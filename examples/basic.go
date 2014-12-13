@@ -16,10 +16,10 @@ import (
 func main() {
 	flag.Parse()
 
-	// Set your AppId and AppSecret
-	appId := ""
+	// Set your AppKey and AppSecret
+	appKey := ""
 	appSecret := ""
-	cred := auth.Credential{auth.UserType_APP_SECRET, appId, thrift.StringPtr(appSecret)}
+	cred := auth.Credential{auth.UserType_APP_SECRET, appKey, thrift.StringPtr(appSecret)}
 	endpoint := "http://sds.api.xiaomi.com"
 
 	cfAdmin := client.NewClientFactory(&cred,
