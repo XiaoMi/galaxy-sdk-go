@@ -17,9 +17,9 @@ var _ = bytes.Equal
 
 var _ = errors.GoUnusedProtection__
 
-const DEFAULT_CLIENT_TIMEOUT = 10
-const DEFAULT_ADMIN_CLIENT_TIMEOUT = 30
-const DEFAULT_CLIENT_CONN_TIMEOUT = 3
+const DEFAULT_CLIENT_TIMEOUT = 10000
+const DEFAULT_ADMIN_CLIENT_TIMEOUT = 30000
+const DEFAULT_CLIENT_CONN_TIMEOUT = 3000
 const DEFAULT_SERVICE_ENDPOINT = "http://sds.api.xiaomi.com"
 const DEFAULT_SECURE_SERVICE_ENDPOINT = "https://sds.api.xiaomi.com"
 const API_ROOT_PATH = "/v1/api"

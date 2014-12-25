@@ -331,9 +331,8 @@ func (p *baseServiceProcessorGetServerVersion) Process(seqId int32, iprot, oprot
 
 	iprot.ReadMessageEnd()
 	result := GetServerVersionResult{}
-	var retval *Version
 	var err2 error
-	if retval, err2 = p.handler.GetServerVersion(); err2 != nil {
+	if result.Success, err2 = p.handler.GetServerVersion(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -345,8 +344,6 @@ func (p *baseServiceProcessorGetServerVersion) Process(seqId int32, iprot, oprot
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getServerVersion", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -443,9 +440,8 @@ func (p *baseServiceProcessorGetServerTime) Process(seqId int32, iprot, oprot th
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return true, err2
-	} else {
-		result.Success = &retval
 	}
+	result.Success = &retval
 	if err2 = oprot.WriteMessageBegin("getServerTime", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
@@ -592,7 +588,7 @@ func (p *GetServerVersionResult) ReadField0(iprot thrift.TProtocol) error {
 	p.Success = &Version{
 		Major: 1,
 
-		Patch: "d0bc1b06",
+		Patch: "e882eb61",
 	}
 	if err := p.Success.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
@@ -720,7 +716,7 @@ func (p *ValidateClientVersionArgs) ReadField1(iprot thrift.TProtocol) error {
 	p.ClientVersion = &Version{
 		Major: 1,
 
-		Patch: "d0bc1b06",
+		Patch: "e882eb61",
 	}
 	if err := p.ClientVersion.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.ClientVersion, err)

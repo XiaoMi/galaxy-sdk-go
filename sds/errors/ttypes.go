@@ -83,6 +83,7 @@ const (
 	ErrorCode_CLOCK_TOO_SKEWED        ErrorCode = 32
 	ErrorCode_REQUEST_TOO_LARGE       ErrorCode = 33
 	ErrorCode_BAD_REQUEST             ErrorCode = 34
+	ErrorCode_TTRANSPORT_ERROR        ErrorCode = 35
 )
 
 func (p ErrorCode) String() string {
@@ -123,6 +124,8 @@ func (p ErrorCode) String() string {
 		return "ErrorCode_REQUEST_TOO_LARGE"
 	case ErrorCode_BAD_REQUEST:
 		return "ErrorCode_BAD_REQUEST"
+	case ErrorCode_TTRANSPORT_ERROR:
+		return "ErrorCode_TTRANSPORT_ERROR"
 	}
 	return "<UNSET>"
 }
@@ -165,25 +168,61 @@ func ErrorCodeFromString(s string) (ErrorCode, error) {
 		return ErrorCode_REQUEST_TOO_LARGE, nil
 	case "ErrorCode_BAD_REQUEST":
 		return ErrorCode_BAD_REQUEST, nil
+	case "ErrorCode_TTRANSPORT_ERROR":
+		return ErrorCode_TTRANSPORT_ERROR, nil
 	}
 	return ErrorCode(0), fmt.Errorf("not a valid ErrorCode string")
 }
 
 func ErrorCodePtr(v ErrorCode) *ErrorCode { return &v }
 
+type RetryType int64
+
+const (
+	RetryType_SAFE   RetryType = 0
+	RetryType_UNSAFE RetryType = 1
+)
+
+func (p RetryType) String() string {
+	switch p {
+	case RetryType_SAFE:
+		return "RetryType_SAFE"
+	case RetryType_UNSAFE:
+		return "RetryType_UNSAFE"
+	}
+	return "<UNSET>"
+}
+
+func RetryTypeFromString(s string) (RetryType, error) {
+	switch s {
+	case "RetryType_SAFE":
+		return RetryType_SAFE, nil
+	case "RetryType_UNSAFE":
+		return RetryType_UNSAFE, nil
+	}
+	return RetryType(0), fmt.Errorf("not a valid RetryType string")
+}
+
+func RetryTypePtr(v RetryType) *RetryType { return &v }
+
 type ServiceException struct {
-	ErrorCode    ErrorCode `thrift:"errorCode,1,required" json:"errorCode"`
-	ErrorMessage *string   `thrift:"errorMessage,2" json:"errorMessage"`
-	Details      *string   `thrift:"details,3" json:"details"`
-	CallId       *string   `thrift:"callId,4" json:"callId"`
+	ErrorCode    *ErrorCode `thrift:"errorCode,1" json:"errorCode"`
+	ErrorMessage *string    `thrift:"errorMessage,2" json:"errorMessage"`
+	Details      *string    `thrift:"details,3" json:"details"`
+	CallId       *string    `thrift:"callId,4" json:"callId"`
 }
 
 func NewServiceException() *ServiceException {
 	return &ServiceException{}
 }
 
+var ServiceException_ErrorCode_DEFAULT ErrorCode
+
 func (p *ServiceException) GetErrorCode() ErrorCode {
-	return p.ErrorCode
+	if !p.IsSetErrorCode() {
+		return ServiceException_ErrorCode_DEFAULT
+	}
+	return *p.ErrorCode
 }
 
 var ServiceException_ErrorMessage_DEFAULT string
@@ -212,6 +251,10 @@ func (p *ServiceException) GetCallId() string {
 	}
 	return *p.CallId
 }
+func (p *ServiceException) IsSetErrorCode() bool {
+	return p.ErrorCode != nil
+}
+
 func (p *ServiceException) IsSetErrorMessage() bool {
 	return p.ErrorMessage != nil
 }
@@ -273,7 +316,7 @@ func (p *ServiceException) ReadField1(iprot thrift.TProtocol) error {
 		return fmt.Errorf("error reading field 1: %s", err)
 	} else {
 		temp := ErrorCode(v)
-		p.ErrorCode = temp
+		p.ErrorCode = &temp
 	}
 	return nil
 }
@@ -331,14 +374,16 @@ func (p *ServiceException) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *ServiceException) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("errorCode", thrift.I32, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:errorCode: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.ErrorCode)); err != nil {
-		return fmt.Errorf("%T.errorCode (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:errorCode: %s", p, err)
+	if p.IsSetErrorCode() {
+		if err := oprot.WriteFieldBegin("errorCode", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:errorCode: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.ErrorCode)); err != nil {
+			return fmt.Errorf("%T.errorCode (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:errorCode: %s", p, err)
+		}
 	}
 	return err
 }

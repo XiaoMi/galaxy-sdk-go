@@ -152,21 +152,31 @@ func AppUserAuthProviderFromString(s string) (AppUserAuthProvider, error) {
 func AppUserAuthProviderPtr(v AppUserAuthProvider) *AppUserAuthProvider { return &v }
 
 type Credential struct {
-	TypeA1      UserType `thrift:"type,1,required" json:"type"`
-	SecretKeyId string   `thrift:"secretKeyId,2,required" json:"secretKeyId"`
-	SecretKey   *string  `thrift:"secretKey,3" json:"secretKey"`
+	TypeA1      *UserType `thrift:"type,1" json:"type"`
+	SecretKeyId *string   `thrift:"secretKeyId,2" json:"secretKeyId"`
+	SecretKey   *string   `thrift:"secretKey,3" json:"secretKey"`
 }
 
 func NewCredential() *Credential {
 	return &Credential{}
 }
 
+var Credential_TypeA1_DEFAULT UserType
+
 func (p *Credential) GetTypeA1() UserType {
-	return p.TypeA1
+	if !p.IsSetTypeA1() {
+		return Credential_TypeA1_DEFAULT
+	}
+	return *p.TypeA1
 }
 
+var Credential_SecretKeyId_DEFAULT string
+
 func (p *Credential) GetSecretKeyId() string {
-	return p.SecretKeyId
+	if !p.IsSetSecretKeyId() {
+		return Credential_SecretKeyId_DEFAULT
+	}
+	return *p.SecretKeyId
 }
 
 var Credential_SecretKey_DEFAULT string
@@ -177,6 +187,14 @@ func (p *Credential) GetSecretKey() string {
 	}
 	return *p.SecretKey
 }
+func (p *Credential) IsSetTypeA1() bool {
+	return p.TypeA1 != nil
+}
+
+func (p *Credential) IsSetSecretKeyId() bool {
+	return p.SecretKeyId != nil
+}
+
 func (p *Credential) IsSetSecretKey() bool {
 	return p.SecretKey != nil
 }
@@ -226,7 +244,7 @@ func (p *Credential) ReadField1(iprot thrift.TProtocol) error {
 		return fmt.Errorf("error reading field 1: %s", err)
 	} else {
 		temp := UserType(v)
-		p.TypeA1 = temp
+		p.TypeA1 = &temp
 	}
 	return nil
 }
@@ -235,7 +253,7 @@ func (p *Credential) ReadField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
-		p.SecretKeyId = v
+		p.SecretKeyId = &v
 	}
 	return nil
 }
@@ -272,27 +290,31 @@ func (p *Credential) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *Credential) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("type", thrift.I32, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:type: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.TypeA1)); err != nil {
-		return fmt.Errorf("%T.type (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:type: %s", p, err)
+	if p.IsSetTypeA1() {
+		if err := oprot.WriteFieldBegin("type", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:type: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.TypeA1)); err != nil {
+			return fmt.Errorf("%T.type (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:type: %s", p, err)
+		}
 	}
 	return err
 }
 
 func (p *Credential) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("secretKeyId", thrift.STRING, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:secretKeyId: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.SecretKeyId)); err != nil {
-		return fmt.Errorf("%T.secretKeyId (2) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:secretKeyId: %s", p, err)
+	if p.IsSetSecretKeyId() {
+		if err := oprot.WriteFieldBegin("secretKeyId", thrift.STRING, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:secretKeyId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SecretKeyId)); err != nil {
+			return fmt.Errorf("%T.secretKeyId (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:secretKeyId: %s", p, err)
+		}
 	}
 	return err
 }
@@ -320,9 +342,9 @@ func (p *Credential) String() string {
 }
 
 type HttpAuthorizationHeader struct {
-	Version       string        `thrift:"version,1,required" json:"version"`
-	UserType      UserType      `thrift:"userType,2,required" json:"userType"`
-	SecretKeyId   string        `thrift:"secretKeyId,3,required" json:"secretKeyId"`
+	Version       string        `thrift:"version,1" json:"version"`
+	UserType      UserType      `thrift:"userType,2" json:"userType"`
+	SecretKeyId   *string       `thrift:"secretKeyId,3" json:"secretKeyId"`
 	SecretKey     *string       `thrift:"secretKey,4" json:"secretKey"`
 	Signature     *string       `thrift:"signature,5" json:"signature"`
 	Algorithm     *MacAlgorithm `thrift:"algorithm,6" json:"algorithm"`
@@ -337,16 +359,25 @@ func NewHttpAuthorizationHeader() *HttpAuthorizationHeader {
 	}
 }
 
+var HttpAuthorizationHeader_Version_DEFAULT string = "SDS-V1"
+
 func (p *HttpAuthorizationHeader) GetVersion() string {
 	return p.Version
 }
+
+var HttpAuthorizationHeader_UserType_DEFAULT UserType = 13
 
 func (p *HttpAuthorizationHeader) GetUserType() UserType {
 	return p.UserType
 }
 
+var HttpAuthorizationHeader_SecretKeyId_DEFAULT string
+
 func (p *HttpAuthorizationHeader) GetSecretKeyId() string {
-	return p.SecretKeyId
+	if !p.IsSetSecretKeyId() {
+		return HttpAuthorizationHeader_SecretKeyId_DEFAULT
+	}
+	return *p.SecretKeyId
 }
 
 var HttpAuthorizationHeader_SecretKey_DEFAULT string
@@ -384,6 +415,18 @@ func (p *HttpAuthorizationHeader) GetSignedHeaders() []string {
 	}
 	return *p.SignedHeaders
 }
+func (p *HttpAuthorizationHeader) IsSetVersion() bool {
+	return p.Version != HttpAuthorizationHeader_Version_DEFAULT
+}
+
+func (p *HttpAuthorizationHeader) IsSetUserType() bool {
+	return p.UserType != HttpAuthorizationHeader_UserType_DEFAULT
+}
+
+func (p *HttpAuthorizationHeader) IsSetSecretKeyId() bool {
+	return p.SecretKeyId != nil
+}
+
 func (p *HttpAuthorizationHeader) IsSetSecretKey() bool {
 	return p.SecretKey != nil
 }
@@ -479,7 +522,7 @@ func (p *HttpAuthorizationHeader) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
-		p.SecretKeyId = v
+		p.SecretKeyId = &v
 	}
 	return nil
 }
@@ -569,40 +612,46 @@ func (p *HttpAuthorizationHeader) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *HttpAuthorizationHeader) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("version", thrift.STRING, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:version: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.Version)); err != nil {
-		return fmt.Errorf("%T.version (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:version: %s", p, err)
+	if p.IsSetVersion() {
+		if err := oprot.WriteFieldBegin("version", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:version: %s", p, err)
+		}
+		if err := oprot.WriteString(string(p.Version)); err != nil {
+			return fmt.Errorf("%T.version (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:version: %s", p, err)
+		}
 	}
 	return err
 }
 
 func (p *HttpAuthorizationHeader) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("userType", thrift.I32, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:userType: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.UserType)); err != nil {
-		return fmt.Errorf("%T.userType (2) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:userType: %s", p, err)
+	if p.IsSetUserType() {
+		if err := oprot.WriteFieldBegin("userType", thrift.I32, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:userType: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.UserType)); err != nil {
+			return fmt.Errorf("%T.userType (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:userType: %s", p, err)
+		}
 	}
 	return err
 }
 
 func (p *HttpAuthorizationHeader) writeField3(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("secretKeyId", thrift.STRING, 3); err != nil {
-		return fmt.Errorf("%T write field begin error 3:secretKeyId: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.SecretKeyId)); err != nil {
-		return fmt.Errorf("%T.secretKeyId (3) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 3:secretKeyId: %s", p, err)
+	if p.IsSetSecretKeyId() {
+		if err := oprot.WriteFieldBegin("secretKeyId", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:secretKeyId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SecretKeyId)); err != nil {
+			return fmt.Errorf("%T.secretKeyId (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:secretKeyId: %s", p, err)
+		}
 	}
 	return err
 }

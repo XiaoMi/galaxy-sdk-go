@@ -367,7 +367,7 @@ func (p *TableClientProxy) shouldRetry(err error) bool {
 				glog.V(1).Infof("Adjusting local clock with offset: %d", p.clockOffset)
 			}
 		}
-		if backoff, ok := errors.ERROR_AUTO_BACKOFF[se.GetErrorCode()]; ok && backoff > 0 {
+		if backoff, ok := errors.ERROR_BACKOFF[se.GetErrorCode()]; ok && backoff > 0 {
 			duration := time.Duration(int64(backoff) * int64(time.Millisecond))
 			glog.Infof("Backoff with %s and retry due to error %s", duration, se.GetErrorCode())
 			time.Sleep(duration)

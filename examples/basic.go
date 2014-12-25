@@ -19,8 +19,9 @@ func main() {
 	// Set your AppKey and AppSecret
 	appKey := ""
 	appSecret := ""
-	cred := auth.Credential{auth.UserType_APP_SECRET, appKey, thrift.StringPtr(appSecret)}
-	endpoint := "http://sds.api.xiaomi.com"
+	userType := auth.UserType_APP_SECRET
+	cred := auth.Credential{&userType, &appKey, thrift.StringPtr(appSecret)}
+	endpoint := "https://sds.api.xiaomi.com"
 
 	cfAdmin := client.NewClientFactory(&cred,
 		time.Duration(common.DEFAULT_ADMIN_CLIENT_TIMEOUT * int64(time.Second)))
@@ -30,9 +31,13 @@ func main() {
 	tableClient := cfTable.NewTableClient(endpoint + common.TABLE_SERVICE_PATH)
 
 	tableName := "go-test-weather"
+	primaryKeyStr := "cityId"
+	var tableQuota int64 = 100 * 1024 *1024
+	var readCapacity int64 = 10
+	var writeCapacity int64 = 10
 	tableSpec := table.TableSpec{
 		Schema : &table.TableSchema{
-			PrimaryIndex: []*table.KeySpec{&table.KeySpec{"cityId", true}},
+			PrimaryIndex: []*table.KeySpec{&table.KeySpec{&primaryKeyStr, true}},
 			Attributes: map[string]table.DataType {
 				"cityId": table.DataType_STRING,
 				"timestamp": table.DataType_INT64,
@@ -43,8 +48,8 @@ func main() {
 			Ttl: -1, // Must be set with Go SDK, the default 0 is illegal
 		},
 		Metadata: &table.TableMetadata{
-			Quota: &table.TableQuota{100 * 1024 * 1024}, // 100M
-			Throughput: &table.ProvisionThroughput{10, 10},
+			Quota: &table.TableQuota{&tableQuota}, // 100M
+			Throughput: &table.ProvisionThroughput{&readCapacity, &writeCapacity},
 		},
 	}
 
@@ -74,7 +79,7 @@ func main() {
 
 	for i := 0; i < len(cities); i += 1 {
 		put := table.PutRequest{
-			TableName: tableName,
+			TableName: &tableName,
 			Record: map[string]*table.Datum {
 				"cityId": client.StringDatum(cities[i]),
 				"timestamp": client.Int64Datum(time.Now().Unix()),
@@ -92,7 +97,7 @@ func main() {
 	// get data
 	i := rand.Intn(len(cities))
 	get := table.GetRequest{
-		TableName: tableName,
+		TableName: &tableName,
 		Keys: map[string]*table.Datum {
 			"cityId": client.StringDatum(cities[i]),
 		},
@@ -106,10 +111,11 @@ func main() {
 	}
 
 	// batch put
+	var op table.BatchOp = table.BatchOp_PUT
 	batch := table.NewBatchRequest()
 	for i := 0; i < 2; i += 1 {
 		put := table.PutRequest{
-			TableName: tableName,
+			TableName: &tableName,
 			Record: map[string]*table.Datum {
 				"cityId": client.StringDatum(cities[i]),
 				"timestamp": client.Int64Datum(time.Now().Unix()),
@@ -118,7 +124,7 @@ func main() {
 			},
 		}
 		batch.Items = append(batch.Items, &table.BatchRequestItem{
-				Action: table.BatchOp_PUT,
+				Action: &op,
 				Request: &table.Request{
 					PutRequest: &put,
 				},
@@ -132,7 +138,7 @@ func main() {
 
 	// scan data
 	scan := table.ScanRequest{
-		TableName: tableName,
+		TableName: &tableName,
 		StartKey: nil,
 		StopKey: nil,
 		Attributes: []string{"cityId", "score"},

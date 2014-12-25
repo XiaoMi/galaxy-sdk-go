@@ -555,9 +555,8 @@ func (p *tableServiceProcessorGet) Process(seqId int32, iprot, oprot thrift.TPro
 
 	iprot.ReadMessageEnd()
 	result := GetResult{}
-	var retval *GetResult_
 	var err2 error
-	if retval, err2 = p.handler.Get(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Get(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -569,8 +568,6 @@ func (p *tableServiceProcessorGet) Process(seqId int32, iprot, oprot thrift.TPro
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("get", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -608,9 +605,8 @@ func (p *tableServiceProcessorPut) Process(seqId int32, iprot, oprot thrift.TPro
 
 	iprot.ReadMessageEnd()
 	result := PutResult{}
-	var retval *PutResult_
 	var err2 error
-	if retval, err2 = p.handler.Put(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Put(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -622,8 +618,6 @@ func (p *tableServiceProcessorPut) Process(seqId int32, iprot, oprot thrift.TPro
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("put", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -661,9 +655,8 @@ func (p *tableServiceProcessorIncrement) Process(seqId int32, iprot, oprot thrif
 
 	iprot.ReadMessageEnd()
 	result := IncrementResult{}
-	var retval *IncrementResult_
 	var err2 error
-	if retval, err2 = p.handler.Increment(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Increment(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -675,8 +668,6 @@ func (p *tableServiceProcessorIncrement) Process(seqId int32, iprot, oprot thrif
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("increment", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -714,9 +705,8 @@ func (p *tableServiceProcessorRemove) Process(seqId int32, iprot, oprot thrift.T
 
 	iprot.ReadMessageEnd()
 	result := RemoveResult{}
-	var retval *RemoveResult_
 	var err2 error
-	if retval, err2 = p.handler.Remove(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Remove(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -728,8 +718,6 @@ func (p *tableServiceProcessorRemove) Process(seqId int32, iprot, oprot thrift.T
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("remove", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -767,9 +755,8 @@ func (p *tableServiceProcessorScan) Process(seqId int32, iprot, oprot thrift.TPr
 
 	iprot.ReadMessageEnd()
 	result := ScanResult{}
-	var retval *ScanResult_
 	var err2 error
-	if retval, err2 = p.handler.Scan(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Scan(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -781,8 +768,6 @@ func (p *tableServiceProcessorScan) Process(seqId int32, iprot, oprot thrift.TPr
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("scan", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -820,9 +805,8 @@ func (p *tableServiceProcessorBatch) Process(seqId int32, iprot, oprot thrift.TP
 
 	iprot.ReadMessageEnd()
 	result := BatchResult{}
-	var retval *BatchResult_
 	var err2 error
-	if retval, err2 = p.handler.Batch(args.Request); err2 != nil {
+	if result.Success, err2 = p.handler.Batch(args.Request); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -834,8 +818,6 @@ func (p *tableServiceProcessorBatch) Process(seqId int32, iprot, oprot thrift.TP
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("batch", thrift.REPLY, seqId); err2 != nil {
 		err = err2

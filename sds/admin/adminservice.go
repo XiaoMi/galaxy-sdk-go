@@ -1491,9 +1491,8 @@ func (p *adminServiceProcessorGetAppInfo) Process(seqId int32, iprot, oprot thri
 
 	iprot.ReadMessageEnd()
 	result := GetAppInfoResult{}
-	var retval *AppInfo
 	var err2 error
-	if retval, err2 = p.handler.GetAppInfo(args.AppId); err2 != nil {
+	if result.Success, err2 = p.handler.GetAppInfo(args.AppId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1505,8 +1504,6 @@ func (p *adminServiceProcessorGetAppInfo) Process(seqId int32, iprot, oprot thri
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getAppInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1544,9 +1541,8 @@ func (p *adminServiceProcessorFindAllApps) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := FindAllAppsResult{}
-	var retval []*AppInfo
 	var err2 error
-	if retval, err2 = p.handler.FindAllApps(); err2 != nil {
+	if result.Success, err2 = p.handler.FindAllApps(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1558,8 +1554,6 @@ func (p *adminServiceProcessorFindAllApps) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("findAllApps", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1597,9 +1591,8 @@ func (p *adminServiceProcessorFindAllTables) Process(seqId int32, iprot, oprot t
 
 	iprot.ReadMessageEnd()
 	result := FindAllTablesResult{}
-	var retval []*table.TableInfo
 	var err2 error
-	if retval, err2 = p.handler.FindAllTables(); err2 != nil {
+	if result.Success, err2 = p.handler.FindAllTables(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1611,8 +1604,6 @@ func (p *adminServiceProcessorFindAllTables) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("findAllTables", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1650,9 +1641,8 @@ func (p *adminServiceProcessorCreateTable) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := CreateTableResult{}
-	var retval *table.TableInfo
 	var err2 error
-	if retval, err2 = p.handler.CreateTable(args.TableName, args.TableSpec); err2 != nil {
+	if result.Success, err2 = p.handler.CreateTable(args.TableName, args.TableSpec); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1664,8 +1654,6 @@ func (p *adminServiceProcessorCreateTable) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("createTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2003,9 +1991,8 @@ func (p *adminServiceProcessorDescribeTable) Process(seqId int32, iprot, oprot t
 
 	iprot.ReadMessageEnd()
 	result := DescribeTableResult{}
-	var retval *table.TableSpec
 	var err2 error
-	if retval, err2 = p.handler.DescribeTable(args.TableName); err2 != nil {
+	if result.Success, err2 = p.handler.DescribeTable(args.TableName); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2017,8 +2004,6 @@ func (p *adminServiceProcessorDescribeTable) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("describeTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2056,9 +2041,8 @@ func (p *adminServiceProcessorGetTableStatus) Process(seqId int32, iprot, oprot 
 
 	iprot.ReadMessageEnd()
 	result := GetTableStatusResult{}
-	var retval *table.TableStatus
 	var err2 error
-	if retval, err2 = p.handler.GetTableStatus(args.TableName); err2 != nil {
+	if result.Success, err2 = p.handler.GetTableStatus(args.TableName); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2070,8 +2054,6 @@ func (p *adminServiceProcessorGetTableStatus) Process(seqId int32, iprot, oprot 
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getTableStatus", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2123,9 +2105,8 @@ func (p *adminServiceProcessorGetTableState) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = &retval
 	}
+	result.Success = &retval
 	if err2 = oprot.WriteMessageBegin("getTableState", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
@@ -2162,9 +2143,8 @@ func (p *adminServiceProcessorGetTableSplits) Process(seqId int32, iprot, oprot 
 
 	iprot.ReadMessageEnd()
 	result := GetTableSplitsResult{}
-	var retval []*table.TableSplit
 	var err2 error
-	if retval, err2 = p.handler.GetTableSplits(args.TableName, args.StartKey, args.StopKey); err2 != nil {
+	if result.Success, err2 = p.handler.GetTableSplits(args.TableName, args.StartKey, args.StopKey); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2176,8 +2156,6 @@ func (p *adminServiceProcessorGetTableSplits) Process(seqId int32, iprot, oprot 
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getTableSplits", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2215,9 +2193,8 @@ func (p *adminServiceProcessorQueryMetric) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := QueryMetricResult{}
-	var retval *TimeSeriesData
 	var err2 error
-	if retval, err2 = p.handler.QueryMetric(args.Query); err2 != nil {
+	if result.Success, err2 = p.handler.QueryMetric(args.Query); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2229,8 +2206,6 @@ func (p *adminServiceProcessorQueryMetric) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("queryMetric", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2268,9 +2243,8 @@ func (p *adminServiceProcessorQueryMetrics) Process(seqId int32, iprot, oprot th
 
 	iprot.ReadMessageEnd()
 	result := QueryMetricsResult{}
-	var retval []*TimeSeriesData
 	var err2 error
-	if retval, err2 = p.handler.QueryMetrics(args.Queries); err2 != nil {
+	if result.Success, err2 = p.handler.QueryMetrics(args.Queries); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2282,8 +2256,6 @@ func (p *adminServiceProcessorQueryMetrics) Process(seqId int32, iprot, oprot th
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("queryMetrics", thrift.REPLY, seqId); err2 != nil {
 		err = err2

@@ -38,7 +38,7 @@ func (p *TableScanner) Iter() <-chan *ScannedItem {
 		for {
 			if retry > 0 {
 				duration := time.Duration(int64(1 << (uint(retry - 1))) * int64(time.Millisecond) *
-						int64(errors.ERROR_AUTO_BACKOFF[errors.ErrorCode_THROUGHPUT_EXCEED]))
+						int64(errors.ERROR_BACKOFF[errors.ErrorCode_THROUGHPUT_EXCEED]))
 				glog.Infof("Throttled and slepping for: %s", duration)
 				time.Sleep(duration)
 			}

@@ -152,9 +152,8 @@ func (p *authServiceProcessorCreateCredential) Process(seqId int32, iprot, oprot
 
 	iprot.ReadMessageEnd()
 	result := CreateCredentialResult{}
-	var retval *Credential
 	var err2 error
-	if retval, err2 = p.handler.CreateCredential(args.XiaomiAppId, args.AppUserAuthProvider, args.AuthToken); err2 != nil {
+	if result.Success, err2 = p.handler.CreateCredential(args.XiaomiAppId, args.AppUserAuthProvider, args.AuthToken); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -166,8 +165,6 @@ func (p *authServiceProcessorCreateCredential) Process(seqId int32, iprot, oprot
 			oprot.Flush()
 			return true, err2
 		}
-	} else {
-		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("createCredential", thrift.REPLY, seqId); err2 != nil {
 		err = err2

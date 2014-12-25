@@ -19,8 +19,8 @@ var _ = errors.GoUnusedProtection__
 var GoUnusedProtection__ int
 
 type Version struct {
-	Major    int32  `thrift:"major,1,required" json:"major"`
-	Minor    int32  `thrift:"minor,2,required" json:"minor"`
+	Major    int32  `thrift:"major,1" json:"major"`
+	Minor    int32  `thrift:"minor,2" json:"minor"`
 	Patch    string `thrift:"patch,3" json:"patch"`
 	Comments string `thrift:"comments,4" json:"comments"`
 }
@@ -29,19 +29,23 @@ func NewVersion() *Version {
 	return &Version{
 		Major: 1,
 
-		Patch: "d0bc1b06",
+		Patch: "e882eb61",
 	}
 }
+
+var Version_Major_DEFAULT int32 = 1
 
 func (p *Version) GetMajor() int32 {
 	return p.Major
 }
 
+var Version_Minor_DEFAULT int32 = 0
+
 func (p *Version) GetMinor() int32 {
 	return p.Minor
 }
 
-var Version_Patch_DEFAULT string = "d0bc1b06"
+var Version_Patch_DEFAULT string = "e882eb61"
 
 func (p *Version) GetPatch() string {
 	return p.Patch
@@ -52,6 +56,14 @@ var Version_Comments_DEFAULT string = ""
 func (p *Version) GetComments() string {
 	return p.Comments
 }
+func (p *Version) IsSetMajor() bool {
+	return p.Major != Version_Major_DEFAULT
+}
+
+func (p *Version) IsSetMinor() bool {
+	return p.Minor != Version_Minor_DEFAULT
+}
+
 func (p *Version) IsSetPatch() bool {
 	return p.Patch != Version_Patch_DEFAULT
 }
@@ -166,27 +178,31 @@ func (p *Version) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *Version) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("major", thrift.I32, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:major: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.Major)); err != nil {
-		return fmt.Errorf("%T.major (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:major: %s", p, err)
+	if p.IsSetMajor() {
+		if err := oprot.WriteFieldBegin("major", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:major: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.Major)); err != nil {
+			return fmt.Errorf("%T.major (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:major: %s", p, err)
+		}
 	}
 	return err
 }
 
 func (p *Version) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("minor", thrift.I32, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:minor: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.Minor)); err != nil {
-		return fmt.Errorf("%T.minor (2) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:minor: %s", p, err)
+	if p.IsSetMinor() {
+		if err := oprot.WriteFieldBegin("minor", thrift.I32, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:minor: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.Minor)); err != nil {
+			return fmt.Errorf("%T.minor (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:minor: %s", p, err)
+		}
 	}
 	return err
 }
