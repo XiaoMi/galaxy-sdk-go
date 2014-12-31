@@ -21,7 +21,7 @@ func main() {
 	appSecret := ""
 	userType := auth.UserType_APP_SECRET
 	cred := auth.Credential{&userType, &appKey, thrift.StringPtr(appSecret)}
-	endpoint := "https://sds.api.xiaomi.com"
+	endpoint := "http://cnbj-s0.sds.api.xiaomi.com"
 
 	cfAdmin := client.NewClientFactory(&cred,
 		time.Duration(common.DEFAULT_ADMIN_CLIENT_TIMEOUT * int64(time.Second)))
@@ -48,8 +48,11 @@ func main() {
 			Ttl: -1, // Must be set with Go SDK, the default 0 is illegal
 		},
 		Metadata: &table.TableMetadata{
-			Quota: &table.TableQuota{&tableQuota}, // 100M
-			Throughput: &table.ProvisionThroughput{&readCapacity, &writeCapacity},
+			Quota: &table.TableQuota{
+					Size: &tableQuota}, // 100M
+			Throughput: &table.ProvisionThroughput{
+				ReadCapacity: &readCapacity,
+				WriteCapacity: &writeCapacity},
 		},
 	}
 
