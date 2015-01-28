@@ -18,6 +18,41 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 var GoUnusedProtection__ int
 
+//thrift传输协议
+type ThriftProtocol int64
+
+const (
+	ThriftProtocol_TCOMPACT ThriftProtocol = 0
+	ThriftProtocol_TJSON    ThriftProtocol = 1
+	ThriftProtocol_TBINARY  ThriftProtocol = 2
+)
+
+func (p ThriftProtocol) String() string {
+	switch p {
+	case ThriftProtocol_TCOMPACT:
+		return "ThriftProtocol_TCOMPACT"
+	case ThriftProtocol_TJSON:
+		return "ThriftProtocol_TJSON"
+	case ThriftProtocol_TBINARY:
+		return "ThriftProtocol_TBINARY"
+	}
+	return "<UNSET>"
+}
+
+func ThriftProtocolFromString(s string) (ThriftProtocol, error) {
+	switch s {
+	case "ThriftProtocol_TCOMPACT":
+		return ThriftProtocol_TCOMPACT, nil
+	case "ThriftProtocol_TJSON":
+		return ThriftProtocol_TJSON, nil
+	case "ThriftProtocol_TBINARY":
+		return ThriftProtocol_TBINARY, nil
+	}
+	return ThriftProtocol(0), fmt.Errorf("not a valid ThriftProtocol string")
+}
+
+func ThriftProtocolPtr(v ThriftProtocol) *ThriftProtocol { return &v }
+
 type Version struct {
 	Major    int32  `thrift:"major,1" json:"major"`
 	Minor    int32  `thrift:"minor,2" json:"minor"`
@@ -29,7 +64,7 @@ func NewVersion() *Version {
 	return &Version{
 		Major: 1,
 
-		Patch: "e882eb61",
+		Patch: "bf602faf",
 	}
 }
 
@@ -45,7 +80,7 @@ func (p *Version) GetMinor() int32 {
 	return p.Minor
 }
 
-var Version_Patch_DEFAULT string = "e882eb61"
+var Version_Patch_DEFAULT string = "bf602faf"
 
 func (p *Version) GetPatch() string {
 	return p.Patch

@@ -18,6 +18,7 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 
 const DEFAULT_CLIENT_TIMEOUT = 10000
+const DEFAULT_MAX_CLIENT_TIMEOUT = 10000
 const DEFAULT_ADMIN_CLIENT_TIMEOUT = 30000
 const DEFAULT_CLIENT_CONN_TIMEOUT = 3000
 const DEFAULT_SERVICE_ENDPOINT = "http://sds.api.xiaomi.com"
@@ -26,6 +27,31 @@ const API_ROOT_PATH = "/v1/api"
 const AUTH_SERVICE_PATH = "/v1/api/auth"
 const ADMIN_SERVICE_PATH = "/v1/api/admin"
 const TABLE_SERVICE_PATH = "/v1/api/table"
+const SCAN_COUNT = "count"
+const DEFAULT_THRIFT_HEADER = "application/x-thrift"
+const THRIFT_JSON_HEADER = "application/x-thrift-json"
+const THRIFT_COMPACT_HEADER = "application/x-thrift-compact"
+const THRIFT_BINARY_HEADER = "application/x-thrift-binary"
+
+var THRIFT_HEADER_MAP map[ThriftProtocol]string
+var HEADER_THRIFT_MAP map[string]ThriftProtocol
+
+const HK_REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout"
+const HK_ERROR_CODE_HEADER = "X-Xiaomi-Error-Code"
+const MAX_CONTENT_SIZE = 524288
 
 func init() {
+	THRIFT_HEADER_MAP = map[ThriftProtocol]string{
+		0: "application/x-thrift-compact",
+		1: "application/x-thrift-json",
+		2: "application/x-thrift-binary",
+	}
+
+	HEADER_THRIFT_MAP = map[string]ThriftProtocol{
+		"application/x-thrift-compact": 0,
+		"application/x-thrift-json":    1,
+		"application/x-thrift-binary":  2,
+		"application/x-thrift":         1,
+	}
+
 }

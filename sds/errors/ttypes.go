@@ -84,6 +84,8 @@ const (
 	ErrorCode_REQUEST_TOO_LARGE       ErrorCode = 33
 	ErrorCode_BAD_REQUEST             ErrorCode = 34
 	ErrorCode_TTRANSPORT_ERROR        ErrorCode = 35
+	ErrorCode_UNSUPPORTED_TPROTOCOL   ErrorCode = 36
+	ErrorCode_REQUEST_TIMEOUT         ErrorCode = 37
 )
 
 func (p ErrorCode) String() string {
@@ -126,6 +128,10 @@ func (p ErrorCode) String() string {
 		return "ErrorCode_BAD_REQUEST"
 	case ErrorCode_TTRANSPORT_ERROR:
 		return "ErrorCode_TTRANSPORT_ERROR"
+	case ErrorCode_UNSUPPORTED_TPROTOCOL:
+		return "ErrorCode_UNSUPPORTED_TPROTOCOL"
+	case ErrorCode_REQUEST_TIMEOUT:
+		return "ErrorCode_REQUEST_TIMEOUT"
 	}
 	return "<UNSET>"
 }
@@ -170,6 +176,10 @@ func ErrorCodeFromString(s string) (ErrorCode, error) {
 		return ErrorCode_BAD_REQUEST, nil
 	case "ErrorCode_TTRANSPORT_ERROR":
 		return ErrorCode_TTRANSPORT_ERROR, nil
+	case "ErrorCode_UNSUPPORTED_TPROTOCOL":
+		return ErrorCode_UNSUPPORTED_TPROTOCOL, nil
+	case "ErrorCode_REQUEST_TIMEOUT":
+		return ErrorCode_REQUEST_TIMEOUT, nil
 	}
 	return ErrorCode(0), fmt.Errorf("not a valid ErrorCode string")
 }

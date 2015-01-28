@@ -280,6 +280,7 @@ type AppInfo struct {
 	DeveloperId     *string           `thrift:"developerId,2" json:"developerId"`
 	TableMappings   map[string]string `thrift:"tableMappings,3" json:"tableMappings"`
 	OauthAppMapping map[string]string `thrift:"oauthAppMapping,4" json:"oauthAppMapping"`
+	AppName         *string           `thrift:"appName,5" json:"appName"`
 }
 
 func NewAppInfo() *AppInfo {
@@ -315,6 +316,15 @@ var AppInfo_OauthAppMapping_DEFAULT map[string]string
 func (p *AppInfo) GetOauthAppMapping() map[string]string {
 	return p.OauthAppMapping
 }
+
+var AppInfo_AppName_DEFAULT string
+
+func (p *AppInfo) GetAppName() string {
+	if !p.IsSetAppName() {
+		return AppInfo_AppName_DEFAULT
+	}
+	return *p.AppName
+}
 func (p *AppInfo) IsSetAppId() bool {
 	return p.AppId != nil
 }
@@ -329,6 +339,10 @@ func (p *AppInfo) IsSetTableMappings() bool {
 
 func (p *AppInfo) IsSetOauthAppMapping() bool {
 	return p.OauthAppMapping != nil
+}
+
+func (p *AppInfo) IsSetAppName() bool {
+	return p.AppName != nil
 }
 
 func (p *AppInfo) Read(iprot thrift.TProtocol) error {
@@ -358,6 +372,10 @@ func (p *AppInfo) Read(iprot thrift.TProtocol) error {
 			}
 		case 4:
 			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		case 5:
+			if err := p.ReadField5(iprot); err != nil {
 				return err
 			}
 		default:
@@ -449,6 +467,15 @@ func (p *AppInfo) ReadField4(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *AppInfo) ReadField5(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 5: %s", err)
+	} else {
+		p.AppName = &v
+	}
+	return nil
+}
+
 func (p *AppInfo) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("AppInfo"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -463,6 +490,9 @@ func (p *AppInfo) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField5(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -551,6 +581,21 @@ func (p *AppInfo) writeField4(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 4:oauthAppMapping: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *AppInfo) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAppName() {
+		if err := oprot.WriteFieldBegin("appName", thrift.STRING, 5); err != nil {
+			return fmt.Errorf("%T write field begin error 5:appName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.AppName)); err != nil {
+			return fmt.Errorf("%T.appName (5) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 5:appName: %s", p, err)
 		}
 	}
 	return err

@@ -27,8 +27,6 @@ const HK_AUTHORIZATION = "Authorization"
 
 var SUGGESTED_SIGNATURE_HEADERS []string
 
-const MAX_CONTENT_SIZE = 524288
-
 func init() {
 	SIGNATURE_SUPPORT = map[UserType]bool{
 		1:  false,

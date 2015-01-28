@@ -345,6 +345,40 @@ func TableStateFromString(s string) (TableState, error) {
 
 func TableStatePtr(v TableState) *TableState { return &v }
 
+type ScanOp int64
+
+const (
+	ScanOp_COUNT  ScanOp = 0
+	ScanOp_DELETE ScanOp = 1
+	ScanOp_UPDATE ScanOp = 2
+)
+
+func (p ScanOp) String() string {
+	switch p {
+	case ScanOp_COUNT:
+		return "ScanOp_COUNT"
+	case ScanOp_DELETE:
+		return "ScanOp_DELETE"
+	case ScanOp_UPDATE:
+		return "ScanOp_UPDATE"
+	}
+	return "<UNSET>"
+}
+
+func ScanOpFromString(s string) (ScanOp, error) {
+	switch s {
+	case "ScanOp_COUNT":
+		return ScanOp_COUNT, nil
+	case "ScanOp_DELETE":
+		return ScanOp_DELETE, nil
+	case "ScanOp_UPDATE":
+		return ScanOp_UPDATE, nil
+	}
+	return ScanOp(0), fmt.Errorf("not a valid ScanOp string")
+}
+
+func ScanOpPtr(v ScanOp) *ScanOp { return &v }
+
 type BatchOp int64
 
 const (
@@ -4168,6 +4202,150 @@ func (p *TableSplit) String() string {
 	return fmt.Sprintf("TableSplit(%+v)", *p)
 }
 
+type ScanAction struct {
+	Action  *ScanOp  `thrift:"action,1" json:"action"`
+	Request *Request `thrift:"request,2" json:"request"`
+}
+
+func NewScanAction() *ScanAction {
+	return &ScanAction{}
+}
+
+var ScanAction_Action_DEFAULT ScanOp
+
+func (p *ScanAction) GetAction() ScanOp {
+	if !p.IsSetAction() {
+		return ScanAction_Action_DEFAULT
+	}
+	return *p.Action
+}
+
+var ScanAction_Request_DEFAULT Request
+
+func (p *ScanAction) GetRequest() Request {
+	if !p.IsSetRequest() {
+		return ScanAction_Request_DEFAULT
+	}
+	return *p.Request
+}
+func (p *ScanAction) IsSetAction() bool {
+	return p.Action != nil
+}
+
+func (p *ScanAction) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *ScanAction) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ScanAction) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		temp := ScanOp(v)
+		p.Action = &temp
+	}
+	return nil
+}
+
+func (p *ScanAction) ReadField2(iprot thrift.TProtocol) error {
+	p.Request = &Request{}
+	if err := p.Request.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Request, err)
+	}
+	return nil
+}
+
+func (p *ScanAction) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ScanAction"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ScanAction) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAction() {
+		if err := oprot.WriteFieldBegin("action", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:action: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.Action)); err != nil {
+			return fmt.Errorf("%T.action (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:action: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ScanAction) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRequest() {
+		if err := oprot.WriteFieldBegin("request", thrift.STRUCT, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:request: %s", p, err)
+		}
+		if err := p.Request.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Request, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:request: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ScanAction) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ScanAction(%+v)", *p)
+}
+
 type GetRequest struct {
 	TableName  *string    `thrift:"tableName,1" json:"tableName"`
 	Keys       Dictionary `thrift:"keys,2" json:"keys"`
@@ -5575,16 +5753,18 @@ func (p *RemoveResult_) String() string {
 }
 
 type ScanRequest struct {
-	TableName     *string    `thrift:"tableName,1" json:"tableName"`
-	IndexName     *string    `thrift:"indexName,2" json:"indexName"`
-	StartKey      Dictionary `thrift:"startKey,3" json:"startKey"`
-	StopKey       Dictionary `thrift:"stopKey,4" json:"stopKey"`
-	Attributes    Attributes `thrift:"attributes,5" json:"attributes"`
-	Condition     *string    `thrift:"condition,6" json:"condition"`
-	Limit         int32      `thrift:"limit,7" json:"limit"`
-	Reverse       bool       `thrift:"reverse,8" json:"reverse"`
-	InGlobalOrder bool       `thrift:"inGlobalOrder,9" json:"inGlobalOrder"`
-	CacheResult_  bool       `thrift:"cacheResult,10" json:"cacheResult"`
+	TableName     *string     `thrift:"tableName,1" json:"tableName"`
+	IndexName     *string     `thrift:"indexName,2" json:"indexName"`
+	StartKey      Dictionary  `thrift:"startKey,3" json:"startKey"`
+	StopKey       Dictionary  `thrift:"stopKey,4" json:"stopKey"`
+	Attributes    Attributes  `thrift:"attributes,5" json:"attributes"`
+	Condition     *string     `thrift:"condition,6" json:"condition"`
+	Limit         int32       `thrift:"limit,7" json:"limit"`
+	Reverse       bool        `thrift:"reverse,8" json:"reverse"`
+	InGlobalOrder bool        `thrift:"inGlobalOrder,9" json:"inGlobalOrder"`
+	CacheResult_  bool        `thrift:"cacheResult,10" json:"cacheResult"`
+	LookAheadStep int32       `thrift:"lookAheadStep,11" json:"lookAheadStep"`
+	Action        *ScanAction `thrift:"action,12" json:"action"`
 }
 
 func NewScanRequest() *ScanRequest {
@@ -5665,6 +5845,21 @@ var ScanRequest_CacheResult__DEFAULT bool = true
 func (p *ScanRequest) GetCacheResult_() bool {
 	return p.CacheResult_
 }
+
+var ScanRequest_LookAheadStep_DEFAULT int32 = 0
+
+func (p *ScanRequest) GetLookAheadStep() int32 {
+	return p.LookAheadStep
+}
+
+var ScanRequest_Action_DEFAULT *ScanAction
+
+func (p *ScanRequest) GetAction() *ScanAction {
+	if !p.IsSetAction() {
+		return ScanRequest_Action_DEFAULT
+	}
+	return p.Action
+}
 func (p *ScanRequest) IsSetTableName() bool {
 	return p.TableName != nil
 }
@@ -5703,6 +5898,14 @@ func (p *ScanRequest) IsSetInGlobalOrder() bool {
 
 func (p *ScanRequest) IsSetCacheResult_() bool {
 	return p.CacheResult_ != ScanRequest_CacheResult__DEFAULT
+}
+
+func (p *ScanRequest) IsSetLookAheadStep() bool {
+	return p.LookAheadStep != ScanRequest_LookAheadStep_DEFAULT
+}
+
+func (p *ScanRequest) IsSetAction() bool {
+	return p.Action != nil
 }
 
 func (p *ScanRequest) Read(iprot thrift.TProtocol) error {
@@ -5756,6 +5959,14 @@ func (p *ScanRequest) Read(iprot thrift.TProtocol) error {
 			}
 		case 10:
 			if err := p.ReadField10(iprot); err != nil {
+				return err
+			}
+		case 11:
+			if err := p.ReadField11(iprot); err != nil {
+				return err
+			}
+		case 12:
+			if err := p.ReadField12(iprot); err != nil {
 				return err
 			}
 		default:
@@ -5910,6 +6121,23 @@ func (p *ScanRequest) ReadField10(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *ScanRequest) ReadField11(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 11: %s", err)
+	} else {
+		p.LookAheadStep = v
+	}
+	return nil
+}
+
+func (p *ScanRequest) ReadField12(iprot thrift.TProtocol) error {
+	p.Action = &ScanAction{}
+	if err := p.Action.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Action, err)
+	}
+	return nil
+}
+
 func (p *ScanRequest) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("ScanRequest"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -5942,6 +6170,12 @@ func (p *ScanRequest) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField10(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField11(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField12(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -6133,6 +6367,36 @@ func (p *ScanRequest) writeField10(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
+func (p *ScanRequest) writeField11(oprot thrift.TProtocol) (err error) {
+	if p.IsSetLookAheadStep() {
+		if err := oprot.WriteFieldBegin("lookAheadStep", thrift.I32, 11); err != nil {
+			return fmt.Errorf("%T write field begin error 11:lookAheadStep: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.LookAheadStep)); err != nil {
+			return fmt.Errorf("%T.lookAheadStep (11) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 11:lookAheadStep: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ScanRequest) writeField12(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAction() {
+		if err := oprot.WriteFieldBegin("action", thrift.STRUCT, 12); err != nil {
+			return fmt.Errorf("%T write field begin error 12:action: %s", p, err)
+		}
+		if err := p.Action.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Action, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 12:action: %s", p, err)
+		}
+	}
+	return err
+}
+
 func (p *ScanRequest) String() string {
 	if p == nil {
 		return "<nil>"
@@ -6143,6 +6407,7 @@ func (p *ScanRequest) String() string {
 type ScanResult_ struct {
 	NextStartKey Dictionary   `thrift:"nextStartKey,1" json:"nextStartKey"`
 	Records      []Dictionary `thrift:"records,2" json:"records"`
+	Throttled    *bool        `thrift:"throttled,3" json:"throttled"`
 }
 
 func NewScanResult_() *ScanResult_ {
@@ -6160,12 +6425,25 @@ var ScanResult__Records_DEFAULT []Dictionary
 func (p *ScanResult_) GetRecords() []Dictionary {
 	return p.Records
 }
+
+var ScanResult__Throttled_DEFAULT bool
+
+func (p *ScanResult_) GetThrottled() bool {
+	if !p.IsSetThrottled() {
+		return ScanResult__Throttled_DEFAULT
+	}
+	return *p.Throttled
+}
 func (p *ScanResult_) IsSetNextStartKey() bool {
 	return p.NextStartKey != nil
 }
 
 func (p *ScanResult_) IsSetRecords() bool {
 	return p.Records != nil
+}
+
+func (p *ScanResult_) IsSetThrottled() bool {
+	return p.Throttled != nil
 }
 
 func (p *ScanResult_) Read(iprot thrift.TProtocol) error {
@@ -6187,6 +6465,10 @@ func (p *ScanResult_) Read(iprot thrift.TProtocol) error {
 			}
 		case 2:
 			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
 				return err
 			}
 		default:
@@ -6268,6 +6550,15 @@ func (p *ScanResult_) ReadField2(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *ScanResult_) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.Throttled = &v
+	}
+	return nil
+}
+
 func (p *ScanResult_) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("ScanResult"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -6276,6 +6567,9 @@ func (p *ScanResult_) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -6342,6 +6636,21 @@ func (p *ScanResult_) writeField2(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 2:records: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ScanResult_) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetThrottled() {
+		if err := oprot.WriteFieldBegin("throttled", thrift.BOOL, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:throttled: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.Throttled)); err != nil {
+			return fmt.Errorf("%T.throttled (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:throttled: %s", p, err)
 		}
 	}
 	return err

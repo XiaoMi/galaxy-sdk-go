@@ -23,14 +23,16 @@ func init() {
 	ERROR_BACKOFF = map[ErrorCode]int64{
 		2:  1000,
 		25: 1000,
+		37: 0,
 		32: 0,
 		1:  1000,
 		35: 1000,
 	}
 
 	ERROR_RETRY_TYPE = map[ErrorCode]RetryType{
-		25: 0,
 		2:  0,
+		25: 0,
+		37: 0,
 		32: 0,
 		1:  1,
 		35: 1,
