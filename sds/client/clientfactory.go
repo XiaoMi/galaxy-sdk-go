@@ -214,6 +214,13 @@ func (p *AdminClientProxy) QueryMetrics(queries []*admin.MetricQueryRequest) (r 
 	return client.QueryMetrics(queries)
 }
 
+func (p *AdminClientProxy) FindAllAppInfo() (r []*admin.AppInfo, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.FindAllAppInfo()
+}
+
 ////////////////////////////
 // Table client proxy
 ////////////////////////////
