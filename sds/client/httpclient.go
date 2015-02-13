@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"time"
 	"github.com/golang/glog"
+	"github.com/nu7hatch/gouuid"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
@@ -187,8 +188,13 @@ func (p *SdsTHttpClient) WriteString(s string) (n int, err error) {
 	return p.requestBuffer.WriteString(s)
 }
 
+func (p *SdsTHttpClient) generateRandomId(length int) string {
+	requestId, _ := uuid.NewV4()
+	return requestId.String()[0 : length]
+}
 func (p *SdsTHttpClient) Flush() error {
-	req, err := http.NewRequest("POST", p.url.String(), p.requestBuffer)
+	uri := fmt.Sprintf("%s?requestId=%s", p.url.String(), p.generateRandomId(8))
+	req, err := http.NewRequest("POST", uri, p.requestBuffer)
 	if err != nil {
 		return thrift.NewTTransportExceptionFromError(err)
 	}

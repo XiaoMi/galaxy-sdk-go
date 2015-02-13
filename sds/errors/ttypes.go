@@ -220,6 +220,7 @@ type ServiceException struct {
 	ErrorMessage *string    `thrift:"errorMessage,2" json:"errorMessage"`
 	Details      *string    `thrift:"details,3" json:"details"`
 	CallId       *string    `thrift:"callId,4" json:"callId"`
+	RequestId    *string    `thrift:"requestId,5" json:"requestId"`
 }
 
 func NewServiceException() *ServiceException {
@@ -261,6 +262,15 @@ func (p *ServiceException) GetCallId() string {
 	}
 	return *p.CallId
 }
+
+var ServiceException_RequestId_DEFAULT string
+
+func (p *ServiceException) GetRequestId() string {
+	if !p.IsSetRequestId() {
+		return ServiceException_RequestId_DEFAULT
+	}
+	return *p.RequestId
+}
 func (p *ServiceException) IsSetErrorCode() bool {
 	return p.ErrorCode != nil
 }
@@ -275,6 +285,10 @@ func (p *ServiceException) IsSetDetails() bool {
 
 func (p *ServiceException) IsSetCallId() bool {
 	return p.CallId != nil
+}
+
+func (p *ServiceException) IsSetRequestId() bool {
+	return p.RequestId != nil
 }
 
 func (p *ServiceException) Read(iprot thrift.TProtocol) error {
@@ -304,6 +318,10 @@ func (p *ServiceException) Read(iprot thrift.TProtocol) error {
 			}
 		case 4:
 			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		case 5:
+			if err := p.ReadField5(iprot); err != nil {
 				return err
 			}
 		default:
@@ -358,6 +376,15 @@ func (p *ServiceException) ReadField4(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *ServiceException) ReadField5(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 5: %s", err)
+	} else {
+		p.RequestId = &v
+	}
+	return nil
+}
+
 func (p *ServiceException) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("ServiceException"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -372,6 +399,9 @@ func (p *ServiceException) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField5(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -438,6 +468,21 @@ func (p *ServiceException) writeField4(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 4:callId: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ServiceException) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRequestId() {
+		if err := oprot.WriteFieldBegin("requestId", thrift.STRING, 5); err != nil {
+			return fmt.Errorf("%T write field begin error 5:requestId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.RequestId)); err != nil {
+			return fmt.Errorf("%T.requestId (5) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 5:requestId: %s", p, err)
 		}
 	}
 	return err
