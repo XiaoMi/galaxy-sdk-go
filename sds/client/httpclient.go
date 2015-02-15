@@ -47,6 +47,7 @@ type SdsTHttpClient struct {
 	header        http.Header
 	clockOffset   int64
 	httpClient    *http.Client
+	queryString	  string
 }
 
 type SdsTHttpClientTransportFactory struct {
@@ -67,25 +68,29 @@ func NewTHttpClientTransportFactory(url string, credential *auth.Credential,
 }
 
 func (p *SdsTHttpClientTransportFactory) GetTransport(trans thrift.TTransport) thrift.TTransport {
-	return p.GetTransportWithClockOffset(trans, 0)
+	return p.GetTransportWithClockOffset(trans, 0, "")
 }
 
 func (p *SdsTHttpClientTransportFactory) GetTransportWithClockOffset(trans thrift.TTransport,
-	clockOffset int64) thrift.TTransport {
+	clockOffset int64, requestType string) thrift.TTransport {
+	var queryString string
+	if requestType != "" {
+		queryString = fmt.Sprintf("type=%s", requestType)
+	}
 	if trans != nil {
 		t, ok := trans.(*SdsTHttpClient)
 		if ok && t.url != nil {
 			s, _ := newSdsTHttpClient(t.url.String(), t.credential, t.httpClient,
-				t.agent, t.clockOffset)
+				t.agent, t.clockOffset, queryString)
 			return s
 		}
 	}
-	s, _ := newSdsTHttpClient(p.url, p.credential, p.httpClient, p.agent, clockOffset)
+	s, _ := newSdsTHttpClient(p.url, p.credential, p.httpClient, p.agent, clockOffset, queryString)
 	return s
 }
 
 func newSdsTHttpClient(urlstr string, credential *auth.Credential, httpClient *http.Client,
-	agent string, clockOffset int64) (thrift.TTransport, error) {
+	agent string, clockOffset int64, queryString string) (thrift.TTransport, error) {
 	parsedURL, err := url.Parse(urlstr)
 	if err != nil {
 		return nil, err
@@ -99,6 +104,7 @@ func newSdsTHttpClient(urlstr string, credential *auth.Credential, httpClient *h
 		header:        http.Header{},
 		httpClient:    httpClient,
 		clockOffset:   clockOffset,
+		queryString:   queryString,
 	}, nil
 }
 
@@ -192,8 +198,10 @@ func (p *SdsTHttpClient) generateRandomId(length int) string {
 	requestId, _ := uuid.NewV4()
 	return requestId.String()[0 : length]
 }
+
 func (p *SdsTHttpClient) Flush() error {
-	uri := fmt.Sprintf("%s?requestId=%s", p.url.String(), p.generateRandomId(8))
+	requestId := p.generateRandomId(8)
+	uri := fmt.Sprintf("%s?id=%s&%s", p.url.String(), requestId, p.queryString)
 	req, err := http.NewRequest("POST", uri, p.requestBuffer)
 	if err != nil {
 		return thrift.NewTTransportExceptionFromError(err)

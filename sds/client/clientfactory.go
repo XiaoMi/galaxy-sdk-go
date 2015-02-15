@@ -71,49 +71,49 @@ type AdminClientProxy struct {
 }
 
 func (p *AdminClientProxy) GetServerVersion() (r *common.Version, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getServerVersion")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetServerVersion()
 }
 
 func (p *AdminClientProxy) ValidateClientVersion(clientVersion *common.Version) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "validateClientVersion")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.ValidateClientVersion(clientVersion)
 }
 
 func (p *AdminClientProxy) GetServerTime() (r int64, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getServerTime")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetServerTime()
 }
 
 func (p *AdminClientProxy) SaveAppInfo(appInfo *admin.AppInfo) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "saveAppInfo")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.SaveAppInfo(appInfo)
 }
 
 func (p *AdminClientProxy) GetAppInfo(appId string) (r *admin.AppInfo, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getAppInfo")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetAppInfo(appId)
 }
 
 func (p *AdminClientProxy) FindAllApps() (r []*admin.AppInfo, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "findAllApps")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.FindAllApps()
 }
 
 func (p *AdminClientProxy) FindAllTables() (r []*table.TableInfo, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "findAllTables")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.FindAllTables()
@@ -121,28 +121,28 @@ func (p *AdminClientProxy) FindAllTables() (r []*table.TableInfo, err error) {
 
 func (p *AdminClientProxy) CreateTable(tableName string,
 	tableSpec *table.TableSpec) (r *table.TableInfo, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "createTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.CreateTable(tableName, tableSpec)
 }
 
 func (p *AdminClientProxy) DropTable(tableName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "dropTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.DropTable(tableName)
 }
 
 func (p *AdminClientProxy) LazyDropTable(tableName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "lazyDropTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.LazyDropTable(tableName)
 }
 
 func (p *AdminClientProxy) AlterTable(tableName string, tableSpec *table.TableSpec) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "alterTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.AlterTable(tableName, tableSpec)
@@ -150,42 +150,42 @@ func (p *AdminClientProxy) AlterTable(tableName string, tableSpec *table.TableSp
 
 func (p *AdminClientProxy) CloneTable(srcName string, destTable string,
 	flushTable bool) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "cloneTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.CloneTable(srcName, destTable, flushTable)
 }
 
 func (p *AdminClientProxy) DisableTable(tableName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "disableTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.DisableTable(tableName)
 }
 
 func (p *AdminClientProxy) EnableTable(tableName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "enableTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.EnableTable(tableName)
 }
 
 func (p *AdminClientProxy) DescribeTable(tableName string) (r *table.TableSpec, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "describeTable")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.DescribeTable(tableName)
 }
 
 func (p *AdminClientProxy) GetTableStatus(tableName string) (r *table.TableStatus, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getTableStatus")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetTableStatus(tableName)
 }
 
 func (p *AdminClientProxy) GetTableState(tableName string) (r table.TableState, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getTableState")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetTableState(tableName)
@@ -193,7 +193,7 @@ func (p *AdminClientProxy) GetTableState(tableName string) (r table.TableState, 
 
 func (p *AdminClientProxy) GetTableSplits(tableName string, startKey table.Dictionary,
 	stopKey table.Dictionary) (r []*table.TableSplit, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getTableSplits")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetTableSplits(tableName, startKey, stopKey)
@@ -201,21 +201,21 @@ func (p *AdminClientProxy) GetTableSplits(tableName string, startKey table.Dicti
 
 func (p *AdminClientProxy) QueryMetric(query *admin.MetricQueryRequest) (r *admin.TimeSeriesData,
 	err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "queryMetric")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.QueryMetric(query)
 }
 
 func (p *AdminClientProxy) QueryMetrics(queries []*admin.MetricQueryRequest) (r []*admin.TimeSeriesData, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "queryMetrics")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.QueryMetrics(queries)
 }
 
 func (p *AdminClientProxy) FindAllAppInfo() (r []*admin.AppInfo, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "findAllAppInfo")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.FindAllAppInfo()
@@ -230,21 +230,21 @@ type TableClientProxy struct {
 }
 
 func (p *TableClientProxy) GetServerVersion() (r *common.Version, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getServerVersion")
 	defer trans.Close()
 	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetServerVersion()
 }
 
 func (p *TableClientProxy) ValidateClientVersion(clientVersion *common.Version) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "validateClientVersion")
 	defer trans.Close()
 	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.ValidateClientVersion(clientVersion)
 }
 
 func (p *TableClientProxy) GetServerTime() (r int64, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "getServerTime")
 	defer trans.Close()
 	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetServerTime()
@@ -252,7 +252,7 @@ func (p *TableClientProxy) GetServerTime() (r int64, err error) {
 
 func (p *TableClientProxy) Get(request *table.GetRequest) (r *table.GetResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "get")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Get(request); e != nil {
@@ -271,7 +271,7 @@ func (p *TableClientProxy) Get(request *table.GetRequest) (r *table.GetResult_, 
 
 func (p *TableClientProxy) Put(request *table.PutRequest) (r *table.PutResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "put")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Put(request); e != nil {
@@ -291,7 +291,7 @@ func (p *TableClientProxy) Put(request *table.PutRequest) (r *table.PutResult_, 
 func (p *TableClientProxy) Increment(request *table.IncrementRequest) (r *table.IncrementResult_,
 	err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "increment")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Increment(request); e != nil {
@@ -311,7 +311,7 @@ func (p *TableClientProxy) Increment(request *table.IncrementRequest) (r *table.
 func (p *TableClientProxy) Remove(request *table.RemoveRequest) (r *table.RemoveResult_,
 	err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "remove")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Remove(request); e != nil {
@@ -330,7 +330,7 @@ func (p *TableClientProxy) Remove(request *table.RemoveRequest) (r *table.Remove
 
 func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "scan")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Scan(request); e != nil {
@@ -349,7 +349,7 @@ func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult
 
 func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
-		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "batch")
 		defer trans.Close()
 		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 		if r, e := client.Batch(request); e != nil {
