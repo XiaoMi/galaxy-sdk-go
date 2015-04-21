@@ -32,8 +32,12 @@ const DEFAULT_THRIFT_HEADER = "application/x-thrift"
 const THRIFT_JSON_HEADER = "application/x-thrift-json"
 const THRIFT_COMPACT_HEADER = "application/x-thrift-compact"
 const THRIFT_BINARY_HEADER = "application/x-thrift-binary"
+const THRIFT_JSON_PROTOCOL_CLASS = "TJSONProtocol"
+const THRIFT_BINARY_PROTOCOL_CLASS = "TBinaryProtocol"
+const THRIFT_COMPACT_PROTOCOL_CLASS = "TCompactProtocol"
 
 var THRIFT_HEADER_MAP map[ThriftProtocol]string
+var THRIFT_PROTOCOL_MAP map[ThriftProtocol]string
 var HEADER_THRIFT_MAP map[string]ThriftProtocol
 
 const HK_REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout"
@@ -45,6 +49,12 @@ func init() {
 		0: "application/x-thrift-compact",
 		1: "application/x-thrift-json",
 		2: "application/x-thrift-binary",
+	}
+
+	THRIFT_PROTOCOL_MAP = map[ThriftProtocol]string{
+		0: "TCompactProtocol",
+		1: "TJSONProtocol",
+		2: "TBinaryProtocol",
 	}
 
 	HEADER_THRIFT_MAP = map[string]ThriftProtocol{

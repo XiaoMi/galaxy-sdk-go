@@ -342,13 +342,14 @@ func (p *Credential) String() string {
 }
 
 type HttpAuthorizationHeader struct {
-	Version       string        `thrift:"version,1" json:"version"`
-	UserType      UserType      `thrift:"userType,2" json:"userType"`
-	SecretKeyId   *string       `thrift:"secretKeyId,3" json:"secretKeyId"`
-	SecretKey     *string       `thrift:"secretKey,4" json:"secretKey"`
-	Signature     *string       `thrift:"signature,5" json:"signature"`
-	Algorithm     *MacAlgorithm `thrift:"algorithm,6" json:"algorithm"`
-	SignedHeaders *[]string     `thrift:"signedHeaders,7" json:"signedHeaders"`
+	Version           string        `thrift:"version,1" json:"version"`
+	UserType          UserType      `thrift:"userType,2" json:"userType"`
+	SecretKeyId       *string       `thrift:"secretKeyId,3" json:"secretKeyId"`
+	SecretKey         *string       `thrift:"secretKey,4" json:"secretKey"`
+	Signature         *string       `thrift:"signature,5" json:"signature"`
+	Algorithm         *MacAlgorithm `thrift:"algorithm,6" json:"algorithm"`
+	SignedHeaders     *[]string     `thrift:"signedHeaders,7" json:"signedHeaders"`
+	SupportAccountKey bool          `thrift:"supportAccountKey,8" json:"supportAccountKey"`
 }
 
 func NewHttpAuthorizationHeader() *HttpAuthorizationHeader {
@@ -415,6 +416,12 @@ func (p *HttpAuthorizationHeader) GetSignedHeaders() []string {
 	}
 	return *p.SignedHeaders
 }
+
+var HttpAuthorizationHeader_SupportAccountKey_DEFAULT bool = false
+
+func (p *HttpAuthorizationHeader) GetSupportAccountKey() bool {
+	return p.SupportAccountKey
+}
 func (p *HttpAuthorizationHeader) IsSetVersion() bool {
 	return p.Version != HttpAuthorizationHeader_Version_DEFAULT
 }
@@ -441,6 +448,10 @@ func (p *HttpAuthorizationHeader) IsSetAlgorithm() bool {
 
 func (p *HttpAuthorizationHeader) IsSetSignedHeaders() bool {
 	return p.SignedHeaders != nil
+}
+
+func (p *HttpAuthorizationHeader) IsSetSupportAccountKey() bool {
+	return p.SupportAccountKey != HttpAuthorizationHeader_SupportAccountKey_DEFAULT
 }
 
 func (p *HttpAuthorizationHeader) Read(iprot thrift.TProtocol) error {
@@ -482,6 +493,10 @@ func (p *HttpAuthorizationHeader) Read(iprot thrift.TProtocol) error {
 			}
 		case 7:
 			if err := p.ReadField7(iprot); err != nil {
+				return err
+			}
+		case 8:
+			if err := p.ReadField8(iprot); err != nil {
 				return err
 			}
 		default:
@@ -577,6 +592,15 @@ func (p *HttpAuthorizationHeader) ReadField7(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *HttpAuthorizationHeader) ReadField8(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 8: %s", err)
+	} else {
+		p.SupportAccountKey = v
+	}
+	return nil
+}
+
 func (p *HttpAuthorizationHeader) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("HttpAuthorizationHeader"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -600,6 +624,9 @@ func (p *HttpAuthorizationHeader) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField7(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField8(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -719,6 +746,21 @@ func (p *HttpAuthorizationHeader) writeField7(oprot thrift.TProtocol) (err error
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 7:signedHeaders: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *HttpAuthorizationHeader) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSupportAccountKey() {
+		if err := oprot.WriteFieldBegin("supportAccountKey", thrift.BOOL, 8); err != nil {
+			return fmt.Errorf("%T write field begin error 8:supportAccountKey: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(p.SupportAccountKey)); err != nil {
+			return fmt.Errorf("%T.supportAccountKey (8) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 8:supportAccountKey: %s", p, err)
 		}
 	}
 	return err

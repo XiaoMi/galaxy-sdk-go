@@ -3823,6 +3823,7 @@ type SimpleCondition struct {
 	Operator *OperatorType `thrift:"operator,1" json:"operator"`
 	Field    *string       `thrift:"field,2" json:"field"`
 	Value    *Datum        `thrift:"value,3" json:"value"`
+	RowExist *bool         `thrift:"rowExist,4" json:"rowExist"`
 }
 
 func NewSimpleCondition() *SimpleCondition {
@@ -3855,6 +3856,15 @@ func (p *SimpleCondition) GetValue() *Datum {
 	}
 	return p.Value
 }
+
+var SimpleCondition_RowExist_DEFAULT bool
+
+func (p *SimpleCondition) GetRowExist() bool {
+	if !p.IsSetRowExist() {
+		return SimpleCondition_RowExist_DEFAULT
+	}
+	return *p.RowExist
+}
 func (p *SimpleCondition) IsSetOperator() bool {
 	return p.Operator != nil
 }
@@ -3865,6 +3875,10 @@ func (p *SimpleCondition) IsSetField() bool {
 
 func (p *SimpleCondition) IsSetValue() bool {
 	return p.Value != nil
+}
+
+func (p *SimpleCondition) IsSetRowExist() bool {
+	return p.RowExist != nil
 }
 
 func (p *SimpleCondition) Read(iprot thrift.TProtocol) error {
@@ -3890,6 +3904,10 @@ func (p *SimpleCondition) Read(iprot thrift.TProtocol) error {
 			}
 		case 3:
 			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
 				return err
 			}
 		default:
@@ -3934,6 +3952,15 @@ func (p *SimpleCondition) ReadField3(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *SimpleCondition) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		p.RowExist = &v
+	}
+	return nil
+}
+
 func (p *SimpleCondition) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("SimpleCondition"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -3945,6 +3972,9 @@ func (p *SimpleCondition) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -3996,6 +4026,21 @@ func (p *SimpleCondition) writeField3(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 3:value: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *SimpleCondition) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRowExist() {
+		if err := oprot.WriteFieldBegin("rowExist", thrift.BOOL, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:rowExist: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.RowExist)); err != nil {
+			return fmt.Errorf("%T.rowExist (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:rowExist: %s", p, err)
 		}
 	}
 	return err
@@ -6635,9 +6680,9 @@ func (p *ScanRequest) String() string {
 }
 
 type ScanResult_ struct {
-	NextStartKey Dictionary   `thrift:"nextStartKey,1" json:"nextStartKey"`
-	Records      []Dictionary `thrift:"records,2" json:"records"`
-	Throttled    *bool        `thrift:"throttled,3" json:"throttled"`
+	NextStartKey Dictionary          `thrift:"nextStartKey,1" json:"nextStartKey"`
+	Records      []map[string]*Datum `thrift:"records,2" json:"records"`
+	Throttled    *bool               `thrift:"throttled,3" json:"throttled"`
 }
 
 func NewScanResult_() *ScanResult_ {
@@ -6650,9 +6695,9 @@ func (p *ScanResult_) GetNextStartKey() Dictionary {
 	return p.NextStartKey
 }
 
-var ScanResult__Records_DEFAULT []Dictionary
+var ScanResult__Records_DEFAULT []map[string]*Datum
 
-func (p *ScanResult_) GetRecords() []Dictionary {
+func (p *ScanResult_) GetRecords() []map[string]*Datum {
 	return p.Records
 }
 
@@ -6747,7 +6792,7 @@ func (p *ScanResult_) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return fmt.Errorf("error reading list begin: %s", err)
 	}
-	tSlice := make([]Dictionary, 0, size)
+	tSlice := make([]map[string]*Datum, 0, size)
 	p.Records = tSlice
 	for i := 0; i < size; i++ {
 		_, _, size, err := iprot.ReadMapBegin()

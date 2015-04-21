@@ -41,6 +41,8 @@ type AdminService interface {
 	FindAllApps() (r []*AppInfo, err error)
 	// 获取指定用户所有表信息
 	FindAllTables() (r []*table.TableInfo, err error)
+	// 清除所有延迟删除的表
+	CleanAllLazyDroppedTables() (r []string, err error)
 	// 创建表
 	//
 	// Parameters:
@@ -52,11 +54,11 @@ type AdminService interface {
 	// Parameters:
 	//  - TableName
 	DropTable(tableName string) (err error)
-	// 延迟删除表
+	// 恢复表
 	//
 	// Parameters:
 	//  - TableName
-	LazyDropTable(tableName string) (err error)
+	RestoreTable(tableName string) (err error)
 	// 修改表
 	//
 	// Parameters:
@@ -418,6 +420,76 @@ func (p *AdminServiceClient) recvFindAllTables() (value []*table.TableInfo, err 
 	return
 }
 
+// 清除所有延迟删除的表
+func (p *AdminServiceClient) CleanAllLazyDroppedTables() (r []string, err error) {
+	if err = p.sendCleanAllLazyDroppedTables(); err != nil {
+		return
+	}
+	return p.recvCleanAllLazyDroppedTables()
+}
+
+func (p *AdminServiceClient) sendCleanAllLazyDroppedTables() (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	if err = oprot.WriteMessageBegin("cleanAllLazyDroppedTables", thrift.CALL, p.SeqId); err != nil {
+		return
+	}
+	args := CleanAllLazyDroppedTablesArgs{}
+	if err = args.Write(oprot); err != nil {
+		return
+	}
+	if err = oprot.WriteMessageEnd(); err != nil {
+		return
+	}
+	return oprot.Flush()
+}
+
+func (p *AdminServiceClient) recvCleanAllLazyDroppedTables() (value []string, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error14 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error15 error
+		error15, err = error14.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error15
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "cleanAllLazyDroppedTables failed: out of sequence response")
+		return
+	}
+	result := CleanAllLazyDroppedTablesResult{}
+	if err = result.Read(iprot); err != nil {
+		return
+	}
+	if err = iprot.ReadMessageEnd(); err != nil {
+		return
+	}
+	if result.Se != nil {
+		err = result.Se
+		return
+	}
+	value = result.GetSuccess()
+	return
+}
+
 // 创建表
 //
 // Parameters:
@@ -464,16 +536,16 @@ func (p *AdminServiceClient) recvCreateTable() (value *table.TableInfo, err erro
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error14 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error15 error
-		error15, err = error14.Read(iprot)
+		error16 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error17 error
+		error17, err = error16.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error15
+		err = error17
 		return
 	}
 	if p.SeqId != seqId {
@@ -539,16 +611,16 @@ func (p *AdminServiceClient) recvDropTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error16 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error17 error
-		error17, err = error16.Read(iprot)
+		error18 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error19 error
+		error19, err = error18.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error17
+		err = error19
 		return
 	}
 	if p.SeqId != seqId {
@@ -569,28 +641,28 @@ func (p *AdminServiceClient) recvDropTable() (err error) {
 	return
 }
 
-// 延迟删除表
+// 恢复表
 //
 // Parameters:
 //  - TableName
-func (p *AdminServiceClient) LazyDropTable(tableName string) (err error) {
-	if err = p.sendLazyDropTable(tableName); err != nil {
+func (p *AdminServiceClient) RestoreTable(tableName string) (err error) {
+	if err = p.sendRestoreTable(tableName); err != nil {
 		return
 	}
-	return p.recvLazyDropTable()
+	return p.recvRestoreTable()
 }
 
-func (p *AdminServiceClient) sendLazyDropTable(tableName string) (err error) {
+func (p *AdminServiceClient) sendRestoreTable(tableName string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
 		p.OutputProtocol = oprot
 	}
 	p.SeqId++
-	if err = oprot.WriteMessageBegin("lazyDropTable", thrift.CALL, p.SeqId); err != nil {
+	if err = oprot.WriteMessageBegin("restoreTable", thrift.CALL, p.SeqId); err != nil {
 		return
 	}
-	args := LazyDropTableArgs{
+	args := RestoreTableArgs{
 		TableName: tableName,
 	}
 	if err = args.Write(oprot); err != nil {
@@ -602,7 +674,7 @@ func (p *AdminServiceClient) sendLazyDropTable(tableName string) (err error) {
 	return oprot.Flush()
 }
 
-func (p *AdminServiceClient) recvLazyDropTable() (err error) {
+func (p *AdminServiceClient) recvRestoreTable() (err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -613,23 +685,23 @@ func (p *AdminServiceClient) recvLazyDropTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error18 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error19 error
-		error19, err = error18.Read(iprot)
+		error20 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error21 error
+		error21, err = error20.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error19
+		err = error21
 		return
 	}
 	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "lazyDropTable failed: out of sequence response")
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "restoreTable failed: out of sequence response")
 		return
 	}
-	result := LazyDropTableResult{}
+	result := RestoreTableResult{}
 	if err = result.Read(iprot); err != nil {
 		return
 	}
@@ -689,16 +761,16 @@ func (p *AdminServiceClient) recvAlterTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error20 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error21 error
-		error21, err = error20.Read(iprot)
+		error22 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error23 error
+		error23, err = error22.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error21
+		err = error23
 		return
 	}
 	if p.SeqId != seqId {
@@ -767,16 +839,16 @@ func (p *AdminServiceClient) recvCloneTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error22 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error23 error
-		error23, err = error22.Read(iprot)
+		error24 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error25 error
+		error25, err = error24.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error23
+		err = error25
 		return
 	}
 	if p.SeqId != seqId {
@@ -841,16 +913,16 @@ func (p *AdminServiceClient) recvDisableTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error24 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error25 error
-		error25, err = error24.Read(iprot)
+		error26 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error27 error
+		error27, err = error26.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error25
+		err = error27
 		return
 	}
 	if p.SeqId != seqId {
@@ -915,16 +987,16 @@ func (p *AdminServiceClient) recvEnableTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error26 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error27 error
-		error27, err = error26.Read(iprot)
+		error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error29 error
+		error29, err = error28.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error27
+		err = error29
 		return
 	}
 	if p.SeqId != seqId {
@@ -989,16 +1061,16 @@ func (p *AdminServiceClient) recvDescribeTable() (value *table.TableSpec, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error29 error
-		error29, err = error28.Read(iprot)
+		error30 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error31 error
+		error31, err = error30.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error29
+		err = error31
 		return
 	}
 	if p.SeqId != seqId {
@@ -1064,16 +1136,16 @@ func (p *AdminServiceClient) recvGetTableStatus() (value *table.TableStatus, err
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error30 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error31 error
-		error31, err = error30.Read(iprot)
+		error32 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error33 error
+		error33, err = error32.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error31
+		err = error33
 		return
 	}
 	if p.SeqId != seqId {
@@ -1139,16 +1211,16 @@ func (p *AdminServiceClient) recvGetTableState() (value table.TableState, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error32 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error33 error
-		error33, err = error32.Read(iprot)
+		error34 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error35 error
+		error35, err = error34.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error33
+		err = error35
 		return
 	}
 	if p.SeqId != seqId {
@@ -1218,16 +1290,16 @@ func (p *AdminServiceClient) recvGetTableSplits() (value []*table.TableSplit, er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error34 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error35 error
-		error35, err = error34.Read(iprot)
+		error36 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error37 error
+		error37, err = error36.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error35
+		err = error37
 		return
 	}
 	if p.SeqId != seqId {
@@ -1293,16 +1365,16 @@ func (p *AdminServiceClient) recvQueryMetric() (value *TimeSeriesData, err error
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error36 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error37 error
-		error37, err = error36.Read(iprot)
+		error38 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error39 error
+		error39, err = error38.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error37
+		err = error39
 		return
 	}
 	if p.SeqId != seqId {
@@ -1368,16 +1440,16 @@ func (p *AdminServiceClient) recvQueryMetrics() (value []*TimeSeriesData, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error38 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error39 error
-		error39, err = error38.Read(iprot)
+		error40 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error41 error
+		error41, err = error40.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error39
+		err = error41
 		return
 	}
 	if p.SeqId != seqId {
@@ -1438,16 +1510,16 @@ func (p *AdminServiceClient) recvFindAllAppInfo() (value []*AppInfo, err error) 
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error40 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error41 error
-		error41, err = error40.Read(iprot)
+		error42 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error43 error
+		error43, err = error42.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error41
+		err = error43
 		return
 	}
 	if p.SeqId != seqId {
@@ -1474,26 +1546,27 @@ type AdminServiceProcessor struct {
 }
 
 func NewAdminServiceProcessor(handler AdminService) *AdminServiceProcessor {
-	self42 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self42.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
-	self42.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
-	self42.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
-	self42.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
-	self42.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
-	self42.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
-	self42.AddToProcessorMap("lazyDropTable", &adminServiceProcessorLazyDropTable{handler: handler})
-	self42.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
-	self42.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
-	self42.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
-	self42.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
-	self42.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
-	self42.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
-	self42.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
-	self42.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
-	self42.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
-	self42.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
-	self42.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
-	return self42
+	self44 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self44.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
+	self44.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
+	self44.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
+	self44.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
+	self44.AddToProcessorMap("cleanAllLazyDroppedTables", &adminServiceProcessorCleanAllLazyDroppedTables{handler: handler})
+	self44.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
+	self44.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
+	self44.AddToProcessorMap("restoreTable", &adminServiceProcessorRestoreTable{handler: handler})
+	self44.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
+	self44.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
+	self44.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
+	self44.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
+	self44.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
+	self44.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
+	self44.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
+	self44.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
+	self44.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
+	self44.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
+	self44.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
+	return self44
 }
 
 type adminServiceProcessorSaveAppInfo struct {
@@ -1564,8 +1637,9 @@ func (p *adminServiceProcessorGetAppInfo) Process(seqId int32, iprot, oprot thri
 
 	iprot.ReadMessageEnd()
 	result := GetAppInfoResult{}
+	var retval *AppInfo
 	var err2 error
-	if result.Success, err2 = p.handler.GetAppInfo(args.AppId); err2 != nil {
+	if retval, err2 = p.handler.GetAppInfo(args.AppId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1577,6 +1651,8 @@ func (p *adminServiceProcessorGetAppInfo) Process(seqId int32, iprot, oprot thri
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getAppInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1614,8 +1690,9 @@ func (p *adminServiceProcessorFindAllApps) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := FindAllAppsResult{}
+	var retval []*AppInfo
 	var err2 error
-	if result.Success, err2 = p.handler.FindAllApps(); err2 != nil {
+	if retval, err2 = p.handler.FindAllApps(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1627,6 +1704,8 @@ func (p *adminServiceProcessorFindAllApps) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("findAllApps", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1664,8 +1743,9 @@ func (p *adminServiceProcessorFindAllTables) Process(seqId int32, iprot, oprot t
 
 	iprot.ReadMessageEnd()
 	result := FindAllTablesResult{}
+	var retval []*table.TableInfo
 	var err2 error
-	if result.Success, err2 = p.handler.FindAllTables(); err2 != nil {
+	if retval, err2 = p.handler.FindAllTables(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1677,8 +1757,63 @@ func (p *adminServiceProcessorFindAllTables) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("findAllTables", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type adminServiceProcessorCleanAllLazyDroppedTables struct {
+	handler AdminService
+}
+
+func (p *adminServiceProcessorCleanAllLazyDroppedTables) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := CleanAllLazyDroppedTablesArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("cleanAllLazyDroppedTables", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	result := CleanAllLazyDroppedTablesResult{}
+	var retval []string
+	var err2 error
+	if retval, err2 = p.handler.CleanAllLazyDroppedTables(); err2 != nil {
+		switch v := err2.(type) {
+		case *errors.ServiceException:
+			result.Se = v
+		default:
+			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing cleanAllLazyDroppedTables: "+err2.Error())
+			oprot.WriteMessageBegin("cleanAllLazyDroppedTables", thrift.EXCEPTION, seqId)
+			x.Write(oprot)
+			oprot.WriteMessageEnd()
+			oprot.Flush()
+			return true, err2
+		}
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("cleanAllLazyDroppedTables", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -1714,8 +1849,9 @@ func (p *adminServiceProcessorCreateTable) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := CreateTableResult{}
+	var retval *table.TableInfo
 	var err2 error
-	if result.Success, err2 = p.handler.CreateTable(args.TableName, args.TableSpec); err2 != nil {
+	if retval, err2 = p.handler.CreateTable(args.TableName, args.TableSpec); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -1727,6 +1863,8 @@ func (p *adminServiceProcessorCreateTable) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("createTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -1796,16 +1934,16 @@ func (p *adminServiceProcessorDropTable) Process(seqId int32, iprot, oprot thrif
 	return true, err
 }
 
-type adminServiceProcessorLazyDropTable struct {
+type adminServiceProcessorRestoreTable struct {
 	handler AdminService
 }
 
-func (p *adminServiceProcessorLazyDropTable) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := LazyDropTableArgs{}
+func (p *adminServiceProcessorRestoreTable) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := RestoreTableArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("lazyDropTable", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("restoreTable", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
@@ -1813,22 +1951,22 @@ func (p *adminServiceProcessorLazyDropTable) Process(seqId int32, iprot, oprot t
 	}
 
 	iprot.ReadMessageEnd()
-	result := LazyDropTableResult{}
+	result := RestoreTableResult{}
 	var err2 error
-	if err2 = p.handler.LazyDropTable(args.TableName); err2 != nil {
+	if err2 = p.handler.RestoreTable(args.TableName); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
 		default:
-			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing lazyDropTable: "+err2.Error())
-			oprot.WriteMessageBegin("lazyDropTable", thrift.EXCEPTION, seqId)
+			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing restoreTable: "+err2.Error())
+			oprot.WriteMessageBegin("restoreTable", thrift.EXCEPTION, seqId)
 			x.Write(oprot)
 			oprot.WriteMessageEnd()
 			oprot.Flush()
 			return true, err2
 		}
 	}
-	if err2 = oprot.WriteMessageBegin("lazyDropTable", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("restoreTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -2064,8 +2202,9 @@ func (p *adminServiceProcessorDescribeTable) Process(seqId int32, iprot, oprot t
 
 	iprot.ReadMessageEnd()
 	result := DescribeTableResult{}
+	var retval *table.TableSpec
 	var err2 error
-	if result.Success, err2 = p.handler.DescribeTable(args.TableName); err2 != nil {
+	if retval, err2 = p.handler.DescribeTable(args.TableName); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2077,6 +2216,8 @@ func (p *adminServiceProcessorDescribeTable) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("describeTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2114,8 +2255,9 @@ func (p *adminServiceProcessorGetTableStatus) Process(seqId int32, iprot, oprot 
 
 	iprot.ReadMessageEnd()
 	result := GetTableStatusResult{}
+	var retval *table.TableStatus
 	var err2 error
-	if result.Success, err2 = p.handler.GetTableStatus(args.TableName); err2 != nil {
+	if retval, err2 = p.handler.GetTableStatus(args.TableName); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2127,6 +2269,8 @@ func (p *adminServiceProcessorGetTableStatus) Process(seqId int32, iprot, oprot 
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getTableStatus", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2178,8 +2322,9 @@ func (p *adminServiceProcessorGetTableState) Process(seqId int32, iprot, oprot t
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = &retval
 	}
-	result.Success = &retval
 	if err2 = oprot.WriteMessageBegin("getTableState", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
@@ -2216,8 +2361,9 @@ func (p *adminServiceProcessorGetTableSplits) Process(seqId int32, iprot, oprot 
 
 	iprot.ReadMessageEnd()
 	result := GetTableSplitsResult{}
+	var retval []*table.TableSplit
 	var err2 error
-	if result.Success, err2 = p.handler.GetTableSplits(args.TableName, args.StartKey, args.StopKey); err2 != nil {
+	if retval, err2 = p.handler.GetTableSplits(args.TableName, args.StartKey, args.StopKey); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2229,6 +2375,8 @@ func (p *adminServiceProcessorGetTableSplits) Process(seqId int32, iprot, oprot 
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("getTableSplits", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2266,8 +2414,9 @@ func (p *adminServiceProcessorQueryMetric) Process(seqId int32, iprot, oprot thr
 
 	iprot.ReadMessageEnd()
 	result := QueryMetricResult{}
+	var retval *TimeSeriesData
 	var err2 error
-	if result.Success, err2 = p.handler.QueryMetric(args.Query); err2 != nil {
+	if retval, err2 = p.handler.QueryMetric(args.Query); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2279,6 +2428,8 @@ func (p *adminServiceProcessorQueryMetric) Process(seqId int32, iprot, oprot thr
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("queryMetric", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2316,8 +2467,9 @@ func (p *adminServiceProcessorQueryMetrics) Process(seqId int32, iprot, oprot th
 
 	iprot.ReadMessageEnd()
 	result := QueryMetricsResult{}
+	var retval []*TimeSeriesData
 	var err2 error
-	if result.Success, err2 = p.handler.QueryMetrics(args.Queries); err2 != nil {
+	if retval, err2 = p.handler.QueryMetrics(args.Queries); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2329,6 +2481,8 @@ func (p *adminServiceProcessorQueryMetrics) Process(seqId int32, iprot, oprot th
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("queryMetrics", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2366,8 +2520,9 @@ func (p *adminServiceProcessorFindAllAppInfo) Process(seqId int32, iprot, oprot 
 
 	iprot.ReadMessageEnd()
 	result := FindAllAppInfoResult{}
+	var retval []*AppInfo
 	var err2 error
-	if result.Success, err2 = p.handler.FindAllAppInfo(); err2 != nil {
+	if retval, err2 = p.handler.FindAllAppInfo(); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -2379,6 +2534,8 @@ func (p *adminServiceProcessorFindAllAppInfo) Process(seqId int32, iprot, oprot 
 			oprot.Flush()
 			return true, err2
 		}
+	} else {
+		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("findAllAppInfo", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -2951,11 +3108,11 @@ func (p *FindAllAppsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem43 := &AppInfo{}
-		if err := _elem43.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem43, err)
+		_elem45 := &AppInfo{}
+		if err := _elem45.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem45, err)
 		}
-		p.Success = append(p.Success, _elem43)
+		p.Success = append(p.Success, _elem45)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -3162,11 +3319,11 @@ func (p *FindAllTablesResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem44 := &table.TableInfo{}
-		if err := _elem44.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem44, err)
+		_elem46 := &table.TableInfo{}
+		if err := _elem46.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem46, err)
 		}
-		p.Success = append(p.Success, _elem44)
+		p.Success = append(p.Success, _elem46)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -3244,6 +3401,219 @@ func (p *FindAllTablesResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("FindAllTablesResult(%+v)", *p)
+}
+
+type CleanAllLazyDroppedTablesArgs struct {
+}
+
+func NewCleanAllLazyDroppedTablesArgs() *CleanAllLazyDroppedTablesArgs {
+	return &CleanAllLazyDroppedTablesArgs{}
+}
+
+func (p *CleanAllLazyDroppedTablesArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		if err := iprot.Skip(fieldTypeId); err != nil {
+			return err
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("cleanAllLazyDroppedTables_args"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CleanAllLazyDroppedTablesArgs(%+v)", *p)
+}
+
+type CleanAllLazyDroppedTablesResult struct {
+	Success []string                 `thrift:"success,0" json:"success"`
+	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
+}
+
+func NewCleanAllLazyDroppedTablesResult() *CleanAllLazyDroppedTablesResult {
+	return &CleanAllLazyDroppedTablesResult{}
+}
+
+var CleanAllLazyDroppedTablesResult_Success_DEFAULT []string
+
+func (p *CleanAllLazyDroppedTablesResult) GetSuccess() []string {
+	return p.Success
+}
+
+var CleanAllLazyDroppedTablesResult_Se_DEFAULT *errors.ServiceException
+
+func (p *CleanAllLazyDroppedTablesResult) GetSe() *errors.ServiceException {
+	if !p.IsSetSe() {
+		return CleanAllLazyDroppedTablesResult_Se_DEFAULT
+	}
+	return p.Se
+}
+func (p *CleanAllLazyDroppedTablesResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) IsSetSe() bool {
+	return p.Se != nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.ReadField0(iprot); err != nil {
+				return err
+			}
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) ReadField0(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make([]string, 0, size)
+	p.Success = tSlice
+	for i := 0; i < size; i++ {
+		var _elem47 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_elem47 = v
+		}
+		p.Success = append(p.Success, _elem47)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) ReadField1(iprot thrift.TProtocol) error {
+	p.Se = &errors.ServiceException{}
+	if err := p.Se.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("cleanAllLazyDroppedTables_result"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *CleanAllLazyDroppedTablesResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.LIST, 0); err != nil {
+			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Success)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.Success {
+			if err := oprot.WriteString(string(v)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CleanAllLazyDroppedTablesResult) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSe() {
+		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
+		}
+		if err := p.Se.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CleanAllLazyDroppedTablesResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CleanAllLazyDroppedTablesResult(%+v)", *p)
 }
 
 type CreateTableArgs struct {
@@ -3704,18 +4074,18 @@ func (p *DropTableResult) String() string {
 	return fmt.Sprintf("DropTableResult(%+v)", *p)
 }
 
-type LazyDropTableArgs struct {
+type RestoreTableArgs struct {
 	TableName string `thrift:"tableName,1" json:"tableName"`
 }
 
-func NewLazyDropTableArgs() *LazyDropTableArgs {
-	return &LazyDropTableArgs{}
+func NewRestoreTableArgs() *RestoreTableArgs {
+	return &RestoreTableArgs{}
 }
 
-func (p *LazyDropTableArgs) GetTableName() string {
+func (p *RestoreTableArgs) GetTableName() string {
 	return p.TableName
 }
-func (p *LazyDropTableArgs) Read(iprot thrift.TProtocol) error {
+func (p *RestoreTableArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
 	}
@@ -3747,7 +4117,7 @@ func (p *LazyDropTableArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableArgs) ReadField1(iprot thrift.TProtocol) error {
+func (p *RestoreTableArgs) ReadField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 1: %s", err)
 	} else {
@@ -3756,8 +4126,8 @@ func (p *LazyDropTableArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("lazyDropTable_args"); err != nil {
+func (p *RestoreTableArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("restoreTable_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
@@ -3772,7 +4142,7 @@ func (p *LazyDropTableArgs) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *RestoreTableArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
 		return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
 	}
@@ -3785,34 +4155,34 @@ func (p *LazyDropTableArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *LazyDropTableArgs) String() string {
+func (p *RestoreTableArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("LazyDropTableArgs(%+v)", *p)
+	return fmt.Sprintf("RestoreTableArgs(%+v)", *p)
 }
 
-type LazyDropTableResult struct {
+type RestoreTableResult struct {
 	Se *errors.ServiceException `thrift:"se,1" json:"se"`
 }
 
-func NewLazyDropTableResult() *LazyDropTableResult {
-	return &LazyDropTableResult{}
+func NewRestoreTableResult() *RestoreTableResult {
+	return &RestoreTableResult{}
 }
 
-var LazyDropTableResult_Se_DEFAULT *errors.ServiceException
+var RestoreTableResult_Se_DEFAULT *errors.ServiceException
 
-func (p *LazyDropTableResult) GetSe() *errors.ServiceException {
+func (p *RestoreTableResult) GetSe() *errors.ServiceException {
 	if !p.IsSetSe() {
-		return LazyDropTableResult_Se_DEFAULT
+		return RestoreTableResult_Se_DEFAULT
 	}
 	return p.Se
 }
-func (p *LazyDropTableResult) IsSetSe() bool {
+func (p *RestoreTableResult) IsSetSe() bool {
 	return p.Se != nil
 }
 
-func (p *LazyDropTableResult) Read(iprot thrift.TProtocol) error {
+func (p *RestoreTableResult) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
 	}
@@ -3844,7 +4214,7 @@ func (p *LazyDropTableResult) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableResult) ReadField1(iprot thrift.TProtocol) error {
+func (p *RestoreTableResult) ReadField1(iprot thrift.TProtocol) error {
 	p.Se = &errors.ServiceException{}
 	if err := p.Se.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
@@ -3852,8 +4222,8 @@ func (p *LazyDropTableResult) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("lazyDropTable_result"); err != nil {
+func (p *RestoreTableResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("restoreTable_result"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
@@ -3868,7 +4238,7 @@ func (p *LazyDropTableResult) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *LazyDropTableResult) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *RestoreTableResult) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSe() {
 		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
 			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
@@ -3883,11 +4253,11 @@ func (p *LazyDropTableResult) writeField1(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *LazyDropTableResult) String() string {
+func (p *RestoreTableResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("LazyDropTableResult(%+v)", *p)
+	return fmt.Sprintf("RestoreTableResult(%+v)", *p)
 }
 
 type AlterTableArgs struct {
@@ -5514,17 +5884,17 @@ func (p *GetTableSplitsArgs) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key45 string
+		var _key48 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key45 = v
+			_key48 = v
 		}
-		_val46 := &table.Datum{}
-		if err := _val46.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val46, err)
+		_val49 := &table.Datum{}
+		if err := _val49.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val49, err)
 		}
-		p.StartKey[_key45] = _val46
+		p.StartKey[_key48] = _val49
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5540,17 +5910,17 @@ func (p *GetTableSplitsArgs) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key47 string
+		var _key50 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key47 = v
+			_key50 = v
 		}
-		_val48 := &table.Datum{}
-		if err := _val48.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val48, err)
+		_val51 := &table.Datum{}
+		if err := _val51.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val51, err)
 		}
-		p.StopKey[_key47] = _val48
+		p.StopKey[_key50] = _val51
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5723,11 +6093,11 @@ func (p *GetTableSplitsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableSplit, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem49 := &table.TableSplit{}
-		if err := _elem49.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem49, err)
+		_elem52 := &table.TableSplit{}
+		if err := _elem52.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem52, err)
 		}
-		p.Success = append(p.Success, _elem49)
+		p.Success = append(p.Success, _elem52)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6096,11 +6466,11 @@ func (p *QueryMetricsArgs) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*MetricQueryRequest, 0, size)
 	p.Queries = tSlice
 	for i := 0; i < size; i++ {
-		_elem50 := &MetricQueryRequest{}
-		if err := _elem50.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem50, err)
+		_elem53 := &MetricQueryRequest{}
+		if err := _elem53.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem53, err)
 		}
-		p.Queries = append(p.Queries, _elem50)
+		p.Queries = append(p.Queries, _elem53)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6227,11 +6597,11 @@ func (p *QueryMetricsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*TimeSeriesData, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem51 := &TimeSeriesData{}
-		if err := _elem51.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem51, err)
+		_elem54 := &TimeSeriesData{}
+		if err := _elem54.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem54, err)
 		}
-		p.Success = append(p.Success, _elem51)
+		p.Success = append(p.Success, _elem54)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6438,11 +6808,11 @@ func (p *FindAllAppInfoResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem52 := &AppInfo{}
-		if err := _elem52.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem52, err)
+		_elem55 := &AppInfo{}
+		if err := _elem55.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
 		}
-		p.Success = append(p.Success, _elem52)
+		p.Success = append(p.Success, _elem55)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
