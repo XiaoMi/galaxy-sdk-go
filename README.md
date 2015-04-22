@@ -1,19 +1,50 @@
-结构化存储Go SDK
-========================
-1. 配置go环境变量GOPATH，并将sdk代码解压到对应目录(或直接通过go get安装)
-2. 修改basic.go中的app key/secret
+# Installing
+
+***
+
+Install your specific service package with the following go get command. 
+You can install the entire SDK by installing the root package:
+
+`$ go get github.com/XiaoMi/galaxy-sdk-go`
+
+# Configuring Credential
+
+***
+
+Before using the SDK, ensure that you've configured credential. 
+You can get the necessary credential by registering on [http://dev.xiaomi.com/]().
+To configure credential, you may use codes like:
 
 ```
-cd examples
-go run basic.go
+appKey := "MY-APP-KEY"
+appSecret := "MY-SECRET-KEY"
+userType := auth.UserType_APP_SECRET
+cred := auth.Credential{&userType, &appKey, thrift.StringPtr(appSecret)}
+```
+# Usage
+
+***
+
+To use SDK, you can import like:
+
+```
+import (
+	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/client"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
+	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+)
+
 ```
 
-SDS Go SDK User Guide
-========================
-1. Set up GOPATH, install SDK manually or by `go get`
-2. change the app id/secret in the example code
+We have an example in examples/basic.go, users can run this example after
+credential configured:
 
 ```
-cd examples
-go run basic.go
+$ cd examples
+$ go get
+$ go run basic.go
 ```
+
