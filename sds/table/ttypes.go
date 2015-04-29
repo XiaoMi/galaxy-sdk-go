@@ -289,14 +289,16 @@ func CannedAclPtr(v CannedAcl) *CannedAcl { return &v }
 type TableState int64
 
 const (
-	TableState_CREATING    TableState = 1
-	TableState_ENABLING    TableState = 2
-	TableState_ENABLED     TableState = 3
-	TableState_DISABLING   TableState = 4
-	TableState_DISABLED    TableState = 5
-	TableState_DELETING    TableState = 6
-	TableState_DELETED     TableState = 7
-	TableState_LAZY_DELETE TableState = 8
+	TableState_CREATING      TableState = 1
+	TableState_ENABLING      TableState = 2
+	TableState_ENABLED       TableState = 3
+	TableState_DISABLING     TableState = 4
+	TableState_DISABLED      TableState = 5
+	TableState_DROPPING      TableState = 6
+	TableState_DROPPED       TableState = 7
+	TableState_LAZY_DROPPING TableState = 8
+	TableState_LAZY_DROP     TableState = 9
+	TableState_RESTORING     TableState = 10
 )
 
 func (p TableState) String() string {
@@ -311,12 +313,16 @@ func (p TableState) String() string {
 		return "TableState_DISABLING"
 	case TableState_DISABLED:
 		return "TableState_DISABLED"
-	case TableState_DELETING:
-		return "TableState_DELETING"
-	case TableState_DELETED:
-		return "TableState_DELETED"
-	case TableState_LAZY_DELETE:
-		return "TableState_LAZY_DELETE"
+	case TableState_DROPPING:
+		return "TableState_DROPPING"
+	case TableState_DROPPED:
+		return "TableState_DROPPED"
+	case TableState_LAZY_DROPPING:
+		return "TableState_LAZY_DROPPING"
+	case TableState_LAZY_DROP:
+		return "TableState_LAZY_DROP"
+	case TableState_RESTORING:
+		return "TableState_RESTORING"
 	}
 	return "<UNSET>"
 }
@@ -333,12 +339,16 @@ func TableStateFromString(s string) (TableState, error) {
 		return TableState_DISABLING, nil
 	case "TableState_DISABLED":
 		return TableState_DISABLED, nil
-	case "TableState_DELETING":
-		return TableState_DELETING, nil
-	case "TableState_DELETED":
-		return TableState_DELETED, nil
-	case "TableState_LAZY_DELETE":
-		return TableState_LAZY_DELETE, nil
+	case "TableState_DROPPING":
+		return TableState_DROPPING, nil
+	case "TableState_DROPPED":
+		return TableState_DROPPED, nil
+	case "TableState_LAZY_DROPPING":
+		return TableState_LAZY_DROPPING, nil
+	case "TableState_LAZY_DROP":
+		return TableState_LAZY_DROP, nil
+	case "TableState_RESTORING":
+		return TableState_RESTORING, nil
 	}
 	return TableState(0), fmt.Errorf("not a valid TableState string")
 }

@@ -116,6 +116,11 @@ type AdminService interface {
 	QueryMetrics(queries []*MetricQueryRequest) (r []*TimeSeriesData, err error)
 	// 获取AppInfo列表,只包括appId和appName
 	FindAllAppInfo() (r []*AppInfo, err error)
+	// 获取表空间大小
+	//
+	// Parameters:
+	//  - TableName
+	GetTableSize(tableName string) (r int64, err error)
 }
 
 //结构化存储管理接口
@@ -1541,32 +1546,108 @@ func (p *AdminServiceClient) recvFindAllAppInfo() (value []*AppInfo, err error) 
 	return
 }
 
+// 获取表空间大小
+//
+// Parameters:
+//  - TableName
+func (p *AdminServiceClient) GetTableSize(tableName string) (r int64, err error) {
+	if err = p.sendGetTableSize(tableName); err != nil {
+		return
+	}
+	return p.recvGetTableSize()
+}
+
+func (p *AdminServiceClient) sendGetTableSize(tableName string) (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	if err = oprot.WriteMessageBegin("getTableSize", thrift.CALL, p.SeqId); err != nil {
+		return
+	}
+	args := GetTableSizeArgs{
+		TableName: tableName,
+	}
+	if err = args.Write(oprot); err != nil {
+		return
+	}
+	if err = oprot.WriteMessageEnd(); err != nil {
+		return
+	}
+	return oprot.Flush()
+}
+
+func (p *AdminServiceClient) recvGetTableSize() (value int64, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error44 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error45 error
+		error45, err = error44.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error45
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getTableSize failed: out of sequence response")
+		return
+	}
+	result := GetTableSizeResult{}
+	if err = result.Read(iprot); err != nil {
+		return
+	}
+	if err = iprot.ReadMessageEnd(); err != nil {
+		return
+	}
+	if result.Se != nil {
+		err = result.Se
+		return
+	}
+	value = result.GetSuccess()
+	return
+}
+
 type AdminServiceProcessor struct {
 	*common.BaseServiceProcessor
 }
 
 func NewAdminServiceProcessor(handler AdminService) *AdminServiceProcessor {
-	self44 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self44.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
-	self44.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
-	self44.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
-	self44.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
-	self44.AddToProcessorMap("cleanAllLazyDroppedTables", &adminServiceProcessorCleanAllLazyDroppedTables{handler: handler})
-	self44.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
-	self44.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
-	self44.AddToProcessorMap("restoreTable", &adminServiceProcessorRestoreTable{handler: handler})
-	self44.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
-	self44.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
-	self44.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
-	self44.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
-	self44.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
-	self44.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
-	self44.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
-	self44.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
-	self44.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
-	self44.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
-	self44.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
-	return self44
+	self46 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self46.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
+	self46.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
+	self46.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
+	self46.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
+	self46.AddToProcessorMap("cleanAllLazyDroppedTables", &adminServiceProcessorCleanAllLazyDroppedTables{handler: handler})
+	self46.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
+	self46.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
+	self46.AddToProcessorMap("restoreTable", &adminServiceProcessorRestoreTable{handler: handler})
+	self46.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
+	self46.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
+	self46.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
+	self46.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
+	self46.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
+	self46.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
+	self46.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
+	self46.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
+	self46.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
+	self46.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
+	self46.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
+	self46.AddToProcessorMap("getTableSize", &adminServiceProcessorGetTableSize{handler: handler})
+	return self46
 }
 
 type adminServiceProcessorSaveAppInfo struct {
@@ -2555,6 +2636,59 @@ func (p *adminServiceProcessorFindAllAppInfo) Process(seqId int32, iprot, oprot 
 	return true, err
 }
 
+type adminServiceProcessorGetTableSize struct {
+	handler AdminService
+}
+
+func (p *adminServiceProcessorGetTableSize) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := GetTableSizeArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("getTableSize", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	result := GetTableSizeResult{}
+	var retval int64
+	var err2 error
+	if retval, err2 = p.handler.GetTableSize(args.TableName); err2 != nil {
+		switch v := err2.(type) {
+		case *errors.ServiceException:
+			result.Se = v
+		default:
+			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getTableSize: "+err2.Error())
+			oprot.WriteMessageBegin("getTableSize", thrift.EXCEPTION, seqId)
+			x.Write(oprot)
+			oprot.WriteMessageEnd()
+			oprot.Flush()
+			return true, err2
+		}
+	} else {
+		result.Success = &retval
+	}
+	if err2 = oprot.WriteMessageBegin("getTableSize", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
 // HELPER FUNCTIONS AND STRUCTURES
 
 type SaveAppInfoArgs struct {
@@ -3108,11 +3242,11 @@ func (p *FindAllAppsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem45 := &AppInfo{}
-		if err := _elem45.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem45, err)
+		_elem47 := &AppInfo{}
+		if err := _elem47.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem47, err)
 		}
-		p.Success = append(p.Success, _elem45)
+		p.Success = append(p.Success, _elem47)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -3319,11 +3453,11 @@ func (p *FindAllTablesResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem46 := &table.TableInfo{}
-		if err := _elem46.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem46, err)
+		_elem48 := &table.TableInfo{}
+		if err := _elem48.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem48, err)
 		}
-		p.Success = append(p.Success, _elem46)
+		p.Success = append(p.Success, _elem48)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -3530,13 +3664,13 @@ func (p *CleanAllLazyDroppedTablesResult) ReadField0(iprot thrift.TProtocol) err
 	tSlice := make([]string, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		var _elem47 string
+		var _elem49 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem47 = v
+			_elem49 = v
 		}
-		p.Success = append(p.Success, _elem47)
+		p.Success = append(p.Success, _elem49)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -5884,17 +6018,17 @@ func (p *GetTableSplitsArgs) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key48 string
+		var _key50 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key48 = v
+			_key50 = v
 		}
-		_val49 := &table.Datum{}
-		if err := _val49.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val49, err)
+		_val51 := &table.Datum{}
+		if err := _val51.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val51, err)
 		}
-		p.StartKey[_key48] = _val49
+		p.StartKey[_key50] = _val51
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5910,17 +6044,17 @@ func (p *GetTableSplitsArgs) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key50 string
+		var _key52 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key50 = v
+			_key52 = v
 		}
-		_val51 := &table.Datum{}
-		if err := _val51.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val51, err)
+		_val53 := &table.Datum{}
+		if err := _val53.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val53, err)
 		}
-		p.StopKey[_key50] = _val51
+		p.StopKey[_key52] = _val53
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6093,11 +6227,11 @@ func (p *GetTableSplitsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableSplit, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem52 := &table.TableSplit{}
-		if err := _elem52.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem52, err)
+		_elem54 := &table.TableSplit{}
+		if err := _elem54.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem54, err)
 		}
-		p.Success = append(p.Success, _elem52)
+		p.Success = append(p.Success, _elem54)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6466,11 +6600,11 @@ func (p *QueryMetricsArgs) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*MetricQueryRequest, 0, size)
 	p.Queries = tSlice
 	for i := 0; i < size; i++ {
-		_elem53 := &MetricQueryRequest{}
-		if err := _elem53.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem53, err)
+		_elem55 := &MetricQueryRequest{}
+		if err := _elem55.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
 		}
-		p.Queries = append(p.Queries, _elem53)
+		p.Queries = append(p.Queries, _elem55)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6597,11 +6731,11 @@ func (p *QueryMetricsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*TimeSeriesData, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem54 := &TimeSeriesData{}
-		if err := _elem54.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem54, err)
+		_elem56 := &TimeSeriesData{}
+		if err := _elem56.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem56, err)
 		}
-		p.Success = append(p.Success, _elem54)
+		p.Success = append(p.Success, _elem56)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6808,11 +6942,11 @@ func (p *FindAllAppInfoResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem55 := &AppInfo{}
-		if err := _elem55.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
+		_elem57 := &AppInfo{}
+		if err := _elem57.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem57, err)
 		}
-		p.Success = append(p.Success, _elem55)
+		p.Success = append(p.Success, _elem57)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6890,4 +7024,235 @@ func (p *FindAllAppInfoResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("FindAllAppInfoResult(%+v)", *p)
+}
+
+type GetTableSizeArgs struct {
+	TableName string `thrift:"tableName,1" json:"tableName"`
+}
+
+func NewGetTableSizeArgs() *GetTableSizeArgs {
+	return &GetTableSizeArgs{}
+}
+
+func (p *GetTableSizeArgs) GetTableName() string {
+	return p.TableName
+}
+func (p *GetTableSizeArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *GetTableSizeArgs) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.TableName = v
+	}
+	return nil
+}
+
+func (p *GetTableSizeArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("getTableSize_args"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *GetTableSizeArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.TableName)); err != nil {
+		return fmt.Errorf("%T.tableName (1) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:tableName: %s", p, err)
+	}
+	return err
+}
+
+func (p *GetTableSizeArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetTableSizeArgs(%+v)", *p)
+}
+
+type GetTableSizeResult struct {
+	Success *int64                   `thrift:"success,0" json:"success"`
+	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
+}
+
+func NewGetTableSizeResult() *GetTableSizeResult {
+	return &GetTableSizeResult{}
+}
+
+var GetTableSizeResult_Success_DEFAULT int64
+
+func (p *GetTableSizeResult) GetSuccess() int64 {
+	if !p.IsSetSuccess() {
+		return GetTableSizeResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+
+var GetTableSizeResult_Se_DEFAULT *errors.ServiceException
+
+func (p *GetTableSizeResult) GetSe() *errors.ServiceException {
+	if !p.IsSetSe() {
+		return GetTableSizeResult_Se_DEFAULT
+	}
+	return p.Se
+}
+func (p *GetTableSizeResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *GetTableSizeResult) IsSetSe() bool {
+	return p.Se != nil
+}
+
+func (p *GetTableSizeResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.ReadField0(iprot); err != nil {
+				return err
+			}
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *GetTableSizeResult) ReadField0(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 0: %s", err)
+	} else {
+		p.Success = &v
+	}
+	return nil
+}
+
+func (p *GetTableSizeResult) ReadField1(iprot thrift.TProtocol) error {
+	p.Se = &errors.ServiceException{}
+	if err := p.Se.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
+	}
+	return nil
+}
+
+func (p *GetTableSizeResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("getTableSize_result"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *GetTableSizeResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.I64, 0); err != nil {
+			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.Success)); err != nil {
+			return fmt.Errorf("%T.success (0) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GetTableSizeResult) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSe() {
+		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
+		}
+		if err := p.Se.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GetTableSizeResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GetTableSizeResult(%+v)", *p)
 }
