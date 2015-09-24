@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  Credential createCredential(string xiaomiAppId, AppUserAuthProvider appUserAuthProvider, string authToken)")
+	fmt.Fprintln(os.Stderr, "  Credential createCredential(OAuthInfo oauthInfo)")
 	fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
 	fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
 	fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
@@ -119,22 +119,28 @@ func main() {
 
 	switch cmd {
 	case "createCredential":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "CreateCredential requires 3 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "CreateCredential requires 1 args")
 			flag.Usage()
 		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		tmp1, err := (strconv.Atoi(flag.Arg(2)))
-		if err != nil {
+		arg4 := flag.Arg(1)
+		mbTrans5 := thrift.NewTMemoryBufferLen(len(arg4))
+		defer mbTrans5.Close()
+		_, err6 := mbTrans5.WriteString(arg4)
+		if err6 != nil {
 			Usage()
 			return
 		}
-		argvalue1 := auth.AppUserAuthProvider(tmp1)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		fmt.Print(client.CreateCredential(value0, value1, value2))
+		factory7 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt8 := factory7.GetProtocol(mbTrans5)
+		argvalue0 := auth.NewOAuthInfo()
+		err9 := argvalue0.Read(jsProt8)
+		if err9 != nil {
+			Usage()
+			return
+		}
+		value0 := argvalue0
+		fmt.Print(client.CreateCredential(value0))
 		fmt.Print("\n")
 		break
 	case "getServerVersion":
@@ -150,19 +156,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
 			flag.Usage()
 		}
-		arg6 := flag.Arg(1)
-		mbTrans7 := thrift.NewTMemoryBufferLen(len(arg6))
-		defer mbTrans7.Close()
-		_, err8 := mbTrans7.WriteString(arg6)
-		if err8 != nil {
+		arg10 := flag.Arg(1)
+		mbTrans11 := thrift.NewTMemoryBufferLen(len(arg10))
+		defer mbTrans11.Close()
+		_, err12 := mbTrans11.WriteString(arg10)
+		if err12 != nil {
 			Usage()
 			return
 		}
-		factory9 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt10 := factory9.GetProtocol(mbTrans7)
+		factory13 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt14 := factory13.GetProtocol(mbTrans11)
 		argvalue0 := auth.NewVersion()
-		err11 := argvalue0.Read(jsProt10)
-		if err11 != nil {
+		err15 := argvalue0.Read(jsProt14)
+		if err15 != nil {
 			Usage()
 			return
 		}

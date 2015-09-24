@@ -26,10 +26,8 @@ type AuthService interface {
 	// 通过第三方认证系统换发Storage Access Token，采用App Secret登录无需此过程
 	//
 	// Parameters:
-	//  - XiaomiAppId
-	//  - AppUserAuthProvider
-	//  - AuthToken
-	CreateCredential(xiaomiAppId string, appUserAuthProvider AppUserAuthProvider, authToken string) (r *Credential, err error)
+	//  - OauthInfo
+	CreateCredential(oauthInfo *OAuthInfo) (r *Credential, err error)
 }
 
 //结构化存储授权相关接口(目前尚未开放)
@@ -48,17 +46,15 @@ func NewAuthServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, o
 // 通过第三方认证系统换发Storage Access Token，采用App Secret登录无需此过程
 //
 // Parameters:
-//  - XiaomiAppId
-//  - AppUserAuthProvider
-//  - AuthToken
-func (p *AuthServiceClient) CreateCredential(xiaomiAppId string, appUserAuthProvider AppUserAuthProvider, authToken string) (r *Credential, err error) {
-	if err = p.sendCreateCredential(xiaomiAppId, appUserAuthProvider, authToken); err != nil {
+//  - OauthInfo
+func (p *AuthServiceClient) CreateCredential(oauthInfo *OAuthInfo) (r *Credential, err error) {
+	if err = p.sendCreateCredential(oauthInfo); err != nil {
 		return
 	}
 	return p.recvCreateCredential()
 }
 
-func (p *AuthServiceClient) sendCreateCredential(xiaomiAppId string, appUserAuthProvider AppUserAuthProvider, authToken string) (err error) {
+func (p *AuthServiceClient) sendCreateCredential(oauthInfo *OAuthInfo) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -69,9 +65,7 @@ func (p *AuthServiceClient) sendCreateCredential(xiaomiAppId string, appUserAuth
 		return
 	}
 	args := CreateCredentialArgs{
-		XiaomiAppId:         xiaomiAppId,
-		AppUserAuthProvider: appUserAuthProvider,
-		AuthToken:           authToken,
+		OauthInfo: oauthInfo,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -154,7 +148,7 @@ func (p *authServiceProcessorCreateCredential) Process(seqId int32, iprot, oprot
 	result := CreateCredentialResult{}
 	var retval *Credential
 	var err2 error
-	if retval, err2 = p.handler.CreateCredential(args.XiaomiAppId, args.AppUserAuthProvider, args.AuthToken); err2 != nil {
+	if retval, err2 = p.handler.CreateCredential(args.OauthInfo); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -190,26 +184,25 @@ func (p *authServiceProcessorCreateCredential) Process(seqId int32, iprot, oprot
 // HELPER FUNCTIONS AND STRUCTURES
 
 type CreateCredentialArgs struct {
-	XiaomiAppId         string              `thrift:"xiaomiAppId,1" json:"xiaomiAppId"`
-	AppUserAuthProvider AppUserAuthProvider `thrift:"appUserAuthProvider,2" json:"appUserAuthProvider"`
-	AuthToken           string              `thrift:"authToken,3" json:"authToken"`
+	OauthInfo *OAuthInfo `thrift:"oauthInfo,1" json:"oauthInfo"`
 }
 
 func NewCreateCredentialArgs() *CreateCredentialArgs {
 	return &CreateCredentialArgs{}
 }
 
-func (p *CreateCredentialArgs) GetXiaomiAppId() string {
-	return p.XiaomiAppId
+var CreateCredentialArgs_OauthInfo_DEFAULT *OAuthInfo
+
+func (p *CreateCredentialArgs) GetOauthInfo() *OAuthInfo {
+	if !p.IsSetOauthInfo() {
+		return CreateCredentialArgs_OauthInfo_DEFAULT
+	}
+	return p.OauthInfo
+}
+func (p *CreateCredentialArgs) IsSetOauthInfo() bool {
+	return p.OauthInfo != nil
 }
 
-func (p *CreateCredentialArgs) GetAppUserAuthProvider() AppUserAuthProvider {
-	return p.AppUserAuthProvider
-}
-
-func (p *CreateCredentialArgs) GetAuthToken() string {
-	return p.AuthToken
-}
 func (p *CreateCredentialArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
@@ -225,14 +218,6 @@ func (p *CreateCredentialArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		case 3:
-			if err := p.ReadField3(iprot); err != nil {
 				return err
 			}
 		default:
@@ -251,29 +236,9 @@ func (p *CreateCredentialArgs) Read(iprot thrift.TProtocol) error {
 }
 
 func (p *CreateCredentialArgs) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.XiaomiAppId = v
-	}
-	return nil
-}
-
-func (p *CreateCredentialArgs) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 2: %s", err)
-	} else {
-		temp := AppUserAuthProvider(v)
-		p.AppUserAuthProvider = temp
-	}
-	return nil
-}
-
-func (p *CreateCredentialArgs) ReadField3(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 3: %s", err)
-	} else {
-		p.AuthToken = v
+	p.OauthInfo = &OAuthInfo{}
+	if err := p.OauthInfo.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.OauthInfo, err)
 	}
 	return nil
 }
@@ -283,12 +248,6 @@ func (p *CreateCredentialArgs) Write(oprot thrift.TProtocol) error {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField3(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -301,40 +260,14 @@ func (p *CreateCredentialArgs) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *CreateCredentialArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("xiaomiAppId", thrift.STRING, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:xiaomiAppId: %s", p, err)
+	if err := oprot.WriteFieldBegin("oauthInfo", thrift.STRUCT, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:oauthInfo: %s", p, err)
 	}
-	if err := oprot.WriteString(string(p.XiaomiAppId)); err != nil {
-		return fmt.Errorf("%T.xiaomiAppId (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:xiaomiAppId: %s", p, err)
-	}
-	return err
-}
-
-func (p *CreateCredentialArgs) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("appUserAuthProvider", thrift.I32, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:appUserAuthProvider: %s", p, err)
-	}
-	if err := oprot.WriteI32(int32(p.AppUserAuthProvider)); err != nil {
-		return fmt.Errorf("%T.appUserAuthProvider (2) field write error: %s", p, err)
+	if err := p.OauthInfo.Write(oprot); err != nil {
+		return fmt.Errorf("%T error writing struct: %s", p.OauthInfo, err)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:appUserAuthProvider: %s", p, err)
-	}
-	return err
-}
-
-func (p *CreateCredentialArgs) writeField3(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("authToken", thrift.STRING, 3); err != nil {
-		return fmt.Errorf("%T write field begin error 3:authToken: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.AuthToken)); err != nil {
-		return fmt.Errorf("%T.authToken (3) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 3:authToken: %s", p, err)
+		return fmt.Errorf("%T write field end error 1:oauthInfo: %s", p, err)
 	}
 	return err
 }

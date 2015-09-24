@@ -20,10 +20,17 @@ var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
 var SIGNATURE_SUPPORT map[UserType]bool
 
+const HK_AUTHORIZATION = "Authorization"
 const HK_HOST = "Host"
 const HK_TIMESTAMP = "X-Xiaomi-Timestamp"
 const HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5"
-const HK_AUTHORIZATION = "Authorization"
+const HK_VERSION = "X-Xiaomi-Version"
+const HK_USER_TYPE = "X-Xiaomi-User-Type"
+const HK_SECRET_KEY_ID = "X-Xiaomi-Secret-Key-Id"
+const HK_SECRET_KEY = "X-Xiaomi-Secret-Key"
+const HK_SIGNATURE = "X-Xiaomi-Signature"
+const HK_MAC_ALGORITHM = "X-Xiaomi-Mac-Algorithm"
+const HK_SUPPORT_ACCOUNT_KEY = "X-Xiaomi-Support-Account-Key"
 
 var SUGGESTED_SIGNATURE_HEADERS []string
 

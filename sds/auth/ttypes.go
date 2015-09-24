@@ -115,6 +115,7 @@ const (
 	AppUserAuthProvider_QQ_OAUTH     AppUserAuthProvider = 3
 	AppUserAuthProvider_SINA_OAUTH   AppUserAuthProvider = 4
 	AppUserAuthProvider_RENREN_OAUTH AppUserAuthProvider = 5
+	AppUserAuthProvider_WEIXIN_OAUTH AppUserAuthProvider = 6
 )
 
 func (p AppUserAuthProvider) String() string {
@@ -129,6 +130,8 @@ func (p AppUserAuthProvider) String() string {
 		return "AppUserAuthProvider_SINA_OAUTH"
 	case AppUserAuthProvider_RENREN_OAUTH:
 		return "AppUserAuthProvider_RENREN_OAUTH"
+	case AppUserAuthProvider_WEIXIN_OAUTH:
+		return "AppUserAuthProvider_WEIXIN_OAUTH"
 	}
 	return "<UNSET>"
 }
@@ -145,6 +148,8 @@ func AppUserAuthProviderFromString(s string) (AppUserAuthProvider, error) {
 		return AppUserAuthProvider_SINA_OAUTH, nil
 	case "AppUserAuthProvider_RENREN_OAUTH":
 		return AppUserAuthProvider_RENREN_OAUTH, nil
+	case "AppUserAuthProvider_WEIXIN_OAUTH":
+		return AppUserAuthProvider_WEIXIN_OAUTH, nil
 	}
 	return AppUserAuthProvider(0), fmt.Errorf("not a valid AppUserAuthProvider string")
 }
@@ -771,4 +776,307 @@ func (p *HttpAuthorizationHeader) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("HttpAuthorizationHeader(%+v)", *p)
+}
+
+type OAuthInfo struct {
+	XiaomiAppId         string              `thrift:"xiaomiAppId,1" json:"xiaomiAppId"`
+	AppUserAuthProvider AppUserAuthProvider `thrift:"appUserAuthProvider,2" json:"appUserAuthProvider"`
+	AccessToken         *string             `thrift:"accessToken,3" json:"accessToken"`
+	OpenId              *string             `thrift:"openId,4" json:"openId"`
+	MacKey              *string             `thrift:"macKey,5" json:"macKey"`
+	MacAlgorithm        *string             `thrift:"macAlgorithm,6" json:"macAlgorithm"`
+}
+
+func NewOAuthInfo() *OAuthInfo {
+	return &OAuthInfo{}
+}
+
+func (p *OAuthInfo) GetXiaomiAppId() string {
+	return p.XiaomiAppId
+}
+
+func (p *OAuthInfo) GetAppUserAuthProvider() AppUserAuthProvider {
+	return p.AppUserAuthProvider
+}
+
+var OAuthInfo_AccessToken_DEFAULT string
+
+func (p *OAuthInfo) GetAccessToken() string {
+	if !p.IsSetAccessToken() {
+		return OAuthInfo_AccessToken_DEFAULT
+	}
+	return *p.AccessToken
+}
+
+var OAuthInfo_OpenId_DEFAULT string
+
+func (p *OAuthInfo) GetOpenId() string {
+	if !p.IsSetOpenId() {
+		return OAuthInfo_OpenId_DEFAULT
+	}
+	return *p.OpenId
+}
+
+var OAuthInfo_MacKey_DEFAULT string
+
+func (p *OAuthInfo) GetMacKey() string {
+	if !p.IsSetMacKey() {
+		return OAuthInfo_MacKey_DEFAULT
+	}
+	return *p.MacKey
+}
+
+var OAuthInfo_MacAlgorithm_DEFAULT string
+
+func (p *OAuthInfo) GetMacAlgorithm() string {
+	if !p.IsSetMacAlgorithm() {
+		return OAuthInfo_MacAlgorithm_DEFAULT
+	}
+	return *p.MacAlgorithm
+}
+func (p *OAuthInfo) IsSetAccessToken() bool {
+	return p.AccessToken != nil
+}
+
+func (p *OAuthInfo) IsSetOpenId() bool {
+	return p.OpenId != nil
+}
+
+func (p *OAuthInfo) IsSetMacKey() bool {
+	return p.MacKey != nil
+}
+
+func (p *OAuthInfo) IsSetMacAlgorithm() bool {
+	return p.MacAlgorithm != nil
+}
+
+func (p *OAuthInfo) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		case 5:
+			if err := p.ReadField5(iprot); err != nil {
+				return err
+			}
+		case 6:
+			if err := p.ReadField6(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.XiaomiAppId = v
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		temp := AppUserAuthProvider(v)
+		p.AppUserAuthProvider = temp
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.AccessToken = &v
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		p.OpenId = &v
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField5(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 5: %s", err)
+	} else {
+		p.MacKey = &v
+	}
+	return nil
+}
+
+func (p *OAuthInfo) ReadField6(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 6: %s", err)
+	} else {
+		p.MacAlgorithm = &v
+	}
+	return nil
+}
+
+func (p *OAuthInfo) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("OAuthInfo"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField5(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField6(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *OAuthInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("xiaomiAppId", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:xiaomiAppId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.XiaomiAppId)); err != nil {
+		return fmt.Errorf("%T.xiaomiAppId (1) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:xiaomiAppId: %s", p, err)
+	}
+	return err
+}
+
+func (p *OAuthInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("appUserAuthProvider", thrift.I32, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:appUserAuthProvider: %s", p, err)
+	}
+	if err := oprot.WriteI32(int32(p.AppUserAuthProvider)); err != nil {
+		return fmt.Errorf("%T.appUserAuthProvider (2) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:appUserAuthProvider: %s", p, err)
+	}
+	return err
+}
+
+func (p *OAuthInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAccessToken() {
+		if err := oprot.WriteFieldBegin("accessToken", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:accessToken: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.AccessToken)); err != nil {
+			return fmt.Errorf("%T.accessToken (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:accessToken: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *OAuthInfo) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetOpenId() {
+		if err := oprot.WriteFieldBegin("openId", thrift.STRING, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:openId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.OpenId)); err != nil {
+			return fmt.Errorf("%T.openId (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:openId: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *OAuthInfo) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMacKey() {
+		if err := oprot.WriteFieldBegin("macKey", thrift.STRING, 5); err != nil {
+			return fmt.Errorf("%T write field begin error 5:macKey: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.MacKey)); err != nil {
+			return fmt.Errorf("%T.macKey (5) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 5:macKey: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *OAuthInfo) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMacAlgorithm() {
+		if err := oprot.WriteFieldBegin("macAlgorithm", thrift.STRING, 6); err != nil {
+			return fmt.Errorf("%T write field begin error 6:macAlgorithm: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.MacAlgorithm)); err != nil {
+			return fmt.Errorf("%T.macAlgorithm (6) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 6:macAlgorithm: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *OAuthInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("OAuthInfo(%+v)", *p)
 }

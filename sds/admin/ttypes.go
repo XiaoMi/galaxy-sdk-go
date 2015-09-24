@@ -24,6 +24,56 @@ var _ = auth.GoUnusedProtection__
 var _ = table.GoUnusedProtection__
 var GoUnusedProtection__ int
 
+//客户端metrics的类型
+type ClientMetricType int64
+
+const (
+	ClientMetricType_Letency ClientMetricType = 1
+)
+
+func (p ClientMetricType) String() string {
+	switch p {
+	case ClientMetricType_Letency:
+		return "ClientMetricType_Letency"
+	}
+	return "<UNSET>"
+}
+
+func ClientMetricTypeFromString(s string) (ClientMetricType, error) {
+	switch s {
+	case "ClientMetricType_Letency":
+		return ClientMetricType_Letency, nil
+	}
+	return ClientMetricType(0), fmt.Errorf("not a valid ClientMetricType string")
+}
+
+func ClientMetricTypePtr(v ClientMetricType) *ClientMetricType { return &v }
+
+//客户端metrics请求延迟的类型
+type LatencyMetricType int64
+
+const (
+	LatencyMetricType_ExecutionTime LatencyMetricType = 1
+)
+
+func (p LatencyMetricType) String() string {
+	switch p {
+	case LatencyMetricType_ExecutionTime:
+		return "LatencyMetricType_ExecutionTime"
+	}
+	return "<UNSET>"
+}
+
+func LatencyMetricTypeFromString(s string) (LatencyMetricType, error) {
+	switch s {
+	case "LatencyMetricType_ExecutionTime":
+		return LatencyMetricType_ExecutionTime, nil
+	}
+	return LatencyMetricType(0), fmt.Errorf("not a valid LatencyMetricType string")
+}
+
+func LatencyMetricTypePtr(v LatencyMetricType) *LatencyMetricType { return &v }
+
 //系统统计指标类型
 type MetricKey int64
 
@@ -608,6 +658,356 @@ func (p *AppInfo) String() string {
 	return fmt.Sprintf("AppInfo(%+v)", *p)
 }
 
+type MetricData struct {
+	ClientMetricType *ClientMetricType `thrift:"clientMetricType,1" json:"clientMetricType"`
+	MetricName       *string           `thrift:"metricName,2" json:"metricName"`
+	Value            *int64            `thrift:"value,3" json:"value"`
+	TimeStamp        *int64            `thrift:"timeStamp,4" json:"timeStamp"`
+}
+
+func NewMetricData() *MetricData {
+	return &MetricData{}
+}
+
+var MetricData_ClientMetricType_DEFAULT ClientMetricType
+
+func (p *MetricData) GetClientMetricType() ClientMetricType {
+	if !p.IsSetClientMetricType() {
+		return MetricData_ClientMetricType_DEFAULT
+	}
+	return *p.ClientMetricType
+}
+
+var MetricData_MetricName_DEFAULT string
+
+func (p *MetricData) GetMetricName() string {
+	if !p.IsSetMetricName() {
+		return MetricData_MetricName_DEFAULT
+	}
+	return *p.MetricName
+}
+
+var MetricData_Value_DEFAULT int64
+
+func (p *MetricData) GetValue() int64 {
+	if !p.IsSetValue() {
+		return MetricData_Value_DEFAULT
+	}
+	return *p.Value
+}
+
+var MetricData_TimeStamp_DEFAULT int64
+
+func (p *MetricData) GetTimeStamp() int64 {
+	if !p.IsSetTimeStamp() {
+		return MetricData_TimeStamp_DEFAULT
+	}
+	return *p.TimeStamp
+}
+func (p *MetricData) IsSetClientMetricType() bool {
+	return p.ClientMetricType != nil
+}
+
+func (p *MetricData) IsSetMetricName() bool {
+	return p.MetricName != nil
+}
+
+func (p *MetricData) IsSetValue() bool {
+	return p.Value != nil
+}
+
+func (p *MetricData) IsSetTimeStamp() bool {
+	return p.TimeStamp != nil
+}
+
+func (p *MetricData) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *MetricData) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		temp := ClientMetricType(v)
+		p.ClientMetricType = &temp
+	}
+	return nil
+}
+
+func (p *MetricData) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.MetricName = &v
+	}
+	return nil
+}
+
+func (p *MetricData) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.Value = &v
+	}
+	return nil
+}
+
+func (p *MetricData) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		p.TimeStamp = &v
+	}
+	return nil
+}
+
+func (p *MetricData) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("MetricData"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *MetricData) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetClientMetricType() {
+		if err := oprot.WriteFieldBegin("clientMetricType", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:clientMetricType: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.ClientMetricType)); err != nil {
+			return fmt.Errorf("%T.clientMetricType (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:clientMetricType: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *MetricData) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMetricName() {
+		if err := oprot.WriteFieldBegin("metricName", thrift.STRING, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:metricName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.MetricName)); err != nil {
+			return fmt.Errorf("%T.metricName (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:metricName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *MetricData) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetValue() {
+		if err := oprot.WriteFieldBegin("value", thrift.I64, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:value: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.Value)); err != nil {
+			return fmt.Errorf("%T.value (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:value: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *MetricData) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTimeStamp() {
+		if err := oprot.WriteFieldBegin("timeStamp", thrift.I64, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:timeStamp: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.TimeStamp)); err != nil {
+			return fmt.Errorf("%T.timeStamp (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:timeStamp: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *MetricData) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("MetricData(%+v)", *p)
+}
+
+type ClientMetrics struct {
+	MetricDataList []*MetricData `thrift:"metricDataList,1" json:"metricDataList"`
+}
+
+func NewClientMetrics() *ClientMetrics {
+	return &ClientMetrics{}
+}
+
+var ClientMetrics_MetricDataList_DEFAULT []*MetricData
+
+func (p *ClientMetrics) GetMetricDataList() []*MetricData {
+	return p.MetricDataList
+}
+func (p *ClientMetrics) IsSetMetricDataList() bool {
+	return p.MetricDataList != nil
+}
+
+func (p *ClientMetrics) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ClientMetrics) ReadField1(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make([]*MetricData, 0, size)
+	p.MetricDataList = tSlice
+	for i := 0; i < size; i++ {
+		_elem4 := &MetricData{}
+		if err := _elem4.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem4, err)
+		}
+		p.MetricDataList = append(p.MetricDataList, _elem4)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *ClientMetrics) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ClientMetrics"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ClientMetrics) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMetricDataList() {
+		if err := oprot.WriteFieldBegin("metricDataList", thrift.LIST, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:metricDataList: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.MetricDataList)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.MetricDataList {
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:metricDataList: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ClientMetrics) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ClientMetrics(%+v)", *p)
+}
+
 type MetricQueryRequest struct {
 	TableName          *string       `thrift:"tableName,1" json:"tableName"`
 	StartTime          *int64        `thrift:"startTime,2" json:"startTime"`
@@ -1120,19 +1520,19 @@ func (p *TimeSeriesData) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(map[int64]float64, size)
 	p.Data = tMap
 	for i := 0; i < size; i++ {
-		var _key4 int64
+		var _key5 int64
 		if v, err := iprot.ReadI64(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key4 = v
+			_key5 = v
 		}
-		var _val5 float64
+		var _val6 float64
 		if v, err := iprot.ReadDouble(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_val5 = v
+			_val6 = v
 		}
-		p.Data[_key4] = _val5
+		p.Data[_key5] = _val6
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
