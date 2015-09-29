@@ -46,8 +46,8 @@ func (p *TableScanner) Iter() <-chan *ScannedItem {
 				ch <- &ScannedItem{Datum: nil, Error: err}
 				break;
 			} else {
-				done := res.GetNextStartKey() == nil
-				if !done && len(res.GetRecords()) < int(p.scan.GetLimit()) {
+				done := res.GetNextStartKey() == nil && res.GetNextSplitIndex() == -1
+				if !done && len(res.GetRecords()) < int(p.scan.GetLimit()) && res.throttled {
 					// request been throttled
 					retry += 1
 				} else {
@@ -60,6 +60,8 @@ func (p *TableScanner) Iter() <-chan *ScannedItem {
 					break;
 				}
 				p.scan.StartKey = res.GetNextStartKey()
+				if res.GetNextSplitIndex() > 0
+					p.scan.SplitIndex = res.GetNextSplitIndex()
 			}
 		}
 		close(ch)
