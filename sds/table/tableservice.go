@@ -115,16 +115,16 @@ func (p *TableServiceClient) recvGet() (value *GetResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error53 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error54 error
-		error54, err = error53.Read(iprot)
+		error68 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error69 error
+		error69, err = error68.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error54
+		err = error69
 		return
 	}
 	if p.SeqId != seqId {
@@ -190,16 +190,16 @@ func (p *TableServiceClient) recvPut() (value *PutResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error55 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error56 error
-		error56, err = error55.Read(iprot)
+		error70 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error71 error
+		error71, err = error70.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error56
+		err = error71
 		return
 	}
 	if p.SeqId != seqId {
@@ -265,16 +265,16 @@ func (p *TableServiceClient) recvIncrement() (value *IncrementResult_, err error
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error57 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error58 error
-		error58, err = error57.Read(iprot)
+		error72 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error73 error
+		error73, err = error72.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error58
+		err = error73
 		return
 	}
 	if p.SeqId != seqId {
@@ -340,16 +340,16 @@ func (p *TableServiceClient) recvRemove() (value *RemoveResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error59 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error60 error
-		error60, err = error59.Read(iprot)
+		error74 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error75 error
+		error75, err = error74.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error60
+		err = error75
 		return
 	}
 	if p.SeqId != seqId {
@@ -415,16 +415,16 @@ func (p *TableServiceClient) recvScan() (value *ScanResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error61 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error62 error
-		error62, err = error61.Read(iprot)
+		error76 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error77 error
+		error77, err = error76.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error62
+		err = error77
 		return
 	}
 	if p.SeqId != seqId {
@@ -491,16 +491,16 @@ func (p *TableServiceClient) recvBatch() (value *BatchResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error63 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error64 error
-		error64, err = error63.Read(iprot)
+		error78 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error79 error
+		error79, err = error78.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error64
+		err = error79
 		return
 	}
 	if p.SeqId != seqId {
@@ -527,14 +527,14 @@ type TableServiceProcessor struct {
 }
 
 func NewTableServiceProcessor(handler TableService) *TableServiceProcessor {
-	self65 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self65.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
-	self65.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
-	self65.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
-	self65.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
-	self65.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
-	self65.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
-	return self65
+	self80 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self80.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
+	self80.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
+	self80.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
+	self80.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
+	self80.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
+	self80.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
+	return self80
 }
 
 type tableServiceProcessorGet struct {

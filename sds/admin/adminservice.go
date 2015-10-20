@@ -52,11 +52,6 @@ type AdminService interface {
 	// Parameters:
 	//  - TableName
 	DropTable(tableName string) (err error)
-	// 延迟删除表
-	//
-	// Parameters:
-	//  - TableName
-	LazyDropTable(tableName string) (err error)
 	// 修改表
 	//
 	// Parameters:
@@ -620,80 +615,6 @@ func (p *AdminServiceClient) recvDropTable() (err error) {
 	return
 }
 
-// 延迟删除表
-//
-// Parameters:
-//  - TableName
-func (p *AdminServiceClient) LazyDropTable(tableName string) (err error) {
-	if err = p.sendLazyDropTable(tableName); err != nil {
-		return
-	}
-	return p.recvLazyDropTable()
-}
-
-func (p *AdminServiceClient) sendLazyDropTable(tableName string) (err error) {
-	oprot := p.OutputProtocol
-	if oprot == nil {
-		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.OutputProtocol = oprot
-	}
-	p.SeqId++
-	if err = oprot.WriteMessageBegin("lazyDropTable", thrift.CALL, p.SeqId); err != nil {
-		return
-	}
-	args := LazyDropTableArgs{
-		TableName: tableName,
-	}
-	if err = args.Write(oprot); err != nil {
-		return
-	}
-	if err = oprot.WriteMessageEnd(); err != nil {
-		return
-	}
-	return oprot.Flush()
-}
-
-func (p *AdminServiceClient) recvLazyDropTable() (err error) {
-	iprot := p.InputProtocol
-	if iprot == nil {
-		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.InputProtocol = iprot
-	}
-	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
-	if err != nil {
-		return
-	}
-	if mTypeId == thrift.EXCEPTION {
-		error19 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error20 error
-		error20, err = error19.Read(iprot)
-		if err != nil {
-			return
-		}
-		if err = iprot.ReadMessageEnd(); err != nil {
-			return
-		}
-		err = error20
-		return
-	}
-	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "lazyDropTable failed: out of sequence response")
-		return
-	}
-	result := LazyDropTableResult{}
-	if err = result.Read(iprot); err != nil {
-		return
-	}
-	if err = iprot.ReadMessageEnd(); err != nil {
-		return
-	}
-	if result.Se != nil {
-		err = result.Se
-		return
-	}
-	return
-}
-
 // 修改表
 //
 // Parameters:
@@ -740,16 +661,16 @@ func (p *AdminServiceClient) recvAlterTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error21 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error22 error
-		error22, err = error21.Read(iprot)
+		error19 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error20 error
+		error20, err = error19.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error22
+		err = error20
 		return
 	}
 	if p.SeqId != seqId {
@@ -818,16 +739,16 @@ func (p *AdminServiceClient) recvCloneTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error23 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error24 error
-		error24, err = error23.Read(iprot)
+		error21 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error22 error
+		error22, err = error21.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error24
+		err = error22
 		return
 	}
 	if p.SeqId != seqId {
@@ -892,16 +813,16 @@ func (p *AdminServiceClient) recvDisableTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error25 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error26 error
-		error26, err = error25.Read(iprot)
+		error23 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error24 error
+		error24, err = error23.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error26
+		err = error24
 		return
 	}
 	if p.SeqId != seqId {
@@ -966,16 +887,16 @@ func (p *AdminServiceClient) recvEnableTable() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error27 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error28 error
-		error28, err = error27.Read(iprot)
+		error25 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error26 error
+		error26, err = error25.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error28
+		err = error26
 		return
 	}
 	if p.SeqId != seqId {
@@ -1040,16 +961,16 @@ func (p *AdminServiceClient) recvDescribeTable() (value *table.TableSpec, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error29 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error30 error
-		error30, err = error29.Read(iprot)
+		error27 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error28 error
+		error28, err = error27.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error30
+		err = error28
 		return
 	}
 	if p.SeqId != seqId {
@@ -1115,16 +1036,16 @@ func (p *AdminServiceClient) recvGetTableStatus() (value *table.TableStatus, err
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error31 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error32 error
-		error32, err = error31.Read(iprot)
+		error29 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error30 error
+		error30, err = error29.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error32
+		err = error30
 		return
 	}
 	if p.SeqId != seqId {
@@ -1190,16 +1111,16 @@ func (p *AdminServiceClient) recvGetTableState() (value table.TableState, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error33 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error34 error
-		error34, err = error33.Read(iprot)
+		error31 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error32 error
+		error32, err = error31.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error34
+		err = error32
 		return
 	}
 	if p.SeqId != seqId {
@@ -1269,16 +1190,16 @@ func (p *AdminServiceClient) recvGetTableSplits() (value []*table.TableSplit, er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error35 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error36 error
-		error36, err = error35.Read(iprot)
+		error33 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error34 error
+		error34, err = error33.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error36
+		err = error34
 		return
 	}
 	if p.SeqId != seqId {
@@ -1344,16 +1265,16 @@ func (p *AdminServiceClient) recvQueryMetric() (value *TimeSeriesData, err error
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error37 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error38 error
-		error38, err = error37.Read(iprot)
+		error35 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error36 error
+		error36, err = error35.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error38
+		err = error36
 		return
 	}
 	if p.SeqId != seqId {
@@ -1419,16 +1340,16 @@ func (p *AdminServiceClient) recvQueryMetrics() (value []*TimeSeriesData, err er
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error39 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error40 error
-		error40, err = error39.Read(iprot)
+		error37 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error38 error
+		error38, err = error37.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error40
+		err = error38
 		return
 	}
 	if p.SeqId != seqId {
@@ -1489,16 +1410,16 @@ func (p *AdminServiceClient) recvFindAllAppInfo() (value []*AppInfo, err error) 
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error41 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error42 error
-		error42, err = error41.Read(iprot)
+		error39 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error40 error
+		error40, err = error39.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error42
+		err = error40
 		return
 	}
 	if p.SeqId != seqId {
@@ -1564,16 +1485,16 @@ func (p *AdminServiceClient) recvGetTableSize() (value int64, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error43 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error44 error
-		error44, err = error43.Read(iprot)
+		error41 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error42 error
+		error42, err = error41.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error44
+		err = error42
 		return
 	}
 	if p.SeqId != seqId {
@@ -1639,16 +1560,16 @@ func (p *AdminServiceClient) recvPutClientMetrics() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error45 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error46 error
-		error46, err = error45.Read(iprot)
+		error43 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error44 error
+		error44, err = error43.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error46
+		err = error44
 		return
 	}
 	if p.SeqId != seqId {
@@ -1715,16 +1636,16 @@ func (p *AdminServiceClient) recvSubscribePhoneAlert() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error47 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error48 error
-		error48, err = error47.Read(iprot)
+		error45 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error46 error
+		error46, err = error45.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error48
+		err = error46
 		return
 	}
 	if p.SeqId != seqId {
@@ -1791,16 +1712,16 @@ func (p *AdminServiceClient) recvUnsubscribePhoneAlert() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error49 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error50 error
-		error50, err = error49.Read(iprot)
+		error47 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error48 error
+		error48, err = error47.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error50
+		err = error48
 		return
 	}
 	if p.SeqId != seqId {
@@ -1867,16 +1788,16 @@ func (p *AdminServiceClient) recvSubscribeEmailAlert() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error51 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error52 error
-		error52, err = error51.Read(iprot)
+		error49 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error50 error
+		error50, err = error49.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error52
+		err = error50
 		return
 	}
 	if p.SeqId != seqId {
@@ -1943,16 +1864,16 @@ func (p *AdminServiceClient) recvUnsubscribeEmailAlert() (err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error53 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error54 error
-		error54, err = error53.Read(iprot)
+		error51 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error52 error
+		error52, err = error51.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error54
+		err = error52
 		return
 	}
 	if p.SeqId != seqId {
@@ -2017,16 +1938,16 @@ func (p *AdminServiceClient) recvListSubscribedPhone() (value []string, err erro
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error55 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error56 error
-		error56, err = error55.Read(iprot)
+		error53 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error54 error
+		error54, err = error53.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error56
+		err = error54
 		return
 	}
 	if p.SeqId != seqId {
@@ -2092,16 +2013,16 @@ func (p *AdminServiceClient) recvListSubscribedEmail() (value []string, err erro
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error57 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error58 error
-		error58, err = error57.Read(iprot)
+		error55 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error56 error
+		error56, err = error55.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error58
+		err = error56
 		return
 	}
 	if p.SeqId != seqId {
@@ -2171,16 +2092,16 @@ func (p *AdminServiceClient) recvGetTableHistorySize() (value map[int64]int64, e
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error59 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error60 error
-		error60, err = error59.Read(iprot)
+		error57 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error58 error
+		error58, err = error57.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error60
+		err = error58
 		return
 	}
 	if p.SeqId != seqId {
@@ -2194,10 +2115,6 @@ func (p *AdminServiceClient) recvGetTableHistorySize() (value map[int64]int64, e
 	if err = iprot.ReadMessageEnd(); err != nil {
 		return
 	}
-	if result.Se != nil {
-		err = result.Se
-		return
-	}
 	value = result.GetSuccess()
 	return
 }
@@ -2207,35 +2124,34 @@ type AdminServiceProcessor struct {
 }
 
 func NewAdminServiceProcessor(handler AdminService) *AdminServiceProcessor {
-	self61 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self61.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
-	self61.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
-	self61.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
-	self61.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
-	self61.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
-	self61.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
-	self61.AddToProcessorMap("lazyDropTable", &adminServiceProcessorLazyDropTable{handler: handler})
-	self61.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
-	self61.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
-	self61.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
-	self61.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
-	self61.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
-	self61.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
-	self61.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
-	self61.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
-	self61.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
-	self61.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
-	self61.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
-	self61.AddToProcessorMap("getTableSize", &adminServiceProcessorGetTableSize{handler: handler})
-	self61.AddToProcessorMap("putClientMetrics", &adminServiceProcessorPutClientMetrics{handler: handler})
-	self61.AddToProcessorMap("subscribePhoneAlert", &adminServiceProcessorSubscribePhoneAlert{handler: handler})
-	self61.AddToProcessorMap("unsubscribePhoneAlert", &adminServiceProcessorUnsubscribePhoneAlert{handler: handler})
-	self61.AddToProcessorMap("subscribeEmailAlert", &adminServiceProcessorSubscribeEmailAlert{handler: handler})
-	self61.AddToProcessorMap("unsubscribeEmailAlert", &adminServiceProcessorUnsubscribeEmailAlert{handler: handler})
-	self61.AddToProcessorMap("listSubscribedPhone", &adminServiceProcessorListSubscribedPhone{handler: handler})
-	self61.AddToProcessorMap("listSubscribedEmail", &adminServiceProcessorListSubscribedEmail{handler: handler})
-	self61.AddToProcessorMap("getTableHistorySize", &adminServiceProcessorGetTableHistorySize{handler: handler})
-	return self61
+	self59 := &AdminServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self59.AddToProcessorMap("saveAppInfo", &adminServiceProcessorSaveAppInfo{handler: handler})
+	self59.AddToProcessorMap("getAppInfo", &adminServiceProcessorGetAppInfo{handler: handler})
+	self59.AddToProcessorMap("findAllApps", &adminServiceProcessorFindAllApps{handler: handler})
+	self59.AddToProcessorMap("findAllTables", &adminServiceProcessorFindAllTables{handler: handler})
+	self59.AddToProcessorMap("createTable", &adminServiceProcessorCreateTable{handler: handler})
+	self59.AddToProcessorMap("dropTable", &adminServiceProcessorDropTable{handler: handler})
+	self59.AddToProcessorMap("alterTable", &adminServiceProcessorAlterTable{handler: handler})
+	self59.AddToProcessorMap("cloneTable", &adminServiceProcessorCloneTable{handler: handler})
+	self59.AddToProcessorMap("disableTable", &adminServiceProcessorDisableTable{handler: handler})
+	self59.AddToProcessorMap("enableTable", &adminServiceProcessorEnableTable{handler: handler})
+	self59.AddToProcessorMap("describeTable", &adminServiceProcessorDescribeTable{handler: handler})
+	self59.AddToProcessorMap("getTableStatus", &adminServiceProcessorGetTableStatus{handler: handler})
+	self59.AddToProcessorMap("getTableState", &adminServiceProcessorGetTableState{handler: handler})
+	self59.AddToProcessorMap("getTableSplits", &adminServiceProcessorGetTableSplits{handler: handler})
+	self59.AddToProcessorMap("queryMetric", &adminServiceProcessorQueryMetric{handler: handler})
+	self59.AddToProcessorMap("queryMetrics", &adminServiceProcessorQueryMetrics{handler: handler})
+	self59.AddToProcessorMap("findAllAppInfo", &adminServiceProcessorFindAllAppInfo{handler: handler})
+	self59.AddToProcessorMap("getTableSize", &adminServiceProcessorGetTableSize{handler: handler})
+	self59.AddToProcessorMap("putClientMetrics", &adminServiceProcessorPutClientMetrics{handler: handler})
+	self59.AddToProcessorMap("subscribePhoneAlert", &adminServiceProcessorSubscribePhoneAlert{handler: handler})
+	self59.AddToProcessorMap("unsubscribePhoneAlert", &adminServiceProcessorUnsubscribePhoneAlert{handler: handler})
+	self59.AddToProcessorMap("subscribeEmailAlert", &adminServiceProcessorSubscribeEmailAlert{handler: handler})
+	self59.AddToProcessorMap("unsubscribeEmailAlert", &adminServiceProcessorUnsubscribeEmailAlert{handler: handler})
+	self59.AddToProcessorMap("listSubscribedPhone", &adminServiceProcessorListSubscribedPhone{handler: handler})
+	self59.AddToProcessorMap("listSubscribedEmail", &adminServiceProcessorListSubscribedEmail{handler: handler})
+	self59.AddToProcessorMap("getTableHistorySize", &adminServiceProcessorGetTableHistorySize{handler: handler})
+	return self59
 }
 
 type adminServiceProcessorSaveAppInfo struct {
@@ -2533,56 +2449,6 @@ func (p *adminServiceProcessorDropTable) Process(seqId int32, iprot, oprot thrif
 		}
 	}
 	if err2 = oprot.WriteMessageBegin("dropTable", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
-type adminServiceProcessorLazyDropTable struct {
-	handler AdminService
-}
-
-func (p *adminServiceProcessorLazyDropTable) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := LazyDropTableArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("lazyDropTable", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush()
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	result := LazyDropTableResult{}
-	var err2 error
-	if err2 = p.handler.LazyDropTable(args.TableName); err2 != nil {
-		switch v := err2.(type) {
-		case *errors.ServiceException:
-			result.Se = v
-		default:
-			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing lazyDropTable: "+err2.Error())
-			oprot.WriteMessageBegin("lazyDropTable", thrift.EXCEPTION, seqId)
-			x.Write(oprot)
-			oprot.WriteMessageEnd()
-			oprot.Flush()
-			return true, err2
-		}
-	}
-	if err2 = oprot.WriteMessageBegin("lazyDropTable", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -3601,17 +3467,12 @@ func (p *adminServiceProcessorGetTableHistorySize) Process(seqId int32, iprot, o
 	var retval map[int64]int64
 	var err2 error
 	if retval, err2 = p.handler.GetTableHistorySize(args.TableName, args.StartDate, args.StopDate); err2 != nil {
-		switch v := err2.(type) {
-		case *errors.ServiceException:
-			result.Se = v
-		default:
-			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getTableHistorySize: "+err2.Error())
-			oprot.WriteMessageBegin("getTableHistorySize", thrift.EXCEPTION, seqId)
-			x.Write(oprot)
-			oprot.WriteMessageEnd()
-			oprot.Flush()
-			return true, err2
-		}
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getTableHistorySize: "+err2.Error())
+		oprot.WriteMessageBegin("getTableHistorySize", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return true, err2
 	} else {
 		result.Success = retval
 	}
@@ -4186,11 +4047,11 @@ func (p *FindAllAppsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem62 := &AppInfo{}
-		if err := _elem62.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem62, err)
+		_elem60 := &AppInfo{}
+		if err := _elem60.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem60, err)
 		}
-		p.Success = append(p.Success, _elem62)
+		p.Success = append(p.Success, _elem60)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -4397,11 +4258,11 @@ func (p *FindAllTablesResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem63 := &table.TableInfo{}
-		if err := _elem63.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem63, err)
+		_elem61 := &table.TableInfo{}
+		if err := _elem61.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem61, err)
 		}
-		p.Success = append(p.Success, _elem63)
+		p.Success = append(p.Success, _elem61)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -4937,192 +4798,6 @@ func (p *DropTableResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("DropTableResult(%+v)", *p)
-}
-
-type LazyDropTableArgs struct {
-	TableName string `thrift:"tableName,1" json:"tableName"`
-}
-
-func NewLazyDropTableArgs() *LazyDropTableArgs {
-	return &LazyDropTableArgs{}
-}
-
-func (p *LazyDropTableArgs) GetTableName() string {
-	return p.TableName
-}
-func (p *LazyDropTableArgs) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *LazyDropTableArgs) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.TableName = v
-	}
-	return nil
-}
-
-func (p *LazyDropTableArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("lazyDropTable_args"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *LazyDropTableArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.TableName)); err != nil {
-		return fmt.Errorf("%T.tableName (1) field write error: %s", p, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:tableName: %s", p, err)
-	}
-	return err
-}
-
-func (p *LazyDropTableArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("LazyDropTableArgs(%+v)", *p)
-}
-
-type LazyDropTableResult struct {
-	Se *errors.ServiceException `thrift:"se,1" json:"se"`
-}
-
-func NewLazyDropTableResult() *LazyDropTableResult {
-	return &LazyDropTableResult{}
-}
-
-var LazyDropTableResult_Se_DEFAULT *errors.ServiceException
-
-func (p *LazyDropTableResult) GetSe() *errors.ServiceException {
-	if !p.IsSetSe() {
-		return LazyDropTableResult_Se_DEFAULT
-	}
-	return p.Se
-}
-func (p *LazyDropTableResult) IsSetSe() bool {
-	return p.Se != nil
-}
-
-func (p *LazyDropTableResult) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *LazyDropTableResult) ReadField1(iprot thrift.TProtocol) error {
-	p.Se = &errors.ServiceException{}
-	if err := p.Se.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
-	}
-	return nil
-}
-
-func (p *LazyDropTableResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("lazyDropTable_result"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *LazyDropTableResult) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSe() {
-		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
-		}
-		if err := p.Se.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *LazyDropTableResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("LazyDropTableResult(%+v)", *p)
 }
 
 type AlterTableArgs struct {
@@ -6749,17 +6424,17 @@ func (p *GetTableSplitsArgs) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key64 string
+		var _key62 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key64 = v
+			_key62 = v
 		}
-		_val65 := &table.Datum{}
-		if err := _val65.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val65, err)
+		_val63 := &table.Datum{}
+		if err := _val63.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val63, err)
 		}
-		p.StartKey[_key64] = _val65
+		p.StartKey[_key62] = _val63
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6775,17 +6450,17 @@ func (p *GetTableSplitsArgs) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(table.Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key66 string
+		var _key64 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key66 = v
+			_key64 = v
 		}
-		_val67 := &table.Datum{}
-		if err := _val67.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val67, err)
+		_val65 := &table.Datum{}
+		if err := _val65.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val65, err)
 		}
-		p.StopKey[_key66] = _val67
+		p.StopKey[_key64] = _val65
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6958,11 +6633,11 @@ func (p *GetTableSplitsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*table.TableSplit, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem68 := &table.TableSplit{}
-		if err := _elem68.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem68, err)
+		_elem66 := &table.TableSplit{}
+		if err := _elem66.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem66, err)
 		}
-		p.Success = append(p.Success, _elem68)
+		p.Success = append(p.Success, _elem66)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7331,11 +7006,11 @@ func (p *QueryMetricsArgs) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*MetricQueryRequest, 0, size)
 	p.Queries = tSlice
 	for i := 0; i < size; i++ {
-		_elem69 := &MetricQueryRequest{}
-		if err := _elem69.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem69, err)
+		_elem67 := &MetricQueryRequest{}
+		if err := _elem67.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem67, err)
 		}
-		p.Queries = append(p.Queries, _elem69)
+		p.Queries = append(p.Queries, _elem67)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7462,11 +7137,11 @@ func (p *QueryMetricsResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*TimeSeriesData, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem70 := &TimeSeriesData{}
-		if err := _elem70.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem70, err)
+		_elem68 := &TimeSeriesData{}
+		if err := _elem68.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem68, err)
 		}
-		p.Success = append(p.Success, _elem70)
+		p.Success = append(p.Success, _elem68)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7673,11 +7348,11 @@ func (p *FindAllAppInfoResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]*AppInfo, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem71 := &AppInfo{}
-		if err := _elem71.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem71, err)
+		_elem69 := &AppInfo{}
+		if err := _elem69.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem69, err)
 		}
-		p.Success = append(p.Success, _elem71)
+		p.Success = append(p.Success, _elem69)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -9225,13 +8900,13 @@ func (p *ListSubscribedPhoneResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]string, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		var _elem72 string
+		var _elem70 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem72 = v
+			_elem70 = v
 		}
-		p.Success = append(p.Success, _elem72)
+		p.Success = append(p.Success, _elem70)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -9474,13 +9149,13 @@ func (p *ListSubscribedEmailResult) ReadField0(iprot thrift.TProtocol) error {
 	tSlice := make([]string, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		var _elem73 string
+		var _elem71 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem73 = v
+			_elem71 = v
 		}
-		p.Success = append(p.Success, _elem73)
+		p.Success = append(p.Success, _elem71)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -9717,8 +9392,7 @@ func (p *GetTableHistorySizeArgs) String() string {
 }
 
 type GetTableHistorySizeResult struct {
-	Success map[int64]int64          `thrift:"success,0" json:"success"`
-	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
+	Success map[int64]int64 `thrift:"success,0" json:"success"`
 }
 
 func NewGetTableHistorySizeResult() *GetTableHistorySizeResult {
@@ -9730,21 +9404,8 @@ var GetTableHistorySizeResult_Success_DEFAULT map[int64]int64
 func (p *GetTableHistorySizeResult) GetSuccess() map[int64]int64 {
 	return p.Success
 }
-
-var GetTableHistorySizeResult_Se_DEFAULT *errors.ServiceException
-
-func (p *GetTableHistorySizeResult) GetSe() *errors.ServiceException {
-	if !p.IsSetSe() {
-		return GetTableHistorySizeResult_Se_DEFAULT
-	}
-	return p.Se
-}
 func (p *GetTableHistorySizeResult) IsSetSuccess() bool {
 	return p.Success != nil
-}
-
-func (p *GetTableHistorySizeResult) IsSetSe() bool {
-	return p.Se != nil
 }
 
 func (p *GetTableHistorySizeResult) Read(iprot thrift.TProtocol) error {
@@ -9762,10 +9423,6 @@ func (p *GetTableHistorySizeResult) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 0:
 			if err := p.ReadField0(iprot); err != nil {
-				return err
-			}
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
 				return err
 			}
 		default:
@@ -9791,30 +9448,22 @@ func (p *GetTableHistorySizeResult) ReadField0(iprot thrift.TProtocol) error {
 	tMap := make(map[int64]int64, size)
 	p.Success = tMap
 	for i := 0; i < size; i++ {
-		var _key74 int64
+		var _key72 int64
 		if v, err := iprot.ReadI64(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key74 = v
+			_key72 = v
 		}
-		var _val75 int64
+		var _val73 int64
 		if v, err := iprot.ReadI64(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_val75 = v
+			_val73 = v
 		}
-		p.Success[_key74] = _val75
+		p.Success[_key72] = _val73
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
-}
-
-func (p *GetTableHistorySizeResult) ReadField1(iprot thrift.TProtocol) error {
-	p.Se = &errors.ServiceException{}
-	if err := p.Se.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
 	}
 	return nil
 }
@@ -9824,9 +9473,6 @@ func (p *GetTableHistorySizeResult) Write(oprot thrift.TProtocol) error {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField0(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField1(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9859,21 +9505,6 @@ func (p *GetTableHistorySizeResult) writeField0(oprot thrift.TProtocol) (err err
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *GetTableHistorySizeResult) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSe() {
-		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
-		}
-		if err := p.Se.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
 		}
 	}
 	return err
