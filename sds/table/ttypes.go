@@ -2832,8 +2832,8 @@ type TableMetadata struct {
 	Quota                   *TableQuota          `thrift:"quota,4" json:"quota"`
 	Throughput              *ProvisionThroughput `thrift:"throughput,5" json:"throughput"`
 	Description             *string              `thrift:"description,6" json:"description"`
-	EnableReplication       bool                 `thrift:"enableReplication,7" json:"enableReplication"`
-	EnableScanInGlobalOrder bool                 `thrift:"enableScanInGlobalOrder,8" json:"enableScanInGlobalOrder"`
+	EnableReplication       *bool                `thrift:"enableReplication,7" json:"enableReplication"`
+	EnableScanInGlobalOrder *bool                `thrift:"enableScanInGlobalOrder,8" json:"enableScanInGlobalOrder"`
 }
 
 func NewTableMetadata() *TableMetadata {
@@ -2891,16 +2891,22 @@ func (p *TableMetadata) GetDescription() string {
 	return *p.Description
 }
 
-var TableMetadata_EnableReplication_DEFAULT bool = false
+var TableMetadata_EnableReplication_DEFAULT bool
 
 func (p *TableMetadata) GetEnableReplication() bool {
-	return p.EnableReplication
+	if !p.IsSetEnableReplication() {
+		return TableMetadata_EnableReplication_DEFAULT
+	}
+	return *p.EnableReplication
 }
 
-var TableMetadata_EnableScanInGlobalOrder_DEFAULT bool = false
+var TableMetadata_EnableScanInGlobalOrder_DEFAULT bool
 
 func (p *TableMetadata) GetEnableScanInGlobalOrder() bool {
-	return p.EnableScanInGlobalOrder
+	if !p.IsSetEnableScanInGlobalOrder() {
+		return TableMetadata_EnableScanInGlobalOrder_DEFAULT
+	}
+	return *p.EnableScanInGlobalOrder
 }
 func (p *TableMetadata) IsSetTableId() bool {
 	return p.TableId != nil
@@ -2927,11 +2933,11 @@ func (p *TableMetadata) IsSetDescription() bool {
 }
 
 func (p *TableMetadata) IsSetEnableReplication() bool {
-	return p.EnableReplication != TableMetadata_EnableReplication_DEFAULT
+	return p.EnableReplication != nil
 }
 
 func (p *TableMetadata) IsSetEnableScanInGlobalOrder() bool {
-	return p.EnableScanInGlobalOrder != TableMetadata_EnableScanInGlobalOrder_DEFAULT
+	return p.EnableScanInGlobalOrder != nil
 }
 
 func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
@@ -3082,7 +3088,7 @@ func (p *TableMetadata) ReadField7(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadBool(); err != nil {
 		return fmt.Errorf("error reading field 7: %s", err)
 	} else {
-		p.EnableReplication = v
+		p.EnableReplication = &v
 	}
 	return nil
 }
@@ -3091,7 +3097,7 @@ func (p *TableMetadata) ReadField8(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadBool(); err != nil {
 		return fmt.Errorf("error reading field 8: %s", err)
 	} else {
-		p.EnableScanInGlobalOrder = v
+		p.EnableScanInGlobalOrder = &v
 	}
 	return nil
 }
@@ -3247,7 +3253,7 @@ func (p *TableMetadata) writeField7(oprot thrift.TProtocol) (err error) {
 		if err := oprot.WriteFieldBegin("enableReplication", thrift.BOOL, 7); err != nil {
 			return fmt.Errorf("%T write field begin error 7:enableReplication: %s", p, err)
 		}
-		if err := oprot.WriteBool(bool(p.EnableReplication)); err != nil {
+		if err := oprot.WriteBool(bool(*p.EnableReplication)); err != nil {
 			return fmt.Errorf("%T.enableReplication (7) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -3262,7 +3268,7 @@ func (p *TableMetadata) writeField8(oprot thrift.TProtocol) (err error) {
 		if err := oprot.WriteFieldBegin("enableScanInGlobalOrder", thrift.BOOL, 8); err != nil {
 			return fmt.Errorf("%T write field begin error 8:enableScanInGlobalOrder: %s", p, err)
 		}
-		if err := oprot.WriteBool(bool(p.EnableScanInGlobalOrder)); err != nil {
+		if err := oprot.WriteBool(bool(*p.EnableScanInGlobalOrder)); err != nil {
 			return fmt.Errorf("%T.enableScanInGlobalOrder (8) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
