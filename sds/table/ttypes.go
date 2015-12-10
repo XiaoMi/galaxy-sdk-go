@@ -6,6 +6,7 @@ package table
 import (
 	"bytes"
 	"fmt"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/Authorization"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
@@ -20,6 +21,7 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
 var _ = auth.GoUnusedProtection__
+var _ = Authorization.GoUnusedProtection__
 var GoUnusedProtection__ int
 
 //数据类型
@@ -297,6 +299,7 @@ const (
 	TableState_DELETING    TableState = 6
 	TableState_DELETED     TableState = 7
 	TableState_LAZY_DELETE TableState = 8
+	TableState_RENAMING    TableState = 9
 )
 
 func (p TableState) String() string {
@@ -317,6 +320,8 @@ func (p TableState) String() string {
 		return "TableState_DELETED"
 	case TableState_LAZY_DELETE:
 		return "TableState_LAZY_DELETE"
+	case TableState_RENAMING:
+		return "TableState_RENAMING"
 	}
 	return "<UNSET>"
 }
@@ -339,11 +344,43 @@ func TableStateFromString(s string) (TableState, error) {
 		return TableState_DELETED, nil
 	case "TableState_LAZY_DELETE":
 		return TableState_LAZY_DELETE, nil
+	case "TableState_RENAMING":
+		return TableState_RENAMING, nil
 	}
 	return TableState(0), fmt.Errorf("not a valid TableState string")
 }
 
 func TableStatePtr(v TableState) *TableState { return &v }
+
+//快照状态
+type SnapshotState int64
+
+const (
+	SnapshotState_ENABLED    SnapshotState = 1
+	SnapshotState_INPROGRESS SnapshotState = 2
+)
+
+func (p SnapshotState) String() string {
+	switch p {
+	case SnapshotState_ENABLED:
+		return "SnapshotState_ENABLED"
+	case SnapshotState_INPROGRESS:
+		return "SnapshotState_INPROGRESS"
+	}
+	return "<UNSET>"
+}
+
+func SnapshotStateFromString(s string) (SnapshotState, error) {
+	switch s {
+	case "SnapshotState_ENABLED":
+		return SnapshotState_ENABLED, nil
+	case "SnapshotState_INPROGRESS":
+		return SnapshotState_INPROGRESS, nil
+	}
+	return SnapshotState(0), fmt.Errorf("not a valid SnapshotState string")
+}
+
+func SnapshotStatePtr(v SnapshotState) *SnapshotState { return &v }
 
 type ScanOp int64
 
@@ -2832,8 +2869,9 @@ type TableMetadata struct {
 	Quota                   *TableQuota          `thrift:"quota,4" json:"quota"`
 	Throughput              *ProvisionThroughput `thrift:"throughput,5" json:"throughput"`
 	Description             *string              `thrift:"description,6" json:"description"`
-	EnableReplication       *bool                `thrift:"enableReplication,7" json:"enableReplication"`
-	EnableScanInGlobalOrder *bool                `thrift:"enableScanInGlobalOrder,8" json:"enableScanInGlobalOrder"`
+	EnableScanInGlobalOrder *bool                `thrift:"enableScanInGlobalOrder,7" json:"enableScanInGlobalOrder"`
+	Replication             *ReplicationSpec     `thrift:"replication,8" json:"replication"`
+	EnableSysSnapshot       *bool                `thrift:"enableSysSnapshot,9" json:"enableSysSnapshot"`
 }
 
 func NewTableMetadata() *TableMetadata {
@@ -2891,15 +2929,6 @@ func (p *TableMetadata) GetDescription() string {
 	return *p.Description
 }
 
-var TableMetadata_EnableReplication_DEFAULT bool
-
-func (p *TableMetadata) GetEnableReplication() bool {
-	if !p.IsSetEnableReplication() {
-		return TableMetadata_EnableReplication_DEFAULT
-	}
-	return *p.EnableReplication
-}
-
 var TableMetadata_EnableScanInGlobalOrder_DEFAULT bool
 
 func (p *TableMetadata) GetEnableScanInGlobalOrder() bool {
@@ -2907,6 +2936,24 @@ func (p *TableMetadata) GetEnableScanInGlobalOrder() bool {
 		return TableMetadata_EnableScanInGlobalOrder_DEFAULT
 	}
 	return *p.EnableScanInGlobalOrder
+}
+
+var TableMetadata_Replication_DEFAULT ReplicationSpec
+
+func (p *TableMetadata) GetReplication() ReplicationSpec {
+	if !p.IsSetReplication() {
+		return TableMetadata_Replication_DEFAULT
+	}
+	return *p.Replication
+}
+
+var TableMetadata_EnableSysSnapshot_DEFAULT bool
+
+func (p *TableMetadata) GetEnableSysSnapshot() bool {
+	if !p.IsSetEnableSysSnapshot() {
+		return TableMetadata_EnableSysSnapshot_DEFAULT
+	}
+	return *p.EnableSysSnapshot
 }
 func (p *TableMetadata) IsSetTableId() bool {
 	return p.TableId != nil
@@ -2932,12 +2979,16 @@ func (p *TableMetadata) IsSetDescription() bool {
 	return p.Description != nil
 }
 
-func (p *TableMetadata) IsSetEnableReplication() bool {
-	return p.EnableReplication != nil
-}
-
 func (p *TableMetadata) IsSetEnableScanInGlobalOrder() bool {
 	return p.EnableScanInGlobalOrder != nil
+}
+
+func (p *TableMetadata) IsSetReplication() bool {
+	return p.Replication != nil
+}
+
+func (p *TableMetadata) IsSetEnableSysSnapshot() bool {
+	return p.EnableSysSnapshot != nil
 }
 
 func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
@@ -2983,6 +3034,10 @@ func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
 			}
 		case 8:
 			if err := p.ReadField8(iprot); err != nil {
+				return err
+			}
+		case 9:
+			if err := p.ReadField9(iprot); err != nil {
 				return err
 			}
 		default:
@@ -3088,16 +3143,24 @@ func (p *TableMetadata) ReadField7(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadBool(); err != nil {
 		return fmt.Errorf("error reading field 7: %s", err)
 	} else {
-		p.EnableReplication = &v
+		p.EnableScanInGlobalOrder = &v
 	}
 	return nil
 }
 
 func (p *TableMetadata) ReadField8(iprot thrift.TProtocol) error {
+	p.Replication = &ReplicationSpec{}
+	if err := p.Replication.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Replication, err)
+	}
+	return nil
+}
+
+func (p *TableMetadata) ReadField9(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadBool(); err != nil {
-		return fmt.Errorf("error reading field 8: %s", err)
+		return fmt.Errorf("error reading field 9: %s", err)
 	} else {
-		p.EnableScanInGlobalOrder = &v
+		p.EnableSysSnapshot = &v
 	}
 	return nil
 }
@@ -3128,6 +3191,9 @@ func (p *TableMetadata) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField8(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField9(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -3249,30 +3315,45 @@ func (p *TableMetadata) writeField6(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *TableMetadata) writeField7(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEnableReplication() {
-		if err := oprot.WriteFieldBegin("enableReplication", thrift.BOOL, 7); err != nil {
-			return fmt.Errorf("%T write field begin error 7:enableReplication: %s", p, err)
+	if p.IsSetEnableScanInGlobalOrder() {
+		if err := oprot.WriteFieldBegin("enableScanInGlobalOrder", thrift.BOOL, 7); err != nil {
+			return fmt.Errorf("%T write field begin error 7:enableScanInGlobalOrder: %s", p, err)
 		}
-		if err := oprot.WriteBool(bool(*p.EnableReplication)); err != nil {
-			return fmt.Errorf("%T.enableReplication (7) field write error: %s", p, err)
+		if err := oprot.WriteBool(bool(*p.EnableScanInGlobalOrder)); err != nil {
+			return fmt.Errorf("%T.enableScanInGlobalOrder (7) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 7:enableReplication: %s", p, err)
+			return fmt.Errorf("%T write field end error 7:enableScanInGlobalOrder: %s", p, err)
 		}
 	}
 	return err
 }
 
 func (p *TableMetadata) writeField8(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEnableScanInGlobalOrder() {
-		if err := oprot.WriteFieldBegin("enableScanInGlobalOrder", thrift.BOOL, 8); err != nil {
-			return fmt.Errorf("%T write field begin error 8:enableScanInGlobalOrder: %s", p, err)
+	if p.IsSetReplication() {
+		if err := oprot.WriteFieldBegin("replication", thrift.STRUCT, 8); err != nil {
+			return fmt.Errorf("%T write field begin error 8:replication: %s", p, err)
 		}
-		if err := oprot.WriteBool(bool(*p.EnableScanInGlobalOrder)); err != nil {
-			return fmt.Errorf("%T.enableScanInGlobalOrder (8) field write error: %s", p, err)
+		if err := p.Replication.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Replication, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 8:enableScanInGlobalOrder: %s", p, err)
+			return fmt.Errorf("%T write field end error 8:replication: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableMetadata) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnableSysSnapshot() {
+		if err := oprot.WriteFieldBegin("enableSysSnapshot", thrift.BOOL, 9); err != nil {
+			return fmt.Errorf("%T write field begin error 9:enableSysSnapshot: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.EnableSysSnapshot)); err != nil {
+			return fmt.Errorf("%T.enableSysSnapshot (9) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 9:enableSysSnapshot: %s", p, err)
 		}
 	}
 	return err
@@ -3429,6 +3510,761 @@ func (p *TableSpec) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("TableSpec(%+v)", *p)
+}
+
+type ReplicationProvisionThroughput struct {
+	ConsumeCapacity *int64 `thrift:"consumeCapacity,1" json:"consumeCapacity"`
+	CommitCapacity  *int64 `thrift:"commitCapacity,2" json:"commitCapacity"`
+}
+
+func NewReplicationProvisionThroughput() *ReplicationProvisionThroughput {
+	return &ReplicationProvisionThroughput{}
+}
+
+var ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT int64
+
+func (p *ReplicationProvisionThroughput) GetConsumeCapacity() int64 {
+	if !p.IsSetConsumeCapacity() {
+		return ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT
+	}
+	return *p.ConsumeCapacity
+}
+
+var ReplicationProvisionThroughput_CommitCapacity_DEFAULT int64
+
+func (p *ReplicationProvisionThroughput) GetCommitCapacity() int64 {
+	if !p.IsSetCommitCapacity() {
+		return ReplicationProvisionThroughput_CommitCapacity_DEFAULT
+	}
+	return *p.CommitCapacity
+}
+func (p *ReplicationProvisionThroughput) IsSetConsumeCapacity() bool {
+	return p.ConsumeCapacity != nil
+}
+
+func (p *ReplicationProvisionThroughput) IsSetCommitCapacity() bool {
+	return p.CommitCapacity != nil
+}
+
+func (p *ReplicationProvisionThroughput) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.ConsumeCapacity = &v
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.CommitCapacity = &v
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ReplicationProvisionThroughput"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConsumeCapacity() {
+		if err := oprot.WriteFieldBegin("consumeCapacity", thrift.I64, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:consumeCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.ConsumeCapacity)); err != nil {
+			return fmt.Errorf("%T.consumeCapacity (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:consumeCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationProvisionThroughput) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCommitCapacity() {
+		if err := oprot.WriteFieldBegin("commitCapacity", thrift.I64, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:commitCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.CommitCapacity)); err != nil {
+			return fmt.Errorf("%T.commitCapacity (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:commitCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationProvisionThroughput) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReplicationProvisionThroughput(%+v)", *p)
+}
+
+type ReplicationSpec struct {
+	EnableReplication *bool                           `thrift:"enableReplication,1" json:"enableReplication"`
+	Throughput        *ReplicationProvisionThroughput `thrift:"throughput,2" json:"throughput"`
+	MaxSubscribers    *int32                          `thrift:"maxSubscribers,3" json:"maxSubscribers"`
+}
+
+func NewReplicationSpec() *ReplicationSpec {
+	return &ReplicationSpec{}
+}
+
+var ReplicationSpec_EnableReplication_DEFAULT bool
+
+func (p *ReplicationSpec) GetEnableReplication() bool {
+	if !p.IsSetEnableReplication() {
+		return ReplicationSpec_EnableReplication_DEFAULT
+	}
+	return *p.EnableReplication
+}
+
+var ReplicationSpec_Throughput_DEFAULT *ReplicationProvisionThroughput
+
+func (p *ReplicationSpec) GetThroughput() *ReplicationProvisionThroughput {
+	if !p.IsSetThroughput() {
+		return ReplicationSpec_Throughput_DEFAULT
+	}
+	return p.Throughput
+}
+
+var ReplicationSpec_MaxSubscribers_DEFAULT int32
+
+func (p *ReplicationSpec) GetMaxSubscribers() int32 {
+	if !p.IsSetMaxSubscribers() {
+		return ReplicationSpec_MaxSubscribers_DEFAULT
+	}
+	return *p.MaxSubscribers
+}
+func (p *ReplicationSpec) IsSetEnableReplication() bool {
+	return p.EnableReplication != nil
+}
+
+func (p *ReplicationSpec) IsSetThroughput() bool {
+	return p.Throughput != nil
+}
+
+func (p *ReplicationSpec) IsSetMaxSubscribers() bool {
+	return p.MaxSubscribers != nil
+}
+
+func (p *ReplicationSpec) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.EnableReplication = &v
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField2(iprot thrift.TProtocol) error {
+	p.Throughput = &ReplicationProvisionThroughput{}
+	if err := p.Throughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Throughput, err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.MaxSubscribers = &v
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ReplicationSpec"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnableReplication() {
+		if err := oprot.WriteFieldBegin("enableReplication", thrift.BOOL, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:enableReplication: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.EnableReplication)); err != nil {
+			return fmt.Errorf("%T.enableReplication (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:enableReplication: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetThroughput() {
+		if err := oprot.WriteFieldBegin("throughput", thrift.STRUCT, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:throughput: %s", p, err)
+		}
+		if err := p.Throughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Throughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:throughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMaxSubscribers() {
+		if err := oprot.WriteFieldBegin("maxSubscribers", thrift.I32, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:maxSubscribers: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.MaxSubscribers)); err != nil {
+			return fmt.Errorf("%T.maxSubscribers (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:maxSubscribers: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReplicationSpec(%+v)", *p)
+}
+
+type Subscriber struct {
+	TableName      *string `thrift:"tableName,1" json:"tableName"`
+	SubscriberName *string `thrift:"subscriberName,2" json:"subscriberName"`
+	SubscriberId   *string `thrift:"subscriberId,3" json:"subscriberId"`
+}
+
+func NewSubscriber() *Subscriber {
+	return &Subscriber{}
+}
+
+var Subscriber_TableName_DEFAULT string
+
+func (p *Subscriber) GetTableName() string {
+	if !p.IsSetTableName() {
+		return Subscriber_TableName_DEFAULT
+	}
+	return *p.TableName
+}
+
+var Subscriber_SubscriberName_DEFAULT string
+
+func (p *Subscriber) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return Subscriber_SubscriberName_DEFAULT
+	}
+	return *p.SubscriberName
+}
+
+var Subscriber_SubscriberId_DEFAULT string
+
+func (p *Subscriber) GetSubscriberId() string {
+	if !p.IsSetSubscriberId() {
+		return Subscriber_SubscriberId_DEFAULT
+	}
+	return *p.SubscriberId
+}
+func (p *Subscriber) IsSetTableName() bool {
+	return p.TableName != nil
+}
+
+func (p *Subscriber) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
+}
+
+func (p *Subscriber) IsSetSubscriberId() bool {
+	return p.SubscriberId != nil
+}
+
+func (p *Subscriber) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *Subscriber) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.TableName = &v
+	}
+	return nil
+}
+
+func (p *Subscriber) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SubscriberName = &v
+	}
+	return nil
+}
+
+func (p *Subscriber) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.SubscriberId = &v
+	}
+	return nil
+}
+
+func (p *Subscriber) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("Subscriber"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *Subscriber) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTableName() {
+		if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.TableName)); err != nil {
+			return fmt.Errorf("%T.tableName (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:tableName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Subscriber) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:subscriberName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:subscriberName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Subscriber) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSubscriberId() {
+		if err := oprot.WriteFieldBegin("subscriberId", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:subscriberId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SubscriberId)); err != nil {
+			return fmt.Errorf("%T.subscriberId (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:subscriberId: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Subscriber) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("Subscriber(%+v)", *p)
+}
+
+type Sinker struct {
+	SubscribedTableName *string `thrift:"subscribedTableName,1" json:"subscribedTableName"`
+	SubscriberName      *string `thrift:"subscriberName,2" json:"subscriberName"`
+	Endpoint            *string `thrift:"endpoint,3" json:"endpoint"`
+	SinkedTableName     *string `thrift:"sinkedTableName,4" json:"sinkedTableName"`
+}
+
+func NewSinker() *Sinker {
+	return &Sinker{}
+}
+
+var Sinker_SubscribedTableName_DEFAULT string
+
+func (p *Sinker) GetSubscribedTableName() string {
+	if !p.IsSetSubscribedTableName() {
+		return Sinker_SubscribedTableName_DEFAULT
+	}
+	return *p.SubscribedTableName
+}
+
+var Sinker_SubscriberName_DEFAULT string
+
+func (p *Sinker) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return Sinker_SubscriberName_DEFAULT
+	}
+	return *p.SubscriberName
+}
+
+var Sinker_Endpoint_DEFAULT string
+
+func (p *Sinker) GetEndpoint() string {
+	if !p.IsSetEndpoint() {
+		return Sinker_Endpoint_DEFAULT
+	}
+	return *p.Endpoint
+}
+
+var Sinker_SinkedTableName_DEFAULT string
+
+func (p *Sinker) GetSinkedTableName() string {
+	if !p.IsSetSinkedTableName() {
+		return Sinker_SinkedTableName_DEFAULT
+	}
+	return *p.SinkedTableName
+}
+func (p *Sinker) IsSetSubscribedTableName() bool {
+	return p.SubscribedTableName != nil
+}
+
+func (p *Sinker) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
+}
+
+func (p *Sinker) IsSetEndpoint() bool {
+	return p.Endpoint != nil
+}
+
+func (p *Sinker) IsSetSinkedTableName() bool {
+	return p.SinkedTableName != nil
+}
+
+func (p *Sinker) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *Sinker) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.SubscribedTableName = &v
+	}
+	return nil
+}
+
+func (p *Sinker) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SubscriberName = &v
+	}
+	return nil
+}
+
+func (p *Sinker) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.Endpoint = &v
+	}
+	return nil
+}
+
+func (p *Sinker) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		p.SinkedTableName = &v
+	}
+	return nil
+}
+
+func (p *Sinker) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("Sinker"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *Sinker) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSubscribedTableName() {
+		if err := oprot.WriteFieldBegin("subscribedTableName", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:subscribedTableName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SubscribedTableName)); err != nil {
+			return fmt.Errorf("%T.subscribedTableName (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:subscribedTableName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Sinker) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:subscriberName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:subscriberName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Sinker) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEndpoint() {
+		if err := oprot.WriteFieldBegin("endpoint", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:endpoint: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.Endpoint)); err != nil {
+			return fmt.Errorf("%T.endpoint (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:endpoint: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Sinker) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSinkedTableName() {
+		if err := oprot.WriteFieldBegin("sinkedTableName", thrift.STRING, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:sinkedTableName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SinkedTableName)); err != nil {
+			return fmt.Errorf("%T.sinkedTableName (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:sinkedTableName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Sinker) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("Sinker(%+v)", *p)
 }
 
 type TableStatus struct {
@@ -4371,111 +5207,49 @@ func (p *TableSplit) String() string {
 	return fmt.Sprintf("TableSplit(%+v)", *p)
 }
 
-type PartitionInfo struct {
-	PutRequestNumber       *int64 `thrift:"putRequestNumber,1" json:"putRequestNumber"`
-	DeleteRequestNumber    *int64 `thrift:"deleteRequestNumber,2" json:"deleteRequestNumber"`
-	IncrementRequestNumber *int64 `thrift:"incrementRequestNumber,3" json:"incrementRequestNumber"`
-	CollectedEditNumber    *int64 `thrift:"collectedEditNumber,4" json:"collectedEditNumber"`
-	RetrievedEditNumber    *int64 `thrift:"retrievedEditNumber,5" json:"retrievedEditNumber"`
-	FullScanNumber         *int64 `thrift:"fullScanNumber,6" json:"fullScanNumber"`
-	CompactionNumber       *int64 `thrift:"compactionNumber,7" json:"compactionNumber"`
+type Partition struct {
+	PartitionId *int32     `thrift:"partitionId,1" json:"partitionId"`
+	StartKey    Dictionary `thrift:"startKey,2" json:"startKey"`
+	StopKey     Dictionary `thrift:"stopKey,3" json:"stopKey"`
 }
 
-func NewPartitionInfo() *PartitionInfo {
-	return &PartitionInfo{}
+func NewPartition() *Partition {
+	return &Partition{}
 }
 
-var PartitionInfo_PutRequestNumber_DEFAULT int64
+var Partition_PartitionId_DEFAULT int32
 
-func (p *PartitionInfo) GetPutRequestNumber() int64 {
-	if !p.IsSetPutRequestNumber() {
-		return PartitionInfo_PutRequestNumber_DEFAULT
+func (p *Partition) GetPartitionId() int32 {
+	if !p.IsSetPartitionId() {
+		return Partition_PartitionId_DEFAULT
 	}
-	return *p.PutRequestNumber
+	return *p.PartitionId
 }
 
-var PartitionInfo_DeleteRequestNumber_DEFAULT int64
+var Partition_StartKey_DEFAULT Dictionary
 
-func (p *PartitionInfo) GetDeleteRequestNumber() int64 {
-	if !p.IsSetDeleteRequestNumber() {
-		return PartitionInfo_DeleteRequestNumber_DEFAULT
-	}
-	return *p.DeleteRequestNumber
+func (p *Partition) GetStartKey() Dictionary {
+	return p.StartKey
 }
 
-var PartitionInfo_IncrementRequestNumber_DEFAULT int64
+var Partition_StopKey_DEFAULT Dictionary
 
-func (p *PartitionInfo) GetIncrementRequestNumber() int64 {
-	if !p.IsSetIncrementRequestNumber() {
-		return PartitionInfo_IncrementRequestNumber_DEFAULT
-	}
-	return *p.IncrementRequestNumber
+func (p *Partition) GetStopKey() Dictionary {
+	return p.StopKey
+}
+func (p *Partition) IsSetPartitionId() bool {
+	return p.PartitionId != nil
 }
 
-var PartitionInfo_CollectedEditNumber_DEFAULT int64
-
-func (p *PartitionInfo) GetCollectedEditNumber() int64 {
-	if !p.IsSetCollectedEditNumber() {
-		return PartitionInfo_CollectedEditNumber_DEFAULT
-	}
-	return *p.CollectedEditNumber
+func (p *Partition) IsSetStartKey() bool {
+	return p.StartKey != nil
 }
 
-var PartitionInfo_RetrievedEditNumber_DEFAULT int64
-
-func (p *PartitionInfo) GetRetrievedEditNumber() int64 {
-	if !p.IsSetRetrievedEditNumber() {
-		return PartitionInfo_RetrievedEditNumber_DEFAULT
-	}
-	return *p.RetrievedEditNumber
+func (p *Partition) IsSetStopKey() bool {
+	return p.StopKey != nil
 }
 
-var PartitionInfo_FullScanNumber_DEFAULT int64
-
-func (p *PartitionInfo) GetFullScanNumber() int64 {
-	if !p.IsSetFullScanNumber() {
-		return PartitionInfo_FullScanNumber_DEFAULT
-	}
-	return *p.FullScanNumber
-}
-
-var PartitionInfo_CompactionNumber_DEFAULT int64
-
-func (p *PartitionInfo) GetCompactionNumber() int64 {
-	if !p.IsSetCompactionNumber() {
-		return PartitionInfo_CompactionNumber_DEFAULT
-	}
-	return *p.CompactionNumber
-}
-func (p *PartitionInfo) IsSetPutRequestNumber() bool {
-	return p.PutRequestNumber != nil
-}
-
-func (p *PartitionInfo) IsSetDeleteRequestNumber() bool {
-	return p.DeleteRequestNumber != nil
-}
-
-func (p *PartitionInfo) IsSetIncrementRequestNumber() bool {
-	return p.IncrementRequestNumber != nil
-}
-
-func (p *PartitionInfo) IsSetCollectedEditNumber() bool {
-	return p.CollectedEditNumber != nil
-}
-
-func (p *PartitionInfo) IsSetRetrievedEditNumber() bool {
-	return p.RetrievedEditNumber != nil
-}
-
-func (p *PartitionInfo) IsSetFullScanNumber() bool {
-	return p.FullScanNumber != nil
-}
-
-func (p *PartitionInfo) IsSetCompactionNumber() bool {
-	return p.CompactionNumber != nil
-}
-
-func (p *PartitionInfo) Read(iprot thrift.TProtocol) error {
+func (p *Partition) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
 	}
@@ -4500,22 +5274,6 @@ func (p *PartitionInfo) Read(iprot thrift.TProtocol) error {
 			if err := p.ReadField3(iprot); err != nil {
 				return err
 			}
-		case 4:
-			if err := p.ReadField4(iprot); err != nil {
-				return err
-			}
-		case 5:
-			if err := p.ReadField5(iprot); err != nil {
-				return err
-			}
-		case 6:
-			if err := p.ReadField6(iprot); err != nil {
-				return err
-			}
-		case 7:
-			if err := p.ReadField7(iprot); err != nil {
-				return err
-			}
 		default:
 			if err := iprot.Skip(fieldTypeId); err != nil {
 				return err
@@ -4531,71 +5289,69 @@ func (p *PartitionInfo) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *PartitionInfo) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+func (p *Partition) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 1: %s", err)
 	} else {
-		p.PutRequestNumber = &v
+		p.PartitionId = &v
 	}
 	return nil
 }
 
-func (p *PartitionInfo) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 2: %s", err)
-	} else {
-		p.DeleteRequestNumber = &v
+func (p *Partition) ReadField2(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(Dictionary, size)
+	p.StartKey = tMap
+	for i := 0; i < size; i++ {
+		var _key23 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key23 = v
+		}
+		_val24 := &Datum{}
+		if err := _val24.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val24, err)
+		}
+		p.StartKey[_key23] = _val24
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
 	}
 	return nil
 }
 
-func (p *PartitionInfo) ReadField3(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 3: %s", err)
-	} else {
-		p.IncrementRequestNumber = &v
+func (p *Partition) ReadField3(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(Dictionary, size)
+	p.StopKey = tMap
+	for i := 0; i < size; i++ {
+		var _key25 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key25 = v
+		}
+		_val26 := &Datum{}
+		if err := _val26.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val26, err)
+		}
+		p.StopKey[_key25] = _val26
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
 	}
 	return nil
 }
 
-func (p *PartitionInfo) ReadField4(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 4: %s", err)
-	} else {
-		p.CollectedEditNumber = &v
-	}
-	return nil
-}
-
-func (p *PartitionInfo) ReadField5(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 5: %s", err)
-	} else {
-		p.RetrievedEditNumber = &v
-	}
-	return nil
-}
-
-func (p *PartitionInfo) ReadField6(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 6: %s", err)
-	} else {
-		p.FullScanNumber = &v
-	}
-	return nil
-}
-
-func (p *PartitionInfo) ReadField7(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 7: %s", err)
-	} else {
-		p.CompactionNumber = &v
-	}
-	return nil
-}
-
-func (p *PartitionInfo) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("PartitionInfo"); err != nil {
+func (p *Partition) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("Partition"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
@@ -4607,16 +5363,185 @@ func (p *PartitionInfo) Write(oprot thrift.TProtocol) error {
 	if err := p.writeField3(oprot); err != nil {
 		return err
 	}
-	if err := p.writeField4(oprot); err != nil {
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *Partition) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPartitionId() {
+		if err := oprot.WriteFieldBegin("partitionId", thrift.I32, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:partitionId: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.PartitionId)); err != nil {
+			return fmt.Errorf("%T.partitionId (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:partitionId: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Partition) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetStartKey() {
+		if err := oprot.WriteFieldBegin("startKey", thrift.MAP, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:startKey: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.StartKey)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.StartKey {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:startKey: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Partition) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetStopKey() {
+		if err := oprot.WriteFieldBegin("stopKey", thrift.MAP, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:stopKey: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.StopKey)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.StopKey {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:stopKey: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Partition) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("Partition(%+v)", *p)
+}
+
+type PartitionStatistics struct {
+	CollectedEditNumber *int64 `thrift:"collectedEditNumber,1" json:"collectedEditNumber"`
+	RetrievedEditNumber *int64 `thrift:"retrievedEditNumber,2" json:"retrievedEditNumber"`
+}
+
+func NewPartitionStatistics() *PartitionStatistics {
+	return &PartitionStatistics{}
+}
+
+var PartitionStatistics_CollectedEditNumber_DEFAULT int64
+
+func (p *PartitionStatistics) GetCollectedEditNumber() int64 {
+	if !p.IsSetCollectedEditNumber() {
+		return PartitionStatistics_CollectedEditNumber_DEFAULT
+	}
+	return *p.CollectedEditNumber
+}
+
+var PartitionStatistics_RetrievedEditNumber_DEFAULT int64
+
+func (p *PartitionStatistics) GetRetrievedEditNumber() int64 {
+	if !p.IsSetRetrievedEditNumber() {
+		return PartitionStatistics_RetrievedEditNumber_DEFAULT
+	}
+	return *p.RetrievedEditNumber
+}
+func (p *PartitionStatistics) IsSetCollectedEditNumber() bool {
+	return p.CollectedEditNumber != nil
+}
+
+func (p *PartitionStatistics) IsSetRetrievedEditNumber() bool {
+	return p.RetrievedEditNumber != nil
+}
+
+func (p *PartitionStatistics) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *PartitionStatistics) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.CollectedEditNumber = &v
+	}
+	return nil
+}
+
+func (p *PartitionStatistics) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.RetrievedEditNumber = &v
+	}
+	return nil
+}
+
+func (p *PartitionStatistics) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("PartitionStatistics"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
 		return err
 	}
-	if err := p.writeField5(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField6(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField7(oprot); err != nil {
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -4628,181 +5553,106 @@ func (p *PartitionInfo) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *PartitionInfo) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPutRequestNumber() {
-		if err := oprot.WriteFieldBegin("putRequestNumber", thrift.I64, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:putRequestNumber: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.PutRequestNumber)); err != nil {
-			return fmt.Errorf("%T.putRequestNumber (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:putRequestNumber: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *PartitionInfo) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDeleteRequestNumber() {
-		if err := oprot.WriteFieldBegin("deleteRequestNumber", thrift.I64, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:deleteRequestNumber: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.DeleteRequestNumber)); err != nil {
-			return fmt.Errorf("%T.deleteRequestNumber (2) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:deleteRequestNumber: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *PartitionInfo) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetIncrementRequestNumber() {
-		if err := oprot.WriteFieldBegin("incrementRequestNumber", thrift.I64, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:incrementRequestNumber: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.IncrementRequestNumber)); err != nil {
-			return fmt.Errorf("%T.incrementRequestNumber (3) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:incrementRequestNumber: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *PartitionInfo) writeField4(oprot thrift.TProtocol) (err error) {
+func (p *PartitionStatistics) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCollectedEditNumber() {
-		if err := oprot.WriteFieldBegin("collectedEditNumber", thrift.I64, 4); err != nil {
-			return fmt.Errorf("%T write field begin error 4:collectedEditNumber: %s", p, err)
+		if err := oprot.WriteFieldBegin("collectedEditNumber", thrift.I64, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:collectedEditNumber: %s", p, err)
 		}
 		if err := oprot.WriteI64(int64(*p.CollectedEditNumber)); err != nil {
-			return fmt.Errorf("%T.collectedEditNumber (4) field write error: %s", p, err)
+			return fmt.Errorf("%T.collectedEditNumber (1) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 4:collectedEditNumber: %s", p, err)
+			return fmt.Errorf("%T write field end error 1:collectedEditNumber: %s", p, err)
 		}
 	}
 	return err
 }
 
-func (p *PartitionInfo) writeField5(oprot thrift.TProtocol) (err error) {
+func (p *PartitionStatistics) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetRetrievedEditNumber() {
-		if err := oprot.WriteFieldBegin("retrievedEditNumber", thrift.I64, 5); err != nil {
-			return fmt.Errorf("%T write field begin error 5:retrievedEditNumber: %s", p, err)
+		if err := oprot.WriteFieldBegin("retrievedEditNumber", thrift.I64, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:retrievedEditNumber: %s", p, err)
 		}
 		if err := oprot.WriteI64(int64(*p.RetrievedEditNumber)); err != nil {
-			return fmt.Errorf("%T.retrievedEditNumber (5) field write error: %s", p, err)
+			return fmt.Errorf("%T.retrievedEditNumber (2) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 5:retrievedEditNumber: %s", p, err)
+			return fmt.Errorf("%T write field end error 2:retrievedEditNumber: %s", p, err)
 		}
 	}
 	return err
 }
 
-func (p *PartitionInfo) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetFullScanNumber() {
-		if err := oprot.WriteFieldBegin("fullScanNumber", thrift.I64, 6); err != nil {
-			return fmt.Errorf("%T write field begin error 6:fullScanNumber: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.FullScanNumber)); err != nil {
-			return fmt.Errorf("%T.fullScanNumber (6) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 6:fullScanNumber: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *PartitionInfo) writeField7(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCompactionNumber() {
-		if err := oprot.WriteFieldBegin("compactionNumber", thrift.I64, 7); err != nil {
-			return fmt.Errorf("%T write field begin error 7:compactionNumber: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.CompactionNumber)); err != nil {
-			return fmt.Errorf("%T.compactionNumber (7) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 7:compactionNumber: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *PartitionInfo) String() string {
+func (p *PartitionStatistics) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("PartitionInfo(%+v)", *p)
+	return fmt.Sprintf("PartitionStatistics(%+v)", *p)
 }
 
-type SubscribeInfo struct {
+type SubscriberStatistics struct {
 	ConsumedDataNumber  *int64 `thrift:"consumedDataNumber,1" json:"consumedDataNumber"`
 	CommittedDataNumber *int64 `thrift:"committedDataNumber,2" json:"committedDataNumber"`
 	ConsumedEditNumber  *int64 `thrift:"consumedEditNumber,3" json:"consumedEditNumber"`
 	CommittedEditNumber *int64 `thrift:"committedEditNumber,4" json:"committedEditNumber"`
 }
 
-func NewSubscribeInfo() *SubscribeInfo {
-	return &SubscribeInfo{}
+func NewSubscriberStatistics() *SubscriberStatistics {
+	return &SubscriberStatistics{}
 }
 
-var SubscribeInfo_ConsumedDataNumber_DEFAULT int64
+var SubscriberStatistics_ConsumedDataNumber_DEFAULT int64
 
-func (p *SubscribeInfo) GetConsumedDataNumber() int64 {
+func (p *SubscriberStatistics) GetConsumedDataNumber() int64 {
 	if !p.IsSetConsumedDataNumber() {
-		return SubscribeInfo_ConsumedDataNumber_DEFAULT
+		return SubscriberStatistics_ConsumedDataNumber_DEFAULT
 	}
 	return *p.ConsumedDataNumber
 }
 
-var SubscribeInfo_CommittedDataNumber_DEFAULT int64
+var SubscriberStatistics_CommittedDataNumber_DEFAULT int64
 
-func (p *SubscribeInfo) GetCommittedDataNumber() int64 {
+func (p *SubscriberStatistics) GetCommittedDataNumber() int64 {
 	if !p.IsSetCommittedDataNumber() {
-		return SubscribeInfo_CommittedDataNumber_DEFAULT
+		return SubscriberStatistics_CommittedDataNumber_DEFAULT
 	}
 	return *p.CommittedDataNumber
 }
 
-var SubscribeInfo_ConsumedEditNumber_DEFAULT int64
+var SubscriberStatistics_ConsumedEditNumber_DEFAULT int64
 
-func (p *SubscribeInfo) GetConsumedEditNumber() int64 {
+func (p *SubscriberStatistics) GetConsumedEditNumber() int64 {
 	if !p.IsSetConsumedEditNumber() {
-		return SubscribeInfo_ConsumedEditNumber_DEFAULT
+		return SubscriberStatistics_ConsumedEditNumber_DEFAULT
 	}
 	return *p.ConsumedEditNumber
 }
 
-var SubscribeInfo_CommittedEditNumber_DEFAULT int64
+var SubscriberStatistics_CommittedEditNumber_DEFAULT int64
 
-func (p *SubscribeInfo) GetCommittedEditNumber() int64 {
+func (p *SubscriberStatistics) GetCommittedEditNumber() int64 {
 	if !p.IsSetCommittedEditNumber() {
-		return SubscribeInfo_CommittedEditNumber_DEFAULT
+		return SubscriberStatistics_CommittedEditNumber_DEFAULT
 	}
 	return *p.CommittedEditNumber
 }
-func (p *SubscribeInfo) IsSetConsumedDataNumber() bool {
+func (p *SubscriberStatistics) IsSetConsumedDataNumber() bool {
 	return p.ConsumedDataNumber != nil
 }
 
-func (p *SubscribeInfo) IsSetCommittedDataNumber() bool {
+func (p *SubscriberStatistics) IsSetCommittedDataNumber() bool {
 	return p.CommittedDataNumber != nil
 }
 
-func (p *SubscribeInfo) IsSetConsumedEditNumber() bool {
+func (p *SubscriberStatistics) IsSetConsumedEditNumber() bool {
 	return p.ConsumedEditNumber != nil
 }
 
-func (p *SubscribeInfo) IsSetCommittedEditNumber() bool {
+func (p *SubscriberStatistics) IsSetCommittedEditNumber() bool {
 	return p.CommittedEditNumber != nil
 }
 
-func (p *SubscribeInfo) Read(iprot thrift.TProtocol) error {
+func (p *SubscriberStatistics) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
 	}
@@ -4846,7 +5696,7 @@ func (p *SubscribeInfo) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) ReadField1(iprot thrift.TProtocol) error {
+func (p *SubscriberStatistics) ReadField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 1: %s", err)
 	} else {
@@ -4855,7 +5705,7 @@ func (p *SubscribeInfo) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) ReadField2(iprot thrift.TProtocol) error {
+func (p *SubscriberStatistics) ReadField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
@@ -4864,7 +5714,7 @@ func (p *SubscribeInfo) ReadField2(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) ReadField3(iprot thrift.TProtocol) error {
+func (p *SubscriberStatistics) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
@@ -4873,7 +5723,7 @@ func (p *SubscribeInfo) ReadField3(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) ReadField4(iprot thrift.TProtocol) error {
+func (p *SubscriberStatistics) ReadField4(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 4: %s", err)
 	} else {
@@ -4882,8 +5732,8 @@ func (p *SubscribeInfo) ReadField4(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("SubscribeInfo"); err != nil {
+func (p *SubscriberStatistics) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("SubscriberStatistics"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
@@ -4907,7 +5757,7 @@ func (p *SubscribeInfo) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *SubscribeInfo) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *SubscriberStatistics) writeField1(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConsumedDataNumber() {
 		if err := oprot.WriteFieldBegin("consumedDataNumber", thrift.I64, 1); err != nil {
 			return fmt.Errorf("%T write field begin error 1:consumedDataNumber: %s", p, err)
@@ -4922,7 +5772,7 @@ func (p *SubscribeInfo) writeField1(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *SubscribeInfo) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *SubscriberStatistics) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCommittedDataNumber() {
 		if err := oprot.WriteFieldBegin("committedDataNumber", thrift.I64, 2); err != nil {
 			return fmt.Errorf("%T write field begin error 2:committedDataNumber: %s", p, err)
@@ -4937,7 +5787,7 @@ func (p *SubscribeInfo) writeField2(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *SubscribeInfo) writeField3(oprot thrift.TProtocol) (err error) {
+func (p *SubscriberStatistics) writeField3(oprot thrift.TProtocol) (err error) {
 	if p.IsSetConsumedEditNumber() {
 		if err := oprot.WriteFieldBegin("consumedEditNumber", thrift.I64, 3); err != nil {
 			return fmt.Errorf("%T write field begin error 3:consumedEditNumber: %s", p, err)
@@ -4952,7 +5802,7 @@ func (p *SubscribeInfo) writeField3(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *SubscribeInfo) writeField4(oprot thrift.TProtocol) (err error) {
+func (p *SubscriberStatistics) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetCommittedEditNumber() {
 		if err := oprot.WriteFieldBegin("committedEditNumber", thrift.I64, 4); err != nil {
 			return fmt.Errorf("%T write field begin error 4:committedEditNumber: %s", p, err)
@@ -4967,11 +5817,11 @@ func (p *SubscribeInfo) writeField4(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *SubscribeInfo) String() string {
+func (p *SubscriberStatistics) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("SubscribeInfo(%+v)", *p)
+	return fmt.Sprintf("SubscriberStatistics(%+v)", *p)
 }
 
 type GetRequest struct {
@@ -5073,17 +5923,17 @@ func (p *GetRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key23 string
+		var _key27 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key23 = v
+			_key27 = v
 		}
-		_val24 := &Datum{}
-		if err := _val24.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val24, err)
+		_val28 := &Datum{}
+		if err := _val28.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val28, err)
 		}
-		p.Keys[_key23] = _val24
+		p.Keys[_key27] = _val28
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5099,13 +5949,13 @@ func (p *GetRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem25 string
+		var _elem29 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem25 = v
+			_elem29 = v
 		}
-		p.Attributes = append(p.Attributes, _elem25)
+		p.Attributes = append(p.Attributes, _elem29)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -5263,17 +6113,17 @@ func (p *GetResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Item = tMap
 	for i := 0; i < size; i++ {
-		var _key26 string
+		var _key30 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key26 = v
+			_key30 = v
 		}
-		_val27 := &Datum{}
-		if err := _val27.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val27, err)
+		_val31 := &Datum{}
+		if err := _val31.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val31, err)
 		}
-		p.Item[_key26] = _val27
+		p.Item[_key30] = _val31
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5432,17 +6282,17 @@ func (p *PutRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key28 string
+		var _key32 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key28 = v
+			_key32 = v
 		}
-		_val29 := &Datum{}
-		if err := _val29.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val29, err)
+		_val33 := &Datum{}
+		if err := _val33.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val33, err)
 		}
-		p.Record[_key28] = _val29
+		p.Record[_key32] = _val33
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5741,17 +6591,17 @@ func (p *IncrementRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key30 string
+		var _key34 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key30 = v
+			_key34 = v
 		}
-		_val31 := &Datum{}
-		if err := _val31.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val31, err)
+		_val35 := &Datum{}
+		if err := _val35.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val35, err)
 		}
-		p.Keys[_key30] = _val31
+		p.Keys[_key34] = _val35
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5767,17 +6617,17 @@ func (p *IncrementRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key32 string
+		var _key36 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key32 = v
+			_key36 = v
 		}
-		_val33 := &Datum{}
-		if err := _val33.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val33, err)
+		_val37 := &Datum{}
+		if err := _val37.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val37, err)
 		}
-		p.Amounts[_key32] = _val33
+		p.Amounts[_key36] = _val37
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5938,17 +6788,17 @@ func (p *IncrementResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key34 string
+		var _key38 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key34 = v
+			_key38 = v
 		}
-		_val35 := &Datum{}
-		if err := _val35.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val35, err)
+		_val39 := &Datum{}
+		if err := _val39.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val39, err)
 		}
-		p.Amounts[_key34] = _val35
+		p.Amounts[_key38] = _val39
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6122,17 +6972,17 @@ func (p *RemoveRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key36 string
+		var _key40 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key36 = v
+			_key40 = v
 		}
-		_val37 := &Datum{}
-		if err := _val37.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val37, err)
+		_val41 := &Datum{}
+		if err := _val41.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val41, err)
 		}
-		p.Keys[_key36] = _val37
+		p.Keys[_key40] = _val41
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6148,13 +6998,13 @@ func (p *RemoveRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem38 string
+		var _elem42 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem38 = v
+			_elem42 = v
 		}
-		p.Attributes = append(p.Attributes, _elem38)
+		p.Attributes = append(p.Attributes, _elem42)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6769,6 +7619,7 @@ type ScanRequest struct {
 	Action          *ScanAction `thrift:"action,12" json:"action"`
 	SplitIndex      int32       `thrift:"splitIndex,13" json:"splitIndex"`
 	InitialStartKey Dictionary  `thrift:"initialStartKey,14" json:"initialStartKey"`
+	ScanInOneSplit  bool        `thrift:"scanInOneSplit,15" json:"scanInOneSplit"`
 }
 
 func NewScanRequest() *ScanRequest {
@@ -6876,6 +7727,12 @@ var ScanRequest_InitialStartKey_DEFAULT Dictionary
 func (p *ScanRequest) GetInitialStartKey() Dictionary {
 	return p.InitialStartKey
 }
+
+var ScanRequest_ScanInOneSplit_DEFAULT bool = false
+
+func (p *ScanRequest) GetScanInOneSplit() bool {
+	return p.ScanInOneSplit
+}
 func (p *ScanRequest) IsSetTableName() bool {
 	return p.TableName != nil
 }
@@ -6930,6 +7787,10 @@ func (p *ScanRequest) IsSetSplitIndex() bool {
 
 func (p *ScanRequest) IsSetInitialStartKey() bool {
 	return p.InitialStartKey != nil
+}
+
+func (p *ScanRequest) IsSetScanInOneSplit() bool {
+	return p.ScanInOneSplit != ScanRequest_ScanInOneSplit_DEFAULT
 }
 
 func (p *ScanRequest) Read(iprot thrift.TProtocol) error {
@@ -7001,6 +7862,10 @@ func (p *ScanRequest) Read(iprot thrift.TProtocol) error {
 			if err := p.ReadField14(iprot); err != nil {
 				return err
 			}
+		case 15:
+			if err := p.ReadField15(iprot); err != nil {
+				return err
+			}
 		default:
 			if err := iprot.Skip(fieldTypeId); err != nil {
 				return err
@@ -7042,17 +7907,17 @@ func (p *ScanRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key39 string
+		var _key43 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key39 = v
+			_key43 = v
 		}
-		_val40 := &Datum{}
-		if err := _val40.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val40, err)
+		_val44 := &Datum{}
+		if err := _val44.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val44, err)
 		}
-		p.StartKey[_key39] = _val40
+		p.StartKey[_key43] = _val44
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7068,17 +7933,17 @@ func (p *ScanRequest) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key41 string
+		var _key45 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key41 = v
+			_key45 = v
 		}
-		_val42 := &Datum{}
-		if err := _val42.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val42, err)
+		_val46 := &Datum{}
+		if err := _val46.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val46, err)
 		}
-		p.StopKey[_key41] = _val42
+		p.StopKey[_key45] = _val46
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7094,13 +7959,13 @@ func (p *ScanRequest) ReadField5(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem43 string
+		var _elem47 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem43 = v
+			_elem47 = v
 		}
-		p.Attributes = append(p.Attributes, _elem43)
+		p.Attributes = append(p.Attributes, _elem47)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7187,20 +8052,29 @@ func (p *ScanRequest) ReadField14(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.InitialStartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key44 string
+		var _key48 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key44 = v
+			_key48 = v
 		}
-		_val45 := &Datum{}
-		if err := _val45.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val45, err)
+		_val49 := &Datum{}
+		if err := _val49.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val49, err)
 		}
-		p.InitialStartKey[_key44] = _val45
+		p.InitialStartKey[_key48] = _val49
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
+	}
+	return nil
+}
+
+func (p *ScanRequest) ReadField15(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 15: %s", err)
+	} else {
+		p.ScanInOneSplit = v
 	}
 	return nil
 }
@@ -7249,6 +8123,9 @@ func (p *ScanRequest) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField14(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField15(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -7511,6 +8388,21 @@ func (p *ScanRequest) writeField14(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
+func (p *ScanRequest) writeField15(oprot thrift.TProtocol) (err error) {
+	if p.IsSetScanInOneSplit() {
+		if err := oprot.WriteFieldBegin("scanInOneSplit", thrift.BOOL, 15); err != nil {
+			return fmt.Errorf("%T write field begin error 15:scanInOneSplit: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(p.ScanInOneSplit)); err != nil {
+			return fmt.Errorf("%T.scanInOneSplit (15) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 15:scanInOneSplit: %s", p, err)
+		}
+	}
+	return err
+}
+
 func (p *ScanRequest) String() string {
 	if p == nil {
 		return "<nil>"
@@ -7522,11 +8414,13 @@ type ScanResult_ struct {
 	NextStartKey   Dictionary          `thrift:"nextStartKey,1" json:"nextStartKey"`
 	Records        []map[string]*Datum `thrift:"records,2" json:"records"`
 	Throttled      *bool               `thrift:"throttled,3" json:"throttled"`
-	NextSplitIndex *int32              `thrift:"nextSplitIndex,4" json:"nextSplitIndex"`
+	NextSplitIndex int32               `thrift:"nextSplitIndex,4" json:"nextSplitIndex"`
 }
 
 func NewScanResult_() *ScanResult_ {
-	return &ScanResult_{}
+	return &ScanResult_{
+		NextSplitIndex: -1,
+	}
 }
 
 var ScanResult__NextStartKey_DEFAULT Dictionary
@@ -7550,13 +8444,10 @@ func (p *ScanResult_) GetThrottled() bool {
 	return *p.Throttled
 }
 
-var ScanResult__NextSplitIndex_DEFAULT int32
+var ScanResult__NextSplitIndex_DEFAULT int32 = -1
 
 func (p *ScanResult_) GetNextSplitIndex() int32 {
-	if !p.IsSetNextSplitIndex() {
-		return ScanResult__NextSplitIndex_DEFAULT
-	}
-	return *p.NextSplitIndex
+	return p.NextSplitIndex
 }
 func (p *ScanResult_) IsSetNextStartKey() bool {
 	return p.NextStartKey != nil
@@ -7571,7 +8462,7 @@ func (p *ScanResult_) IsSetThrottled() bool {
 }
 
 func (p *ScanResult_) IsSetNextSplitIndex() bool {
-	return p.NextSplitIndex != nil
+	return p.NextSplitIndex != ScanResult__NextSplitIndex_DEFAULT
 }
 
 func (p *ScanResult_) Read(iprot thrift.TProtocol) error {
@@ -7626,17 +8517,17 @@ func (p *ScanResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.NextStartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key46 string
+		var _key50 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key46 = v
+			_key50 = v
 		}
-		_val47 := &Datum{}
-		if err := _val47.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val47, err)
+		_val51 := &Datum{}
+		if err := _val51.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val51, err)
 		}
-		p.NextStartKey[_key46] = _val47
+		p.NextStartKey[_key50] = _val51
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7657,24 +8548,24 @@ func (p *ScanResult_) ReadField2(iprot thrift.TProtocol) error {
 			return fmt.Errorf("error reading map begin: %s", err)
 		}
 		tMap := make(Dictionary, size)
-		_elem48 := tMap
+		_elem52 := tMap
 		for i := 0; i < size; i++ {
-			var _key49 string
+			var _key53 string
 			if v, err := iprot.ReadString(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
-				_key49 = v
+				_key53 = v
 			}
-			_val50 := &Datum{}
-			if err := _val50.Read(iprot); err != nil {
-				return fmt.Errorf("%T error reading struct: %s", _val50, err)
+			_val54 := &Datum{}
+			if err := _val54.Read(iprot); err != nil {
+				return fmt.Errorf("%T error reading struct: %s", _val54, err)
 			}
-			_elem48[_key49] = _val50
+			_elem52[_key53] = _val54
 		}
 		if err := iprot.ReadMapEnd(); err != nil {
 			return fmt.Errorf("error reading map end: %s", err)
 		}
-		p.Records = append(p.Records, _elem48)
+		p.Records = append(p.Records, _elem52)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7695,7 +8586,7 @@ func (p *ScanResult_) ReadField4(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 4: %s", err)
 	} else {
-		p.NextSplitIndex = &v
+		p.NextSplitIndex = v
 	}
 	return nil
 }
@@ -7805,7 +8696,7 @@ func (p *ScanResult_) writeField4(oprot thrift.TProtocol) (err error) {
 		if err := oprot.WriteFieldBegin("nextSplitIndex", thrift.I32, 4); err != nil {
 			return fmt.Errorf("%T write field begin error 4:nextSplitIndex: %s", p, err)
 		}
-		if err := oprot.WriteI32(int32(*p.NextSplitIndex)); err != nil {
+		if err := oprot.WriteI32(int32(p.NextSplitIndex)); err != nil {
 			return fmt.Errorf("%T.nextSplitIndex (4) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -8486,11 +9377,11 @@ func (p *BatchRequest) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchRequestItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem51 := &BatchRequestItem{}
-		if err := _elem51.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem51, err)
+		_elem55 := &BatchRequestItem{}
+		if err := _elem55.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
 		}
-		p.Items = append(p.Items, _elem51)
+		p.Items = append(p.Items, _elem55)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8601,11 +9492,11 @@ func (p *BatchResult_) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchResultItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem52 := &BatchResultItem{}
-		if err := _elem52.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem52, err)
+		_elem56 := &BatchResultItem{}
+		if err := _elem56.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem56, err)
 		}
-		p.Items = append(p.Items, _elem52)
+		p.Items = append(p.Items, _elem56)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8807,6 +9698,7 @@ type RowEdit struct {
 	Keys          Dictionary     `thrift:"keys,1" json:"keys"`
 	Edits         EditDictionary `thrift:"edits,2" json:"edits"`
 	ConsumeOffset *int64         `thrift:"consumeOffset,3" json:"consumeOffset"`
+	DeleteRow     *bool          `thrift:"deleteRow,4" json:"deleteRow"`
 }
 
 func NewRowEdit() *RowEdit {
@@ -8833,6 +9725,15 @@ func (p *RowEdit) GetConsumeOffset() int64 {
 	}
 	return *p.ConsumeOffset
 }
+
+var RowEdit_DeleteRow_DEFAULT bool
+
+func (p *RowEdit) GetDeleteRow() bool {
+	if !p.IsSetDeleteRow() {
+		return RowEdit_DeleteRow_DEFAULT
+	}
+	return *p.DeleteRow
+}
 func (p *RowEdit) IsSetKeys() bool {
 	return p.Keys != nil
 }
@@ -8843,6 +9744,10 @@ func (p *RowEdit) IsSetEdits() bool {
 
 func (p *RowEdit) IsSetConsumeOffset() bool {
 	return p.ConsumeOffset != nil
+}
+
+func (p *RowEdit) IsSetDeleteRow() bool {
+	return p.DeleteRow != nil
 }
 
 func (p *RowEdit) Read(iprot thrift.TProtocol) error {
@@ -8870,6 +9775,10 @@ func (p *RowEdit) Read(iprot thrift.TProtocol) error {
 			if err := p.ReadField3(iprot); err != nil {
 				return err
 			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
 		default:
 			if err := iprot.Skip(fieldTypeId); err != nil {
 				return err
@@ -8893,17 +9802,17 @@ func (p *RowEdit) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key53 string
+		var _key57 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key53 = v
+			_key57 = v
 		}
-		_val54 := &Datum{}
-		if err := _val54.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val54, err)
+		_val58 := &Datum{}
+		if err := _val58.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val58, err)
 		}
-		p.Keys[_key53] = _val54
+		p.Keys[_key57] = _val58
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -8919,17 +9828,17 @@ func (p *RowEdit) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(EditDictionary, size)
 	p.Edits = tMap
 	for i := 0; i < size; i++ {
-		var _key55 string
+		var _key59 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key55 = v
+			_key59 = v
 		}
-		_val56 := &EditDatum{}
-		if err := _val56.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val56, err)
+		_val60 := &EditDatum{}
+		if err := _val60.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val60, err)
 		}
-		p.Edits[_key55] = _val56
+		p.Edits[_key59] = _val60
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -8946,6 +9855,15 @@ func (p *RowEdit) ReadField3(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *RowEdit) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		p.DeleteRow = &v
+	}
+	return nil
+}
+
 func (p *RowEdit) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("RowEdit"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -8957,6 +9875,9 @@ func (p *RowEdit) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9035,6 +9956,21 @@ func (p *RowEdit) writeField3(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
+func (p *RowEdit) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDeleteRow() {
+		if err := oprot.WriteFieldBegin("deleteRow", thrift.BOOL, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:deleteRow: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.DeleteRow)); err != nil {
+			return fmt.Errorf("%T.deleteRow (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:deleteRow: %s", p, err)
+		}
+	}
+	return err
+}
+
 func (p *RowEdit) String() string {
 	if p == nil {
 		return "<nil>"
@@ -9043,11 +9979,11 @@ func (p *RowEdit) String() string {
 }
 
 type DataConsumeRequest struct {
-	TableName     *string    `thrift:"tableName,1" json:"tableName"`
-	PartitionId   *int64     `thrift:"partitionId,2" json:"partitionId"`
-	SubscriberId  *string    `thrift:"subscriberId,3" json:"subscriberId"`
-	ConsumeNumber *int32     `thrift:"consumeNumber,4" json:"consumeNumber"`
-	ConsumeOffset Dictionary `thrift:"consumeOffset,5" json:"consumeOffset"`
+	TableName      *string    `thrift:"tableName,1" json:"tableName"`
+	PartitionId    *int32     `thrift:"partitionId,2" json:"partitionId"`
+	SubscriberName *string    `thrift:"subscriberName,3" json:"subscriberName"`
+	ConsumeNumber  *int32     `thrift:"consumeNumber,4" json:"consumeNumber"`
+	ConsumeOffset  Dictionary `thrift:"consumeOffset,5" json:"consumeOffset"`
 }
 
 func NewDataConsumeRequest() *DataConsumeRequest {
@@ -9063,22 +9999,22 @@ func (p *DataConsumeRequest) GetTableName() string {
 	return *p.TableName
 }
 
-var DataConsumeRequest_PartitionId_DEFAULT int64
+var DataConsumeRequest_PartitionId_DEFAULT int32
 
-func (p *DataConsumeRequest) GetPartitionId() int64 {
+func (p *DataConsumeRequest) GetPartitionId() int32 {
 	if !p.IsSetPartitionId() {
 		return DataConsumeRequest_PartitionId_DEFAULT
 	}
 	return *p.PartitionId
 }
 
-var DataConsumeRequest_SubscriberId_DEFAULT string
+var DataConsumeRequest_SubscriberName_DEFAULT string
 
-func (p *DataConsumeRequest) GetSubscriberId() string {
-	if !p.IsSetSubscriberId() {
-		return DataConsumeRequest_SubscriberId_DEFAULT
+func (p *DataConsumeRequest) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return DataConsumeRequest_SubscriberName_DEFAULT
 	}
-	return *p.SubscriberId
+	return *p.SubscriberName
 }
 
 var DataConsumeRequest_ConsumeNumber_DEFAULT int32
@@ -9103,8 +10039,8 @@ func (p *DataConsumeRequest) IsSetPartitionId() bool {
 	return p.PartitionId != nil
 }
 
-func (p *DataConsumeRequest) IsSetSubscriberId() bool {
-	return p.SubscriberId != nil
+func (p *DataConsumeRequest) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
 }
 
 func (p *DataConsumeRequest) IsSetConsumeNumber() bool {
@@ -9173,7 +10109,7 @@ func (p *DataConsumeRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *DataConsumeRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
 		p.PartitionId = &v
@@ -9185,7 +10121,7 @@ func (p *DataConsumeRequest) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
-		p.SubscriberId = &v
+		p.SubscriberName = &v
 	}
 	return nil
 }
@@ -9207,17 +10143,17 @@ func (p *DataConsumeRequest) ReadField5(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.ConsumeOffset = tMap
 	for i := 0; i < size; i++ {
-		var _key57 string
+		var _key61 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key57 = v
+			_key61 = v
 		}
-		_val58 := &Datum{}
-		if err := _val58.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val58, err)
+		_val62 := &Datum{}
+		if err := _val62.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val62, err)
 		}
-		p.ConsumeOffset[_key57] = _val58
+		p.ConsumeOffset[_key61] = _val62
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -9270,10 +10206,10 @@ func (p *DataConsumeRequest) writeField1(oprot thrift.TProtocol) (err error) {
 
 func (p *DataConsumeRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPartitionId() {
-		if err := oprot.WriteFieldBegin("partitionId", thrift.I64, 2); err != nil {
+		if err := oprot.WriteFieldBegin("partitionId", thrift.I32, 2); err != nil {
 			return fmt.Errorf("%T write field begin error 2:partitionId: %s", p, err)
 		}
-		if err := oprot.WriteI64(int64(*p.PartitionId)); err != nil {
+		if err := oprot.WriteI32(int32(*p.PartitionId)); err != nil {
 			return fmt.Errorf("%T.partitionId (2) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -9284,15 +10220,15 @@ func (p *DataConsumeRequest) writeField2(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *DataConsumeRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubscriberId() {
-		if err := oprot.WriteFieldBegin("subscriberId", thrift.STRING, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:subscriberId: %s", p, err)
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:subscriberName: %s", p, err)
 		}
-		if err := oprot.WriteString(string(*p.SubscriberId)); err != nil {
-			return fmt.Errorf("%T.subscriberId (3) field write error: %s", p, err)
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (3) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:subscriberId: %s", p, err)
+			return fmt.Errorf("%T write field end error 3:subscriberName: %s", p, err)
 		}
 	}
 	return err
@@ -9451,17 +10387,17 @@ func (p *DataConsumeResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.NextConsumeOffset = tMap
 	for i := 0; i < size; i++ {
-		var _key59 string
+		var _key63 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key59 = v
+			_key63 = v
 		}
-		_val60 := &Datum{}
-		if err := _val60.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val60, err)
+		_val64 := &Datum{}
+		if err := _val64.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val64, err)
 		}
-		p.NextConsumeOffset[_key59] = _val60
+		p.NextConsumeOffset[_key63] = _val64
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -9482,24 +10418,24 @@ func (p *DataConsumeResult_) ReadField2(iprot thrift.TProtocol) error {
 			return fmt.Errorf("error reading map begin: %s", err)
 		}
 		tMap := make(Dictionary, size)
-		_elem61 := tMap
+		_elem65 := tMap
 		for i := 0; i < size; i++ {
-			var _key62 string
+			var _key66 string
 			if v, err := iprot.ReadString(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
-				_key62 = v
+				_key66 = v
 			}
-			_val63 := &Datum{}
-			if err := _val63.Read(iprot); err != nil {
-				return fmt.Errorf("%T error reading struct: %s", _val63, err)
+			_val67 := &Datum{}
+			if err := _val67.Read(iprot); err != nil {
+				return fmt.Errorf("%T error reading struct: %s", _val67, err)
 			}
-			_elem61[_key62] = _val63
+			_elem65[_key66] = _val67
 		}
 		if err := iprot.ReadMapEnd(); err != nil {
 			return fmt.Errorf("error reading map end: %s", err)
 		}
-		p.Records = append(p.Records, _elem61)
+		p.Records = append(p.Records, _elem65)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -9515,13 +10451,13 @@ func (p *DataConsumeResult_) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make([]string, 0, size)
 	p.Keys = tSlice
 	for i := 0; i < size; i++ {
-		var _elem64 string
+		var _elem68 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem64 = v
+			_elem68 = v
 		}
-		p.Keys = append(p.Keys, _elem64)
+		p.Keys = append(p.Keys, _elem68)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -9669,11 +10605,11 @@ func (p *DataConsumeResult_) String() string {
 }
 
 type EditConsumeRequest struct {
-	TableName     *string `thrift:"tableName,1" json:"tableName"`
-	PartitionId   *int64  `thrift:"partitionId,2" json:"partitionId"`
-	SubscriberId  *string `thrift:"subscriberId,3" json:"subscriberId"`
-	ConsumeNumber *int32  `thrift:"consumeNumber,4" json:"consumeNumber"`
-	ConsumeOffset int64   `thrift:"consumeOffset,5" json:"consumeOffset"`
+	TableName      *string `thrift:"tableName,1" json:"tableName"`
+	PartitionId    *int32  `thrift:"partitionId,2" json:"partitionId"`
+	SubscriberName *string `thrift:"subscriberName,3" json:"subscriberName"`
+	ConsumeNumber  *int32  `thrift:"consumeNumber,4" json:"consumeNumber"`
+	ConsumeOffset  int64   `thrift:"consumeOffset,5" json:"consumeOffset"`
 }
 
 func NewEditConsumeRequest() *EditConsumeRequest {
@@ -9691,22 +10627,22 @@ func (p *EditConsumeRequest) GetTableName() string {
 	return *p.TableName
 }
 
-var EditConsumeRequest_PartitionId_DEFAULT int64
+var EditConsumeRequest_PartitionId_DEFAULT int32
 
-func (p *EditConsumeRequest) GetPartitionId() int64 {
+func (p *EditConsumeRequest) GetPartitionId() int32 {
 	if !p.IsSetPartitionId() {
 		return EditConsumeRequest_PartitionId_DEFAULT
 	}
 	return *p.PartitionId
 }
 
-var EditConsumeRequest_SubscriberId_DEFAULT string
+var EditConsumeRequest_SubscriberName_DEFAULT string
 
-func (p *EditConsumeRequest) GetSubscriberId() string {
-	if !p.IsSetSubscriberId() {
-		return EditConsumeRequest_SubscriberId_DEFAULT
+func (p *EditConsumeRequest) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return EditConsumeRequest_SubscriberName_DEFAULT
 	}
-	return *p.SubscriberId
+	return *p.SubscriberName
 }
 
 var EditConsumeRequest_ConsumeNumber_DEFAULT int32
@@ -9731,8 +10667,8 @@ func (p *EditConsumeRequest) IsSetPartitionId() bool {
 	return p.PartitionId != nil
 }
 
-func (p *EditConsumeRequest) IsSetSubscriberId() bool {
-	return p.SubscriberId != nil
+func (p *EditConsumeRequest) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
 }
 
 func (p *EditConsumeRequest) IsSetConsumeNumber() bool {
@@ -9801,7 +10737,7 @@ func (p *EditConsumeRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *EditConsumeRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
 		p.PartitionId = &v
@@ -9813,7 +10749,7 @@ func (p *EditConsumeRequest) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
-		p.SubscriberId = &v
+		p.SubscriberName = &v
 	}
 	return nil
 }
@@ -9881,10 +10817,10 @@ func (p *EditConsumeRequest) writeField1(oprot thrift.TProtocol) (err error) {
 
 func (p *EditConsumeRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPartitionId() {
-		if err := oprot.WriteFieldBegin("partitionId", thrift.I64, 2); err != nil {
+		if err := oprot.WriteFieldBegin("partitionId", thrift.I32, 2); err != nil {
 			return fmt.Errorf("%T write field begin error 2:partitionId: %s", p, err)
 		}
-		if err := oprot.WriteI64(int64(*p.PartitionId)); err != nil {
+		if err := oprot.WriteI32(int32(*p.PartitionId)); err != nil {
 			return fmt.Errorf("%T.partitionId (2) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -9895,15 +10831,15 @@ func (p *EditConsumeRequest) writeField2(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *EditConsumeRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubscriberId() {
-		if err := oprot.WriteFieldBegin("subscriberId", thrift.STRING, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:subscriberId: %s", p, err)
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:subscriberName: %s", p, err)
 		}
-		if err := oprot.WriteString(string(*p.SubscriberId)); err != nil {
-			return fmt.Errorf("%T.subscriberId (3) field write error: %s", p, err)
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (3) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:subscriberId: %s", p, err)
+			return fmt.Errorf("%T write field end error 3:subscriberName: %s", p, err)
 		}
 	}
 	return err
@@ -10048,11 +10984,11 @@ func (p *EditConsumeResult_) ReadField2(iprot thrift.TProtocol) error {
 	tSlice := make([]*RowEdit, 0, size)
 	p.RowEdits = tSlice
 	for i := 0; i < size; i++ {
-		_elem65 := &RowEdit{}
-		if err := _elem65.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem65, err)
+		_elem69 := &RowEdit{}
+		if err := _elem69.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem69, err)
 		}
-		p.RowEdits = append(p.RowEdits, _elem65)
+		p.RowEdits = append(p.RowEdits, _elem69)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -10153,8 +11089,8 @@ func (p *EditConsumeResult_) String() string {
 
 type DataCommitRequest struct {
 	TableName          *string    `thrift:"tableName,1" json:"tableName"`
-	PartitionId        *int64     `thrift:"partitionId,2" json:"partitionId"`
-	SubscriberId       *string    `thrift:"subscriberId,3" json:"subscriberId"`
+	PartitionId        *int32     `thrift:"partitionId,2" json:"partitionId"`
+	SubscriberName     *string    `thrift:"subscriberName,3" json:"subscriberName"`
 	LastConsumedOffset Dictionary `thrift:"lastConsumedOffset,4" json:"lastConsumedOffset"`
 	CommitNumber       *int32     `thrift:"commitNumber,5" json:"commitNumber"`
 }
@@ -10172,22 +11108,22 @@ func (p *DataCommitRequest) GetTableName() string {
 	return *p.TableName
 }
 
-var DataCommitRequest_PartitionId_DEFAULT int64
+var DataCommitRequest_PartitionId_DEFAULT int32
 
-func (p *DataCommitRequest) GetPartitionId() int64 {
+func (p *DataCommitRequest) GetPartitionId() int32 {
 	if !p.IsSetPartitionId() {
 		return DataCommitRequest_PartitionId_DEFAULT
 	}
 	return *p.PartitionId
 }
 
-var DataCommitRequest_SubscriberId_DEFAULT string
+var DataCommitRequest_SubscriberName_DEFAULT string
 
-func (p *DataCommitRequest) GetSubscriberId() string {
-	if !p.IsSetSubscriberId() {
-		return DataCommitRequest_SubscriberId_DEFAULT
+func (p *DataCommitRequest) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return DataCommitRequest_SubscriberName_DEFAULT
 	}
-	return *p.SubscriberId
+	return *p.SubscriberName
 }
 
 var DataCommitRequest_LastConsumedOffset_DEFAULT Dictionary
@@ -10212,8 +11148,8 @@ func (p *DataCommitRequest) IsSetPartitionId() bool {
 	return p.PartitionId != nil
 }
 
-func (p *DataCommitRequest) IsSetSubscriberId() bool {
-	return p.SubscriberId != nil
+func (p *DataCommitRequest) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
 }
 
 func (p *DataCommitRequest) IsSetLastConsumedOffset() bool {
@@ -10282,7 +11218,7 @@ func (p *DataCommitRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *DataCommitRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
 		p.PartitionId = &v
@@ -10294,7 +11230,7 @@ func (p *DataCommitRequest) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
-		p.SubscriberId = &v
+		p.SubscriberName = &v
 	}
 	return nil
 }
@@ -10307,17 +11243,17 @@ func (p *DataCommitRequest) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.LastConsumedOffset = tMap
 	for i := 0; i < size; i++ {
-		var _key66 string
+		var _key70 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key66 = v
+			_key70 = v
 		}
-		_val67 := &Datum{}
-		if err := _val67.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val67, err)
+		_val71 := &Datum{}
+		if err := _val71.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val71, err)
 		}
-		p.LastConsumedOffset[_key66] = _val67
+		p.LastConsumedOffset[_key70] = _val71
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -10379,10 +11315,10 @@ func (p *DataCommitRequest) writeField1(oprot thrift.TProtocol) (err error) {
 
 func (p *DataCommitRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPartitionId() {
-		if err := oprot.WriteFieldBegin("partitionId", thrift.I64, 2); err != nil {
+		if err := oprot.WriteFieldBegin("partitionId", thrift.I32, 2); err != nil {
 			return fmt.Errorf("%T write field begin error 2:partitionId: %s", p, err)
 		}
-		if err := oprot.WriteI64(int64(*p.PartitionId)); err != nil {
+		if err := oprot.WriteI32(int32(*p.PartitionId)); err != nil {
 			return fmt.Errorf("%T.partitionId (2) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -10393,15 +11329,15 @@ func (p *DataCommitRequest) writeField2(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *DataCommitRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubscriberId() {
-		if err := oprot.WriteFieldBegin("subscriberId", thrift.STRING, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:subscriberId: %s", p, err)
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:subscriberName: %s", p, err)
 		}
-		if err := oprot.WriteString(string(*p.SubscriberId)); err != nil {
-			return fmt.Errorf("%T.subscriberId (3) field write error: %s", p, err)
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (3) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:subscriberId: %s", p, err)
+			return fmt.Errorf("%T write field end error 3:subscriberName: %s", p, err)
 		}
 	}
 	return err
@@ -10556,8 +11492,8 @@ func (p *DataCommitResult_) String() string {
 
 type EditCommitRequest struct {
 	TableName          *string `thrift:"tableName,1" json:"tableName"`
-	PartitionId        *int64  `thrift:"partitionId,2" json:"partitionId"`
-	SubscriberId       *string `thrift:"subscriberId,3" json:"subscriberId"`
+	PartitionId        *int32  `thrift:"partitionId,2" json:"partitionId"`
+	SubscriberName     *string `thrift:"subscriberName,3" json:"subscriberName"`
 	LastConsumedOffset *int64  `thrift:"lastConsumedOffset,4" json:"lastConsumedOffset"`
 	CommitNumber       *int32  `thrift:"commitNumber,5" json:"commitNumber"`
 }
@@ -10575,22 +11511,22 @@ func (p *EditCommitRequest) GetTableName() string {
 	return *p.TableName
 }
 
-var EditCommitRequest_PartitionId_DEFAULT int64
+var EditCommitRequest_PartitionId_DEFAULT int32
 
-func (p *EditCommitRequest) GetPartitionId() int64 {
+func (p *EditCommitRequest) GetPartitionId() int32 {
 	if !p.IsSetPartitionId() {
 		return EditCommitRequest_PartitionId_DEFAULT
 	}
 	return *p.PartitionId
 }
 
-var EditCommitRequest_SubscriberId_DEFAULT string
+var EditCommitRequest_SubscriberName_DEFAULT string
 
-func (p *EditCommitRequest) GetSubscriberId() string {
-	if !p.IsSetSubscriberId() {
-		return EditCommitRequest_SubscriberId_DEFAULT
+func (p *EditCommitRequest) GetSubscriberName() string {
+	if !p.IsSetSubscriberName() {
+		return EditCommitRequest_SubscriberName_DEFAULT
 	}
-	return *p.SubscriberId
+	return *p.SubscriberName
 }
 
 var EditCommitRequest_LastConsumedOffset_DEFAULT int64
@@ -10618,8 +11554,8 @@ func (p *EditCommitRequest) IsSetPartitionId() bool {
 	return p.PartitionId != nil
 }
 
-func (p *EditCommitRequest) IsSetSubscriberId() bool {
-	return p.SubscriberId != nil
+func (p *EditCommitRequest) IsSetSubscriberName() bool {
+	return p.SubscriberName != nil
 }
 
 func (p *EditCommitRequest) IsSetLastConsumedOffset() bool {
@@ -10688,7 +11624,7 @@ func (p *EditCommitRequest) ReadField1(iprot thrift.TProtocol) error {
 }
 
 func (p *EditCommitRequest) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+	if v, err := iprot.ReadI32(); err != nil {
 		return fmt.Errorf("error reading field 2: %s", err)
 	} else {
 		p.PartitionId = &v
@@ -10700,7 +11636,7 @@ func (p *EditCommitRequest) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 3: %s", err)
 	} else {
-		p.SubscriberId = &v
+		p.SubscriberName = &v
 	}
 	return nil
 }
@@ -10768,10 +11704,10 @@ func (p *EditCommitRequest) writeField1(oprot thrift.TProtocol) (err error) {
 
 func (p *EditCommitRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPartitionId() {
-		if err := oprot.WriteFieldBegin("partitionId", thrift.I64, 2); err != nil {
+		if err := oprot.WriteFieldBegin("partitionId", thrift.I32, 2); err != nil {
 			return fmt.Errorf("%T write field begin error 2:partitionId: %s", p, err)
 		}
-		if err := oprot.WriteI64(int64(*p.PartitionId)); err != nil {
+		if err := oprot.WriteI32(int32(*p.PartitionId)); err != nil {
 			return fmt.Errorf("%T.partitionId (2) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
@@ -10782,15 +11718,15 @@ func (p *EditCommitRequest) writeField2(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *EditCommitRequest) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSubscriberId() {
-		if err := oprot.WriteFieldBegin("subscriberId", thrift.STRING, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:subscriberId: %s", p, err)
+	if p.IsSetSubscriberName() {
+		if err := oprot.WriteFieldBegin("subscriberName", thrift.STRING, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:subscriberName: %s", p, err)
 		}
-		if err := oprot.WriteString(string(*p.SubscriberId)); err != nil {
-			return fmt.Errorf("%T.subscriberId (3) field write error: %s", p, err)
+		if err := oprot.WriteString(string(*p.SubscriberName)); err != nil {
+			return fmt.Errorf("%T.subscriberName (3) field write error: %s", p, err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:subscriberId: %s", p, err)
+			return fmt.Errorf("%T write field end error 3:subscriberName: %s", p, err)
 		}
 	}
 	return err
@@ -10930,4 +11866,432 @@ func (p *EditCommitResult_) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("EditCommitResult_(%+v)", *p)
+}
+
+type ConsumedOffset struct {
+	ConsumedDataOffset  Dictionary `thrift:"consumedDataOffset,1" json:"consumedDataOffset"`
+	DataConsumeFinished *bool      `thrift:"dataConsumeFinished,2" json:"dataConsumeFinished"`
+	ConsumedEditOffset  *int64     `thrift:"consumedEditOffset,3" json:"consumedEditOffset"`
+}
+
+func NewConsumedOffset() *ConsumedOffset {
+	return &ConsumedOffset{}
+}
+
+var ConsumedOffset_ConsumedDataOffset_DEFAULT Dictionary
+
+func (p *ConsumedOffset) GetConsumedDataOffset() Dictionary {
+	return p.ConsumedDataOffset
+}
+
+var ConsumedOffset_DataConsumeFinished_DEFAULT bool
+
+func (p *ConsumedOffset) GetDataConsumeFinished() bool {
+	if !p.IsSetDataConsumeFinished() {
+		return ConsumedOffset_DataConsumeFinished_DEFAULT
+	}
+	return *p.DataConsumeFinished
+}
+
+var ConsumedOffset_ConsumedEditOffset_DEFAULT int64
+
+func (p *ConsumedOffset) GetConsumedEditOffset() int64 {
+	if !p.IsSetConsumedEditOffset() {
+		return ConsumedOffset_ConsumedEditOffset_DEFAULT
+	}
+	return *p.ConsumedEditOffset
+}
+func (p *ConsumedOffset) IsSetConsumedDataOffset() bool {
+	return p.ConsumedDataOffset != nil
+}
+
+func (p *ConsumedOffset) IsSetDataConsumeFinished() bool {
+	return p.DataConsumeFinished != nil
+}
+
+func (p *ConsumedOffset) IsSetConsumedEditOffset() bool {
+	return p.ConsumedEditOffset != nil
+}
+
+func (p *ConsumedOffset) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ConsumedOffset) ReadField1(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(Dictionary, size)
+	p.ConsumedDataOffset = tMap
+	for i := 0; i < size; i++ {
+		var _key72 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key72 = v
+		}
+		_val73 := &Datum{}
+		if err := _val73.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val73, err)
+		}
+		p.ConsumedDataOffset[_key72] = _val73
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
+	}
+	return nil
+}
+
+func (p *ConsumedOffset) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.DataConsumeFinished = &v
+	}
+	return nil
+}
+
+func (p *ConsumedOffset) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.ConsumedEditOffset = &v
+	}
+	return nil
+}
+
+func (p *ConsumedOffset) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ConsumedOffset"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ConsumedOffset) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConsumedDataOffset() {
+		if err := oprot.WriteFieldBegin("consumedDataOffset", thrift.MAP, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:consumedDataOffset: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.ConsumedDataOffset)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.ConsumedDataOffset {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:consumedDataOffset: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ConsumedOffset) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDataConsumeFinished() {
+		if err := oprot.WriteFieldBegin("dataConsumeFinished", thrift.BOOL, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:dataConsumeFinished: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.DataConsumeFinished)); err != nil {
+			return fmt.Errorf("%T.dataConsumeFinished (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:dataConsumeFinished: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ConsumedOffset) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConsumedEditOffset() {
+		if err := oprot.WriteFieldBegin("consumedEditOffset", thrift.I64, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:consumedEditOffset: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.ConsumedEditOffset)); err != nil {
+			return fmt.Errorf("%T.consumedEditOffset (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:consumedEditOffset: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ConsumedOffset) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ConsumedOffset(%+v)", *p)
+}
+
+type CommittedOffset struct {
+	CommittedDataOffset Dictionary `thrift:"committedDataOffset,1" json:"committedDataOffset"`
+	DataCommitFinished  *bool      `thrift:"dataCommitFinished,2" json:"dataCommitFinished"`
+	CommittedEditOffset *int64     `thrift:"committedEditOffset,3" json:"committedEditOffset"`
+}
+
+func NewCommittedOffset() *CommittedOffset {
+	return &CommittedOffset{}
+}
+
+var CommittedOffset_CommittedDataOffset_DEFAULT Dictionary
+
+func (p *CommittedOffset) GetCommittedDataOffset() Dictionary {
+	return p.CommittedDataOffset
+}
+
+var CommittedOffset_DataCommitFinished_DEFAULT bool
+
+func (p *CommittedOffset) GetDataCommitFinished() bool {
+	if !p.IsSetDataCommitFinished() {
+		return CommittedOffset_DataCommitFinished_DEFAULT
+	}
+	return *p.DataCommitFinished
+}
+
+var CommittedOffset_CommittedEditOffset_DEFAULT int64
+
+func (p *CommittedOffset) GetCommittedEditOffset() int64 {
+	if !p.IsSetCommittedEditOffset() {
+		return CommittedOffset_CommittedEditOffset_DEFAULT
+	}
+	return *p.CommittedEditOffset
+}
+func (p *CommittedOffset) IsSetCommittedDataOffset() bool {
+	return p.CommittedDataOffset != nil
+}
+
+func (p *CommittedOffset) IsSetDataCommitFinished() bool {
+	return p.DataCommitFinished != nil
+}
+
+func (p *CommittedOffset) IsSetCommittedEditOffset() bool {
+	return p.CommittedEditOffset != nil
+}
+
+func (p *CommittedOffset) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *CommittedOffset) ReadField1(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(Dictionary, size)
+	p.CommittedDataOffset = tMap
+	for i := 0; i < size; i++ {
+		var _key74 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key74 = v
+		}
+		_val75 := &Datum{}
+		if err := _val75.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val75, err)
+		}
+		p.CommittedDataOffset[_key74] = _val75
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
+	}
+	return nil
+}
+
+func (p *CommittedOffset) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.DataCommitFinished = &v
+	}
+	return nil
+}
+
+func (p *CommittedOffset) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.CommittedEditOffset = &v
+	}
+	return nil
+}
+
+func (p *CommittedOffset) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("CommittedOffset"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *CommittedOffset) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCommittedDataOffset() {
+		if err := oprot.WriteFieldBegin("committedDataOffset", thrift.MAP, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:committedDataOffset: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.CommittedDataOffset)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.CommittedDataOffset {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:committedDataOffset: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CommittedOffset) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDataCommitFinished() {
+		if err := oprot.WriteFieldBegin("dataCommitFinished", thrift.BOOL, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:dataCommitFinished: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.DataCommitFinished)); err != nil {
+			return fmt.Errorf("%T.dataCommitFinished (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:dataCommitFinished: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CommittedOffset) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCommittedEditOffset() {
+		if err := oprot.WriteFieldBegin("committedEditOffset", thrift.I64, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:committedEditOffset: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.CommittedEditOffset)); err != nil {
+			return fmt.Errorf("%T.committedEditOffset (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:committedEditOffset: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CommittedOffset) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("CommittedOffset(%+v)", *p)
 }

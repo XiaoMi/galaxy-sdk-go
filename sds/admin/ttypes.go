@@ -1642,3 +1642,547 @@ func (p *TimeSeriesData) String() string {
 	}
 	return fmt.Sprintf("TimeSeriesData(%+v)", *p)
 }
+
+type Snapshot struct {
+	SnapshotName  *string              `thrift:"snapshotName,1" json:"snapshotName"`
+	SnapshotState *table.SnapshotState `thrift:"snapshotState,2" json:"snapshotState"`
+}
+
+func NewSnapshot() *Snapshot {
+	return &Snapshot{}
+}
+
+var Snapshot_SnapshotName_DEFAULT string
+
+func (p *Snapshot) GetSnapshotName() string {
+	if !p.IsSetSnapshotName() {
+		return Snapshot_SnapshotName_DEFAULT
+	}
+	return *p.SnapshotName
+}
+
+var Snapshot_SnapshotState_DEFAULT table.SnapshotState
+
+func (p *Snapshot) GetSnapshotState() table.SnapshotState {
+	if !p.IsSetSnapshotState() {
+		return Snapshot_SnapshotState_DEFAULT
+	}
+	return *p.SnapshotState
+}
+func (p *Snapshot) IsSetSnapshotName() bool {
+	return p.SnapshotName != nil
+}
+
+func (p *Snapshot) IsSetSnapshotState() bool {
+	return p.SnapshotState != nil
+}
+
+func (p *Snapshot) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *Snapshot) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.SnapshotName = &v
+	}
+	return nil
+}
+
+func (p *Snapshot) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		temp := table.SnapshotState(v)
+		p.SnapshotState = &temp
+	}
+	return nil
+}
+
+func (p *Snapshot) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("Snapshot"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *Snapshot) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSnapshotName() {
+		if err := oprot.WriteFieldBegin("snapshotName", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:snapshotName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SnapshotName)); err != nil {
+			return fmt.Errorf("%T.snapshotName (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:snapshotName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Snapshot) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSnapshotState() {
+		if err := oprot.WriteFieldBegin("snapshotState", thrift.I32, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:snapshotState: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.SnapshotState)); err != nil {
+			return fmt.Errorf("%T.snapshotState (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:snapshotState: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *Snapshot) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("Snapshot(%+v)", *p)
+}
+
+type TableSnapshots struct {
+	TableName     *string     `thrift:"tableName,1" json:"tableName"`
+	SysSnapshots  []*Snapshot `thrift:"sysSnapshots,2" json:"sysSnapshots"`
+	UserSnapshots []*Snapshot `thrift:"userSnapshots,3" json:"userSnapshots"`
+}
+
+func NewTableSnapshots() *TableSnapshots {
+	return &TableSnapshots{}
+}
+
+var TableSnapshots_TableName_DEFAULT string
+
+func (p *TableSnapshots) GetTableName() string {
+	if !p.IsSetTableName() {
+		return TableSnapshots_TableName_DEFAULT
+	}
+	return *p.TableName
+}
+
+var TableSnapshots_SysSnapshots_DEFAULT []*Snapshot
+
+func (p *TableSnapshots) GetSysSnapshots() []*Snapshot {
+	return p.SysSnapshots
+}
+
+var TableSnapshots_UserSnapshots_DEFAULT []*Snapshot
+
+func (p *TableSnapshots) GetUserSnapshots() []*Snapshot {
+	return p.UserSnapshots
+}
+func (p *TableSnapshots) IsSetTableName() bool {
+	return p.TableName != nil
+}
+
+func (p *TableSnapshots) IsSetSysSnapshots() bool {
+	return p.SysSnapshots != nil
+}
+
+func (p *TableSnapshots) IsSetUserSnapshots() bool {
+	return p.UserSnapshots != nil
+}
+
+func (p *TableSnapshots) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *TableSnapshots) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.TableName = &v
+	}
+	return nil
+}
+
+func (p *TableSnapshots) ReadField2(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make([]*Snapshot, 0, size)
+	p.SysSnapshots = tSlice
+	for i := 0; i < size; i++ {
+		_elem7 := &Snapshot{}
+		if err := _elem7.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem7, err)
+		}
+		p.SysSnapshots = append(p.SysSnapshots, _elem7)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *TableSnapshots) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make([]*Snapshot, 0, size)
+	p.UserSnapshots = tSlice
+	for i := 0; i < size; i++ {
+		_elem8 := &Snapshot{}
+		if err := _elem8.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem8, err)
+		}
+		p.UserSnapshots = append(p.UserSnapshots, _elem8)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *TableSnapshots) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("TableSnapshots"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *TableSnapshots) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTableName() {
+		if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.TableName)); err != nil {
+			return fmt.Errorf("%T.tableName (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:tableName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableSnapshots) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSysSnapshots() {
+		if err := oprot.WriteFieldBegin("sysSnapshots", thrift.LIST, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:sysSnapshots: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.SysSnapshots)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.SysSnapshots {
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:sysSnapshots: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableSnapshots) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetUserSnapshots() {
+		if err := oprot.WriteFieldBegin("userSnapshots", thrift.LIST, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:userSnapshots: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.UserSnapshots)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.UserSnapshots {
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:userSnapshots: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableSnapshots) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("TableSnapshots(%+v)", *p)
+}
+
+type SnapshotTableView struct {
+	TableName  *string `thrift:"tableName,1" json:"tableName"`
+	TableExist *bool   `thrift:"tableExist,2" json:"tableExist"`
+	DeleteTime int64   `thrift:"deleteTime,3" json:"deleteTime"`
+}
+
+func NewSnapshotTableView() *SnapshotTableView {
+	return &SnapshotTableView{}
+}
+
+var SnapshotTableView_TableName_DEFAULT string
+
+func (p *SnapshotTableView) GetTableName() string {
+	if !p.IsSetTableName() {
+		return SnapshotTableView_TableName_DEFAULT
+	}
+	return *p.TableName
+}
+
+var SnapshotTableView_TableExist_DEFAULT bool
+
+func (p *SnapshotTableView) GetTableExist() bool {
+	if !p.IsSetTableExist() {
+		return SnapshotTableView_TableExist_DEFAULT
+	}
+	return *p.TableExist
+}
+
+func (p *SnapshotTableView) GetDeleteTime() int64 {
+	return p.DeleteTime
+}
+func (p *SnapshotTableView) IsSetTableName() bool {
+	return p.TableName != nil
+}
+
+func (p *SnapshotTableView) IsSetTableExist() bool {
+	return p.TableExist != nil
+}
+
+func (p *SnapshotTableView) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *SnapshotTableView) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.TableName = &v
+	}
+	return nil
+}
+
+func (p *SnapshotTableView) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.TableExist = &v
+	}
+	return nil
+}
+
+func (p *SnapshotTableView) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.DeleteTime = v
+	}
+	return nil
+}
+
+func (p *SnapshotTableView) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("SnapshotTableView"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *SnapshotTableView) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTableName() {
+		if err := oprot.WriteFieldBegin("tableName", thrift.STRING, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:tableName: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.TableName)); err != nil {
+			return fmt.Errorf("%T.tableName (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:tableName: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *SnapshotTableView) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTableExist() {
+		if err := oprot.WriteFieldBegin("tableExist", thrift.BOOL, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:tableExist: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.TableExist)); err != nil {
+			return fmt.Errorf("%T.tableExist (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:tableExist: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *SnapshotTableView) writeField3(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("deleteTime", thrift.I64, 3); err != nil {
+		return fmt.Errorf("%T write field begin error 3:deleteTime: %s", p, err)
+	}
+	if err := oprot.WriteI64(int64(p.DeleteTime)); err != nil {
+		return fmt.Errorf("%T.deleteTime (3) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 3:deleteTime: %s", p, err)
+	}
+	return err
+}
+
+func (p *SnapshotTableView) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SnapshotTableView(%+v)", *p)
+}
