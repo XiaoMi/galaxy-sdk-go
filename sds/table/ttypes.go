@@ -6,7 +6,7 @@ package table
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/rpc/Authorization"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/authorization"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
@@ -21,7 +21,7 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
 var _ = auth.GoUnusedProtection__
-var _ = Authorization.GoUnusedProtection__
+var _ = authorization.GoUnusedProtection__
 var GoUnusedProtection__ int
 
 //数据类型
@@ -2862,6 +2862,338 @@ func (p *TableSchema) String() string {
 	return fmt.Sprintf("TableSchema(%+v)", *p)
 }
 
+type ReplicationProvisionThroughput struct {
+	ConsumeCapacity *int64 `thrift:"consumeCapacity,1" json:"consumeCapacity"`
+	CommitCapacity  *int64 `thrift:"commitCapacity,2" json:"commitCapacity"`
+}
+
+func NewReplicationProvisionThroughput() *ReplicationProvisionThroughput {
+	return &ReplicationProvisionThroughput{}
+}
+
+var ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT int64
+
+func (p *ReplicationProvisionThroughput) GetConsumeCapacity() int64 {
+	if !p.IsSetConsumeCapacity() {
+		return ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT
+	}
+	return *p.ConsumeCapacity
+}
+
+var ReplicationProvisionThroughput_CommitCapacity_DEFAULT int64
+
+func (p *ReplicationProvisionThroughput) GetCommitCapacity() int64 {
+	if !p.IsSetCommitCapacity() {
+		return ReplicationProvisionThroughput_CommitCapacity_DEFAULT
+	}
+	return *p.CommitCapacity
+}
+func (p *ReplicationProvisionThroughput) IsSetConsumeCapacity() bool {
+	return p.ConsumeCapacity != nil
+}
+
+func (p *ReplicationProvisionThroughput) IsSetCommitCapacity() bool {
+	return p.CommitCapacity != nil
+}
+
+func (p *ReplicationProvisionThroughput) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.ConsumeCapacity = &v
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.CommitCapacity = &v
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ReplicationProvisionThroughput"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ReplicationProvisionThroughput) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConsumeCapacity() {
+		if err := oprot.WriteFieldBegin("consumeCapacity", thrift.I64, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:consumeCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.ConsumeCapacity)); err != nil {
+			return fmt.Errorf("%T.consumeCapacity (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:consumeCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationProvisionThroughput) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCommitCapacity() {
+		if err := oprot.WriteFieldBegin("commitCapacity", thrift.I64, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:commitCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.CommitCapacity)); err != nil {
+			return fmt.Errorf("%T.commitCapacity (2) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:commitCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationProvisionThroughput) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReplicationProvisionThroughput(%+v)", *p)
+}
+
+type ReplicationSpec struct {
+	EnableReplication *bool                           `thrift:"enableReplication,1" json:"enableReplication"`
+	Throughput        *ReplicationProvisionThroughput `thrift:"throughput,2" json:"throughput"`
+	MaxSubscribers    *int32                          `thrift:"maxSubscribers,3" json:"maxSubscribers"`
+}
+
+func NewReplicationSpec() *ReplicationSpec {
+	return &ReplicationSpec{}
+}
+
+var ReplicationSpec_EnableReplication_DEFAULT bool
+
+func (p *ReplicationSpec) GetEnableReplication() bool {
+	if !p.IsSetEnableReplication() {
+		return ReplicationSpec_EnableReplication_DEFAULT
+	}
+	return *p.EnableReplication
+}
+
+var ReplicationSpec_Throughput_DEFAULT *ReplicationProvisionThroughput
+
+func (p *ReplicationSpec) GetThroughput() *ReplicationProvisionThroughput {
+	if !p.IsSetThroughput() {
+		return ReplicationSpec_Throughput_DEFAULT
+	}
+	return p.Throughput
+}
+
+var ReplicationSpec_MaxSubscribers_DEFAULT int32
+
+func (p *ReplicationSpec) GetMaxSubscribers() int32 {
+	if !p.IsSetMaxSubscribers() {
+		return ReplicationSpec_MaxSubscribers_DEFAULT
+	}
+	return *p.MaxSubscribers
+}
+func (p *ReplicationSpec) IsSetEnableReplication() bool {
+	return p.EnableReplication != nil
+}
+
+func (p *ReplicationSpec) IsSetThroughput() bool {
+	return p.Throughput != nil
+}
+
+func (p *ReplicationSpec) IsSetMaxSubscribers() bool {
+	return p.MaxSubscribers != nil
+}
+
+func (p *ReplicationSpec) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.EnableReplication = &v
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField2(iprot thrift.TProtocol) error {
+	p.Throughput = &ReplicationProvisionThroughput{}
+	if err := p.Throughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Throughput, err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) ReadField3(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 3: %s", err)
+	} else {
+		p.MaxSubscribers = &v
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("ReplicationSpec"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ReplicationSpec) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnableReplication() {
+		if err := oprot.WriteFieldBegin("enableReplication", thrift.BOOL, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:enableReplication: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(*p.EnableReplication)); err != nil {
+			return fmt.Errorf("%T.enableReplication (1) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:enableReplication: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetThroughput() {
+		if err := oprot.WriteFieldBegin("throughput", thrift.STRUCT, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:throughput: %s", p, err)
+		}
+		if err := p.Throughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Throughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:throughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMaxSubscribers() {
+		if err := oprot.WriteFieldBegin("maxSubscribers", thrift.I32, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:maxSubscribers: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(*p.MaxSubscribers)); err != nil {
+			return fmt.Errorf("%T.maxSubscribers (3) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:maxSubscribers: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *ReplicationSpec) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ReplicationSpec(%+v)", *p)
+}
+
 type TableMetadata struct {
 	TableId                 *string              `thrift:"tableId,1" json:"tableId"`
 	DeveloperId             *string              `thrift:"developerId,2" json:"developerId"`
@@ -2938,13 +3270,13 @@ func (p *TableMetadata) GetEnableScanInGlobalOrder() bool {
 	return *p.EnableScanInGlobalOrder
 }
 
-var TableMetadata_Replication_DEFAULT ReplicationSpec
+var TableMetadata_Replication_DEFAULT *ReplicationSpec
 
-func (p *TableMetadata) GetReplication() ReplicationSpec {
+func (p *TableMetadata) GetReplication() *ReplicationSpec {
 	if !p.IsSetReplication() {
 		return TableMetadata_Replication_DEFAULT
 	}
-	return *p.Replication
+	return p.Replication
 }
 
 var TableMetadata_EnableSysSnapshot_DEFAULT bool
@@ -3510,338 +3842,6 @@ func (p *TableSpec) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("TableSpec(%+v)", *p)
-}
-
-type ReplicationProvisionThroughput struct {
-	ConsumeCapacity *int64 `thrift:"consumeCapacity,1" json:"consumeCapacity"`
-	CommitCapacity  *int64 `thrift:"commitCapacity,2" json:"commitCapacity"`
-}
-
-func NewReplicationProvisionThroughput() *ReplicationProvisionThroughput {
-	return &ReplicationProvisionThroughput{}
-}
-
-var ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT int64
-
-func (p *ReplicationProvisionThroughput) GetConsumeCapacity() int64 {
-	if !p.IsSetConsumeCapacity() {
-		return ReplicationProvisionThroughput_ConsumeCapacity_DEFAULT
-	}
-	return *p.ConsumeCapacity
-}
-
-var ReplicationProvisionThroughput_CommitCapacity_DEFAULT int64
-
-func (p *ReplicationProvisionThroughput) GetCommitCapacity() int64 {
-	if !p.IsSetCommitCapacity() {
-		return ReplicationProvisionThroughput_CommitCapacity_DEFAULT
-	}
-	return *p.CommitCapacity
-}
-func (p *ReplicationProvisionThroughput) IsSetConsumeCapacity() bool {
-	return p.ConsumeCapacity != nil
-}
-
-func (p *ReplicationProvisionThroughput) IsSetCommitCapacity() bool {
-	return p.CommitCapacity != nil
-}
-
-func (p *ReplicationProvisionThroughput) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *ReplicationProvisionThroughput) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.ConsumeCapacity = &v
-	}
-	return nil
-}
-
-func (p *ReplicationProvisionThroughput) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 2: %s", err)
-	} else {
-		p.CommitCapacity = &v
-	}
-	return nil
-}
-
-func (p *ReplicationProvisionThroughput) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("ReplicationProvisionThroughput"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *ReplicationProvisionThroughput) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetConsumeCapacity() {
-		if err := oprot.WriteFieldBegin("consumeCapacity", thrift.I64, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:consumeCapacity: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.ConsumeCapacity)); err != nil {
-			return fmt.Errorf("%T.consumeCapacity (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:consumeCapacity: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *ReplicationProvisionThroughput) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCommitCapacity() {
-		if err := oprot.WriteFieldBegin("commitCapacity", thrift.I64, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:commitCapacity: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(*p.CommitCapacity)); err != nil {
-			return fmt.Errorf("%T.commitCapacity (2) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:commitCapacity: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *ReplicationProvisionThroughput) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ReplicationProvisionThroughput(%+v)", *p)
-}
-
-type ReplicationSpec struct {
-	EnableReplication *bool                           `thrift:"enableReplication,1" json:"enableReplication"`
-	Throughput        *ReplicationProvisionThroughput `thrift:"throughput,2" json:"throughput"`
-	MaxSubscribers    *int32                          `thrift:"maxSubscribers,3" json:"maxSubscribers"`
-}
-
-func NewReplicationSpec() *ReplicationSpec {
-	return &ReplicationSpec{}
-}
-
-var ReplicationSpec_EnableReplication_DEFAULT bool
-
-func (p *ReplicationSpec) GetEnableReplication() bool {
-	if !p.IsSetEnableReplication() {
-		return ReplicationSpec_EnableReplication_DEFAULT
-	}
-	return *p.EnableReplication
-}
-
-var ReplicationSpec_Throughput_DEFAULT *ReplicationProvisionThroughput
-
-func (p *ReplicationSpec) GetThroughput() *ReplicationProvisionThroughput {
-	if !p.IsSetThroughput() {
-		return ReplicationSpec_Throughput_DEFAULT
-	}
-	return p.Throughput
-}
-
-var ReplicationSpec_MaxSubscribers_DEFAULT int32
-
-func (p *ReplicationSpec) GetMaxSubscribers() int32 {
-	if !p.IsSetMaxSubscribers() {
-		return ReplicationSpec_MaxSubscribers_DEFAULT
-	}
-	return *p.MaxSubscribers
-}
-func (p *ReplicationSpec) IsSetEnableReplication() bool {
-	return p.EnableReplication != nil
-}
-
-func (p *ReplicationSpec) IsSetThroughput() bool {
-	return p.Throughput != nil
-}
-
-func (p *ReplicationSpec) IsSetMaxSubscribers() bool {
-	return p.MaxSubscribers != nil
-}
-
-func (p *ReplicationSpec) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		case 3:
-			if err := p.ReadField3(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *ReplicationSpec) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadBool(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.EnableReplication = &v
-	}
-	return nil
-}
-
-func (p *ReplicationSpec) ReadField2(iprot thrift.TProtocol) error {
-	p.Throughput = &ReplicationProvisionThroughput{}
-	if err := p.Throughput.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Throughput, err)
-	}
-	return nil
-}
-
-func (p *ReplicationSpec) ReadField3(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 3: %s", err)
-	} else {
-		p.MaxSubscribers = &v
-	}
-	return nil
-}
-
-func (p *ReplicationSpec) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("ReplicationSpec"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField3(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *ReplicationSpec) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEnableReplication() {
-		if err := oprot.WriteFieldBegin("enableReplication", thrift.BOOL, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:enableReplication: %s", p, err)
-		}
-		if err := oprot.WriteBool(bool(*p.EnableReplication)); err != nil {
-			return fmt.Errorf("%T.enableReplication (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:enableReplication: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *ReplicationSpec) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetThroughput() {
-		if err := oprot.WriteFieldBegin("throughput", thrift.STRUCT, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:throughput: %s", p, err)
-		}
-		if err := p.Throughput.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Throughput, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:throughput: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *ReplicationSpec) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetMaxSubscribers() {
-		if err := oprot.WriteFieldBegin("maxSubscribers", thrift.I32, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:maxSubscribers: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.MaxSubscribers)); err != nil {
-			return fmt.Errorf("%T.maxSubscribers (3) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:maxSubscribers: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *ReplicationSpec) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ReplicationSpec(%+v)", *p)
 }
 
 type Subscriber struct {

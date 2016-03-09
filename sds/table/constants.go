@@ -6,7 +6,7 @@ package table
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/rpc/Authorization"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/authorization"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
@@ -21,7 +21,7 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
 var _ = auth.GoUnusedProtection__
-var _ = Authorization.GoUnusedProtection__
+var _ = authorization.GoUnusedProtection__
 
 func init() {
 }

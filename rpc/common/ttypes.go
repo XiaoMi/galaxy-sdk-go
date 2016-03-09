@@ -6,7 +6,7 @@ package common
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
 )
 
@@ -22,10 +22,9 @@ var GoUnusedProtection__ int
 type ThriftProtocol int64
 
 const (
-	ThriftProtocol_TCOMPACT           ThriftProtocol = 0
-	ThriftProtocol_TJSON              ThriftProtocol = 1
-	ThriftProtocol_TBINARY            ThriftProtocol = 2
-	ThriftProtocol_TBINARYACCELERATED ThriftProtocol = 3
+	ThriftProtocol_TCOMPACT ThriftProtocol = 0
+	ThriftProtocol_TJSON    ThriftProtocol = 1
+	ThriftProtocol_TBINARY  ThriftProtocol = 2
 )
 
 func (p ThriftProtocol) String() string {
@@ -36,8 +35,6 @@ func (p ThriftProtocol) String() string {
 		return "ThriftProtocol_TJSON"
 	case ThriftProtocol_TBINARY:
 		return "ThriftProtocol_TBINARY"
-	case ThriftProtocol_TBINARYACCELERATED:
-		return "ThriftProtocol_TBINARYACCELERATED"
 	}
 	return "<UNSET>"
 }
@@ -50,8 +47,6 @@ func ThriftProtocolFromString(s string) (ThriftProtocol, error) {
 		return ThriftProtocol_TJSON, nil
 	case "ThriftProtocol_TBINARY":
 		return ThriftProtocol_TBINARY, nil
-	case "ThriftProtocol_TBINARYACCELERATED":
-		return ThriftProtocol_TBINARYACCELERATED, nil
 	}
 	return ThriftProtocol(0), fmt.Errorf("not a valid ThriftProtocol string")
 }
@@ -69,7 +64,7 @@ func NewVersion() *Version {
 	return &Version{
 		Major: 1,
 
-		Patch: "91caa8a2",
+		Patch: "1da06945",
 	}
 }
 
@@ -85,7 +80,7 @@ func (p *Version) GetMinor() int32 {
 	return p.Minor
 }
 
-var Version_Patch_DEFAULT string = "91caa8a2"
+var Version_Patch_DEFAULT string = "1da06945"
 
 func (p *Version) GetPatch() string {
 	return p.Patch

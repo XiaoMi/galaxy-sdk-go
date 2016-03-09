@@ -6,7 +6,7 @@ package common
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
 )
 
@@ -17,7 +17,7 @@ var _ = bytes.Equal
 
 var _ = errors.GoUnusedProtection__
 
-type BaseService interface { //结构化存储基础接口
+type BaseService interface { //基础接口
 
 	// 获取服务端版本
 	GetServerVersion() (r *Version, err error)
@@ -30,7 +30,7 @@ type BaseService interface { //结构化存储基础接口
 	GetServerTime() (r int64, err error)
 }
 
-//结构化存储基础接口
+//基础接口
 type BaseServiceClient struct {
 	Transport       thrift.TTransport
 	ProtocolFactory thrift.TProtocolFactory
@@ -592,7 +592,7 @@ func (p *GetServerVersionResult) ReadField0(iprot thrift.TProtocol) error {
 	p.Success = &Version{
 		Major: 1,
 
-		Patch: "91caa8a2",
+		Patch: "1da06945",
 	}
 	if err := p.Success.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
@@ -720,7 +720,7 @@ func (p *ValidateClientVersionArgs) ReadField1(iprot thrift.TProtocol) error {
 	p.ClientVersion = &Version{
 		Major: 1,
 
-		Patch: "91caa8a2",
+		Patch: "1da06945",
 	}
 	if err := p.ClientVersion.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.ClientVersion, err)
