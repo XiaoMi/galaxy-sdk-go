@@ -72,20 +72,16 @@ func (p *SdsTHttpClientTransportFactory) GetTransport(trans thrift.TTransport) t
 }
 
 func (p *SdsTHttpClientTransportFactory) GetTransportWithClockOffset(trans thrift.TTransport,
-	clockOffset int64, requestType string) thrift.TTransport {
-	var queryString string
-	if requestType != "" {
-		queryString = fmt.Sprintf("type=%s", requestType)
-	}
+	clockOffset int64, query string) thrift.TTransport {
 	if trans != nil {
 		t, ok := trans.(*SdsTHttpClient)
 		if ok && t.url != nil {
 			s, _ := newSdsTHttpClient(t.url.String(), t.credential, t.httpClient,
-				t.agent, t.clockOffset, queryString)
+				t.agent, t.clockOffset, query)
 			return s
 		}
 	}
-	s, _ := newSdsTHttpClient(p.url, p.credential, p.httpClient, p.agent, clockOffset, queryString)
+	s, _ := newSdsTHttpClient(p.url, p.credential, p.httpClient, p.agent, clockOffset, query)
 	return s
 }
 
@@ -201,7 +197,12 @@ func (p *SdsTHttpClient) generateRandomId(length int) string {
 
 func (p *SdsTHttpClient) Flush() error {
 	requestId := p.generateRandomId(8)
-	uri := fmt.Sprintf("%s?id=%s&%s", p.url.String(), requestId, p.queryString)
+	var uri string
+	if p.queryString == "" {
+		uri = fmt.Sprintf("%s?id=%s", p.url.String(), requestId)
+	} else {
+		uri = fmt.Sprintf("%s?id=%s&%s", p.url.String(), requestId, p.queryString)
+	}
 	req, err := http.NewRequest("POST", uri, p.requestBuffer)
 	if err != nil {
 		return thrift.NewTTransportExceptionFromError(err)
