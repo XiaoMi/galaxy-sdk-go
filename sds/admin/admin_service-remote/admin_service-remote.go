@@ -39,26 +39,16 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "   findAllAppInfo()")
 	fmt.Fprintln(os.Stderr, "  i64 getTableSize(string tableName)")
 	fmt.Fprintln(os.Stderr, "  void putClientMetrics(ClientMetrics clientMetrics)")
-	fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string tableName, string phoneNumber)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string tableName, string phoneNumber)")
-	fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string tableName, string email)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string tableName, string email)")
-	fmt.Fprintln(os.Stderr, "   listSubscribedPhone(string tableName)")
-	fmt.Fprintln(os.Stderr, "   listSubscribedEmail(string tableName)")
+	fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string phoneNumber)")
+	fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string phoneNumber)")
+	fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string email)")
+	fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string email)")
+	fmt.Fprintln(os.Stderr, "   listSubscribedPhone()")
+	fmt.Fprintln(os.Stderr, "   listSubscribedEmail()")
 	fmt.Fprintln(os.Stderr, "   getTableHistorySize(string tableName, i64 startDate, i64 stopDate)")
-	fmt.Fprintln(os.Stderr, "  Subscriber createSubscriber(string tableName, string subscriberName)")
-	fmt.Fprintln(os.Stderr, "  void deleteSubscriber(string tableName, string subscriberName)")
-	fmt.Fprintln(os.Stderr, "  Subscriber getSubscriber(string tableName, string subscriberName)")
-	fmt.Fprintln(os.Stderr, "   getSubscribers(string tableName)")
 	fmt.Fprintln(os.Stderr, "   getPartitions(string tableName)")
 	fmt.Fprintln(os.Stderr, "  Partition getPartition(string tableName, i32 partitionId)")
-	fmt.Fprintln(os.Stderr, "  ConsumedOffset getPartitionConsumedOffset(string tableName, i32 partitionId, string subscriberName)")
-	fmt.Fprintln(os.Stderr, "  CommittedOffset getPartitionCommittedOffset(string tableName, i32 partitionId, string subscriberName)")
-	fmt.Fprintln(os.Stderr, "  Sinker createSinker(string subscribedTableName, string subscriberName, string sinkedTableName, string endpoint)")
-	fmt.Fprintln(os.Stderr, "  void deleteSinker(string tableName)")
-	fmt.Fprintln(os.Stderr, "  Sinker getSinker(string tableName)")
 	fmt.Fprintln(os.Stderr, "  PartitionStatistics getPartitionStatistics(string tableName, i32 partitionId)")
-	fmt.Fprintln(os.Stderr, "  SubscriberStatistics getSubscriberStatistics(string tableName, i32 partitionId, string subscriberName)")
 	fmt.Fprintln(os.Stderr, "  void renameTable(string srcName, string destName)")
 	fmt.Fprintln(os.Stderr, "  TableSnapshots listSnapshots(string tableName)")
 	fmt.Fprintln(os.Stderr, "  void snapshotTable(string tableName, string snapshotName)")
@@ -67,6 +57,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "   listAllSnapshots()")
 	fmt.Fprintln(os.Stderr, "  void cancelSnapshotTable(string tableName, string snapshotName)")
 	fmt.Fprintln(os.Stderr, "  SnapshotState getSnapshotState(string tableName, string snapshotName)")
+	fmt.Fprintln(os.Stderr, "  QuotaInfo getQuotaInfo()")
 	fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
 	fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
 	fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
@@ -169,19 +160,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "SaveAppInfo requires 1 args")
 			flag.Usage()
 		}
-		arg121 := flag.Arg(1)
-		mbTrans122 := thrift.NewTMemoryBufferLen(len(arg121))
-		defer mbTrans122.Close()
-		_, err123 := mbTrans122.WriteString(arg121)
-		if err123 != nil {
+		arg102 := flag.Arg(1)
+		mbTrans103 := thrift.NewTMemoryBufferLen(len(arg102))
+		defer mbTrans103.Close()
+		_, err104 := mbTrans103.WriteString(arg102)
+		if err104 != nil {
 			Usage()
 			return
 		}
-		factory124 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt125 := factory124.GetProtocol(mbTrans122)
+		factory105 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt106 := factory105.GetProtocol(mbTrans103)
 		argvalue0 := admin.NewAppInfo()
-		err126 := argvalue0.Read(jsProt125)
-		if err126 != nil {
+		err107 := argvalue0.Read(jsProt106)
+		if err107 != nil {
 			Usage()
 			return
 		}
@@ -222,19 +213,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg129 := flag.Arg(2)
-		mbTrans130 := thrift.NewTMemoryBufferLen(len(arg129))
-		defer mbTrans130.Close()
-		_, err131 := mbTrans130.WriteString(arg129)
-		if err131 != nil {
+		arg110 := flag.Arg(2)
+		mbTrans111 := thrift.NewTMemoryBufferLen(len(arg110))
+		defer mbTrans111.Close()
+		_, err112 := mbTrans111.WriteString(arg110)
+		if err112 != nil {
 			Usage()
 			return
 		}
-		factory132 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt133 := factory132.GetProtocol(mbTrans130)
+		factory113 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt114 := factory113.GetProtocol(mbTrans111)
 		argvalue1 := admin.NewTableSpec()
-		err134 := argvalue1.Read(jsProt133)
-		if err134 != nil {
+		err115 := argvalue1.Read(jsProt114)
+		if err115 != nil {
 			Usage()
 			return
 		}
@@ -259,19 +250,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg137 := flag.Arg(2)
-		mbTrans138 := thrift.NewTMemoryBufferLen(len(arg137))
-		defer mbTrans138.Close()
-		_, err139 := mbTrans138.WriteString(arg137)
-		if err139 != nil {
+		arg118 := flag.Arg(2)
+		mbTrans119 := thrift.NewTMemoryBufferLen(len(arg118))
+		defer mbTrans119.Close()
+		_, err120 := mbTrans119.WriteString(arg118)
+		if err120 != nil {
 			Usage()
 			return
 		}
-		factory140 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt141 := factory140.GetProtocol(mbTrans138)
+		factory121 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt122 := factory121.GetProtocol(mbTrans119)
 		argvalue1 := admin.NewTableSpec()
-		err142 := argvalue1.Read(jsProt141)
-		if err142 != nil {
+		err123 := argvalue1.Read(jsProt122)
+		if err123 != nil {
 			Usage()
 			return
 		}
@@ -350,37 +341,37 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg152 := flag.Arg(2)
-		mbTrans153 := thrift.NewTMemoryBufferLen(len(arg152))
-		defer mbTrans153.Close()
-		_, err154 := mbTrans153.WriteString(arg152)
-		if err154 != nil {
+		arg133 := flag.Arg(2)
+		mbTrans134 := thrift.NewTMemoryBufferLen(len(arg133))
+		defer mbTrans134.Close()
+		_, err135 := mbTrans134.WriteString(arg133)
+		if err135 != nil {
 			Usage()
 			return
 		}
-		factory155 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt156 := factory155.GetProtocol(mbTrans153)
+		factory136 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt137 := factory136.GetProtocol(mbTrans134)
 		containerStruct1 := admin.NewGetTableSplitsArgs()
-		err157 := containerStruct1.ReadField2(jsProt156)
-		if err157 != nil {
+		err138 := containerStruct1.ReadField2(jsProt137)
+		if err138 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := containerStruct1.StartKey
 		value1 := admin.Dictionary(argvalue1)
-		arg158 := flag.Arg(3)
-		mbTrans159 := thrift.NewTMemoryBufferLen(len(arg158))
-		defer mbTrans159.Close()
-		_, err160 := mbTrans159.WriteString(arg158)
-		if err160 != nil {
+		arg139 := flag.Arg(3)
+		mbTrans140 := thrift.NewTMemoryBufferLen(len(arg139))
+		defer mbTrans140.Close()
+		_, err141 := mbTrans140.WriteString(arg139)
+		if err141 != nil {
 			Usage()
 			return
 		}
-		factory161 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt162 := factory161.GetProtocol(mbTrans159)
+		factory142 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt143 := factory142.GetProtocol(mbTrans140)
 		containerStruct2 := admin.NewGetTableSplitsArgs()
-		err163 := containerStruct2.ReadField3(jsProt162)
-		if err163 != nil {
+		err144 := containerStruct2.ReadField3(jsProt143)
+		if err144 != nil {
 			Usage()
 			return
 		}
@@ -394,19 +385,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "QueryMetric requires 1 args")
 			flag.Usage()
 		}
-		arg164 := flag.Arg(1)
-		mbTrans165 := thrift.NewTMemoryBufferLen(len(arg164))
-		defer mbTrans165.Close()
-		_, err166 := mbTrans165.WriteString(arg164)
-		if err166 != nil {
+		arg145 := flag.Arg(1)
+		mbTrans146 := thrift.NewTMemoryBufferLen(len(arg145))
+		defer mbTrans146.Close()
+		_, err147 := mbTrans146.WriteString(arg145)
+		if err147 != nil {
 			Usage()
 			return
 		}
-		factory167 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt168 := factory167.GetProtocol(mbTrans165)
+		factory148 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt149 := factory148.GetProtocol(mbTrans146)
 		argvalue0 := admin.NewMetricQueryRequest()
-		err169 := argvalue0.Read(jsProt168)
-		if err169 != nil {
+		err150 := argvalue0.Read(jsProt149)
+		if err150 != nil {
 			Usage()
 			return
 		}
@@ -419,19 +410,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "QueryMetrics requires 1 args")
 			flag.Usage()
 		}
-		arg170 := flag.Arg(1)
-		mbTrans171 := thrift.NewTMemoryBufferLen(len(arg170))
-		defer mbTrans171.Close()
-		_, err172 := mbTrans171.WriteString(arg170)
-		if err172 != nil {
+		arg151 := flag.Arg(1)
+		mbTrans152 := thrift.NewTMemoryBufferLen(len(arg151))
+		defer mbTrans152.Close()
+		_, err153 := mbTrans152.WriteString(arg151)
+		if err153 != nil {
 			Usage()
 			return
 		}
-		factory173 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt174 := factory173.GetProtocol(mbTrans171)
+		factory154 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt155 := factory154.GetProtocol(mbTrans152)
 		containerStruct0 := admin.NewQueryMetricsArgs()
-		err175 := containerStruct0.ReadField1(jsProt174)
-		if err175 != nil {
+		err156 := containerStruct0.ReadField1(jsProt155)
+		if err156 != nil {
 			Usage()
 			return
 		}
@@ -463,19 +454,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "PutClientMetrics requires 1 args")
 			flag.Usage()
 		}
-		arg177 := flag.Arg(1)
-		mbTrans178 := thrift.NewTMemoryBufferLen(len(arg177))
-		defer mbTrans178.Close()
-		_, err179 := mbTrans178.WriteString(arg177)
-		if err179 != nil {
+		arg158 := flag.Arg(1)
+		mbTrans159 := thrift.NewTMemoryBufferLen(len(arg158))
+		defer mbTrans159.Close()
+		_, err160 := mbTrans159.WriteString(arg158)
+		if err160 != nil {
 			Usage()
 			return
 		}
-		factory180 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt181 := factory180.GetProtocol(mbTrans178)
+		factory161 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt162 := factory161.GetProtocol(mbTrans159)
 		argvalue0 := admin.NewClientMetrics()
-		err182 := argvalue0.Read(jsProt181)
-		if err182 != nil {
+		err163 := argvalue0.Read(jsProt162)
+		if err163 != nil {
 			Usage()
 			return
 		}
@@ -484,71 +475,59 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "subscribePhoneAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 2 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.SubscribePhoneAlert(value0, value1))
+		fmt.Print(client.SubscribePhoneAlert(value0))
 		fmt.Print("\n")
 		break
 	case "unsubscribePhoneAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 2 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.UnsubscribePhoneAlert(value0, value1))
+		fmt.Print(client.UnsubscribePhoneAlert(value0))
 		fmt.Print("\n")
 		break
 	case "subscribeEmailAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 2 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.SubscribeEmailAlert(value0, value1))
+		fmt.Print(client.SubscribeEmailAlert(value0))
 		fmt.Print("\n")
 		break
 	case "unsubscribeEmailAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 2 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.UnsubscribeEmailAlert(value0, value1))
+		fmt.Print(client.UnsubscribeEmailAlert(value0))
 		fmt.Print("\n")
 		break
 	case "listSubscribedPhone":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 1 args")
+		if flag.NArg()-1 != 0 {
+			fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 0 args")
 			flag.Usage()
 		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.ListSubscribedPhone(value0))
+		fmt.Print(client.ListSubscribedPhone())
 		fmt.Print("\n")
 		break
 	case "listSubscribedEmail":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 1 args")
+		if flag.NArg()-1 != 0 {
+			fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 0 args")
 			flag.Usage()
 		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.ListSubscribedEmail(value0))
+		fmt.Print(client.ListSubscribedEmail())
 		fmt.Print("\n")
 		break
 	case "getTableHistorySize":
@@ -558,65 +537,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1, err194 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err194 != nil {
+		argvalue1, err169 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+		if err169 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		argvalue2, err195 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-		if err195 != nil {
+		argvalue2, err170 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+		if err170 != nil {
 			Usage()
 			return
 		}
 		value2 := argvalue2
 		fmt.Print(client.GetTableHistorySize(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "createSubscriber":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "CreateSubscriber requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.CreateSubscriber(value0, value1))
-		fmt.Print("\n")
-		break
-	case "deleteSubscriber":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "DeleteSubscriber requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.DeleteSubscriber(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getSubscriber":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "GetSubscriber requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.GetSubscriber(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getSubscribers":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetSubscribers requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetSubscribers(value0))
 		fmt.Print("\n")
 		break
 	case "getPartitions":
@@ -636,88 +569,14 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		tmp1, err205 := (strconv.Atoi(flag.Arg(2)))
-		if err205 != nil {
+		tmp1, err173 := (strconv.Atoi(flag.Arg(2)))
+		if err173 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
 		fmt.Print(client.GetPartition(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getPartitionConsumedOffset":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "GetPartitionConsumedOffset requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		tmp1, err207 := (strconv.Atoi(flag.Arg(2)))
-		if err207 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := int32(tmp1)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		fmt.Print(client.GetPartitionConsumedOffset(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "getPartitionCommittedOffset":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "GetPartitionCommittedOffset requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		tmp1, err210 := (strconv.Atoi(flag.Arg(2)))
-		if err210 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := int32(tmp1)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		fmt.Print(client.GetPartitionCommittedOffset(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "createSinker":
-		if flag.NArg()-1 != 4 {
-			fmt.Fprintln(os.Stderr, "CreateSinker requires 4 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4)
-		value3 := argvalue3
-		fmt.Print(client.CreateSinker(value0, value1, value2, value3))
-		fmt.Print("\n")
-		break
-	case "deleteSinker":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "DeleteSinker requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.DeleteSinker(value0))
-		fmt.Print("\n")
-		break
-	case "getSinker":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetSinker requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetSinker(value0))
 		fmt.Print("\n")
 		break
 	case "getPartitionStatistics":
@@ -727,33 +586,14 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		tmp1, err219 := (strconv.Atoi(flag.Arg(2)))
-		if err219 != nil {
+		tmp1, err175 := (strconv.Atoi(flag.Arg(2)))
+		if err175 != nil {
 			Usage()
 			return
 		}
 		argvalue1 := int32(tmp1)
 		value1 := argvalue1
 		fmt.Print(client.GetPartitionStatistics(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getSubscriberStatistics":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "GetSubscriberStatistics requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		tmp1, err221 := (strconv.Atoi(flag.Arg(2)))
-		if err221 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := int32(tmp1)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		fmt.Print(client.GetSubscriberStatistics(value0, value1, value2))
 		fmt.Print("\n")
 		break
 	case "renameTable":
@@ -850,6 +690,14 @@ func main() {
 		fmt.Print(client.GetSnapshotState(value0, value1))
 		fmt.Print("\n")
 		break
+	case "getQuotaInfo":
+		if flag.NArg()-1 != 0 {
+			fmt.Fprintln(os.Stderr, "GetQuotaInfo requires 0 args")
+			flag.Usage()
+		}
+		fmt.Print(client.GetQuotaInfo())
+		fmt.Print("\n")
+		break
 	case "getServerVersion":
 		if flag.NArg()-1 != 0 {
 			fmt.Fprintln(os.Stderr, "GetServerVersion requires 0 args")
@@ -863,19 +711,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
 			flag.Usage()
 		}
-		arg238 := flag.Arg(1)
-		mbTrans239 := thrift.NewTMemoryBufferLen(len(arg238))
-		defer mbTrans239.Close()
-		_, err240 := mbTrans239.WriteString(arg238)
-		if err240 != nil {
+		arg191 := flag.Arg(1)
+		mbTrans192 := thrift.NewTMemoryBufferLen(len(arg191))
+		defer mbTrans192.Close()
+		_, err193 := mbTrans192.WriteString(arg191)
+		if err193 != nil {
 			Usage()
 			return
 		}
-		factory241 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt242 := factory241.GetProtocol(mbTrans239)
+		factory194 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt195 := factory194.GetProtocol(mbTrans192)
 		argvalue0 := admin.NewVersion()
-		err243 := argvalue0.Read(jsProt242)
-		if err243 != nil {
+		err196 := argvalue0.Read(jsProt195)
+		if err196 != nil {
 			Usage()
 			return
 		}
