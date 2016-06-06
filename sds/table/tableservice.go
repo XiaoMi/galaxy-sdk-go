@@ -63,12 +63,6 @@ type TableService interface {
 	// Parameters:
 	//  - Request
 	PutToRebuildIndex(request *PutRequest) (r *PutResult_, err error)
-	// new-image的消费操作
-	//
-	//
-	// Parameters:
-	//  - Request
-	GetNewImage(request *GetNewImageRequest) (r *GetNewImageResult_, err error)
 }
 
 //结构化存储表数据访问接口
@@ -128,16 +122,16 @@ func (p *TableServiceClient) recvGet() (value *GetResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error62 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error63 error
-		error63, err = error62.Read(iprot)
+		error60 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error61 error
+		error61, err = error60.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error63
+		err = error61
 		return
 	}
 	if p.SeqId != seqId {
@@ -203,16 +197,16 @@ func (p *TableServiceClient) recvPut() (value *PutResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error64 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error65 error
-		error65, err = error64.Read(iprot)
+		error62 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error63 error
+		error63, err = error62.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error65
+		err = error63
 		return
 	}
 	if p.SeqId != seqId {
@@ -278,16 +272,16 @@ func (p *TableServiceClient) recvIncrement() (value *IncrementResult_, err error
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error66 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error67 error
-		error67, err = error66.Read(iprot)
+		error64 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error65 error
+		error65, err = error64.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error67
+		err = error65
 		return
 	}
 	if p.SeqId != seqId {
@@ -353,16 +347,16 @@ func (p *TableServiceClient) recvRemove() (value *RemoveResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error68 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error69 error
-		error69, err = error68.Read(iprot)
+		error66 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error67 error
+		error67, err = error66.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error69
+		err = error67
 		return
 	}
 	if p.SeqId != seqId {
@@ -428,16 +422,16 @@ func (p *TableServiceClient) recvScan() (value *ScanResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error70 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error71 error
-		error71, err = error70.Read(iprot)
+		error68 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error69 error
+		error69, err = error68.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error71
+		err = error69
 		return
 	}
 	if p.SeqId != seqId {
@@ -504,16 +498,16 @@ func (p *TableServiceClient) recvBatch() (value *BatchResult_, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error72 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error73 error
-		error73, err = error72.Read(iprot)
+		error70 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error71 error
+		error71, err = error70.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error73
+		err = error71
 		return
 	}
 	if p.SeqId != seqId {
@@ -579,16 +573,16 @@ func (p *TableServiceClient) recvPutToRebuildIndex() (value *PutResult_, err err
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error74 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error75 error
-		error75, err = error74.Read(iprot)
+		error72 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error73 error
+		error73, err = error72.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error75
+		err = error73
 		return
 	}
 	if p.SeqId != seqId {
@@ -610,97 +604,20 @@ func (p *TableServiceClient) recvPutToRebuildIndex() (value *PutResult_, err err
 	return
 }
 
-// new-image的消费操作
-//
-//
-// Parameters:
-//  - Request
-func (p *TableServiceClient) GetNewImage(request *GetNewImageRequest) (r *GetNewImageResult_, err error) {
-	if err = p.sendGetNewImage(request); err != nil {
-		return
-	}
-	return p.recvGetNewImage()
-}
-
-func (p *TableServiceClient) sendGetNewImage(request *GetNewImageRequest) (err error) {
-	oprot := p.OutputProtocol
-	if oprot == nil {
-		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.OutputProtocol = oprot
-	}
-	p.SeqId++
-	if err = oprot.WriteMessageBegin("getNewImage", thrift.CALL, p.SeqId); err != nil {
-		return
-	}
-	args := GetNewImageArgs{
-		Request: request,
-	}
-	if err = args.Write(oprot); err != nil {
-		return
-	}
-	if err = oprot.WriteMessageEnd(); err != nil {
-		return
-	}
-	return oprot.Flush()
-}
-
-func (p *TableServiceClient) recvGetNewImage() (value *GetNewImageResult_, err error) {
-	iprot := p.InputProtocol
-	if iprot == nil {
-		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.InputProtocol = iprot
-	}
-	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
-	if err != nil {
-		return
-	}
-	if mTypeId == thrift.EXCEPTION {
-		error76 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error77 error
-		error77, err = error76.Read(iprot)
-		if err != nil {
-			return
-		}
-		if err = iprot.ReadMessageEnd(); err != nil {
-			return
-		}
-		err = error77
-		return
-	}
-	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getNewImage failed: out of sequence response")
-		return
-	}
-	result := GetNewImageResult{}
-	if err = result.Read(iprot); err != nil {
-		return
-	}
-	if err = iprot.ReadMessageEnd(); err != nil {
-		return
-	}
-	if result.Se != nil {
-		err = result.Se
-		return
-	}
-	value = result.GetSuccess()
-	return
-}
-
 type TableServiceProcessor struct {
 	*common.BaseServiceProcessor
 }
 
 func NewTableServiceProcessor(handler TableService) *TableServiceProcessor {
-	self78 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self78.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
-	self78.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
-	self78.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
-	self78.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
-	self78.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
-	self78.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
-	self78.AddToProcessorMap("putToRebuildIndex", &tableServiceProcessorPutToRebuildIndex{handler: handler})
-	self78.AddToProcessorMap("getNewImage", &tableServiceProcessorGetNewImage{handler: handler})
-	return self78
+	self74 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self74.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
+	self74.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
+	self74.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
+	self74.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
+	self74.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
+	self74.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
+	self74.AddToProcessorMap("putToRebuildIndex", &tableServiceProcessorPutToRebuildIndex{handler: handler})
+	return self74
 }
 
 type tableServiceProcessorGet struct {
@@ -1057,59 +974,6 @@ func (p *tableServiceProcessorPutToRebuildIndex) Process(seqId int32, iprot, opr
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("putToRebuildIndex", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
-type tableServiceProcessorGetNewImage struct {
-	handler TableService
-}
-
-func (p *tableServiceProcessorGetNewImage) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := GetNewImageArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("getNewImage", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush()
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	result := GetNewImageResult{}
-	var retval *GetNewImageResult_
-	var err2 error
-	if retval, err2 = p.handler.GetNewImage(args.Request); err2 != nil {
-		switch v := err2.(type) {
-		case *errors.ServiceException:
-			result.Se = v
-		default:
-			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getNewImage: "+err2.Error())
-			oprot.WriteMessageBegin("getNewImage", thrift.EXCEPTION, seqId)
-			x.Write(oprot)
-			oprot.WriteMessageEnd()
-			oprot.Flush()
-			return true, err2
-		}
-	} else {
-		result.Success = retval
-	}
-	if err2 = oprot.WriteMessageBegin("getNewImage", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -2799,242 +2663,4 @@ func (p *PutToRebuildIndexResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("PutToRebuildIndexResult(%+v)", *p)
-}
-
-type GetNewImageArgs struct {
-	Request *GetNewImageRequest `thrift:"request,1" json:"request"`
-}
-
-func NewGetNewImageArgs() *GetNewImageArgs {
-	return &GetNewImageArgs{}
-}
-
-var GetNewImageArgs_Request_DEFAULT *GetNewImageRequest
-
-func (p *GetNewImageArgs) GetRequest() *GetNewImageRequest {
-	if !p.IsSetRequest() {
-		return GetNewImageArgs_Request_DEFAULT
-	}
-	return p.Request
-}
-func (p *GetNewImageArgs) IsSetRequest() bool {
-	return p.Request != nil
-}
-
-func (p *GetNewImageArgs) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *GetNewImageArgs) ReadField1(iprot thrift.TProtocol) error {
-	p.Request = &GetNewImageRequest{}
-	if err := p.Request.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Request, err)
-	}
-	return nil
-}
-
-func (p *GetNewImageArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("getNewImage_args"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *GetNewImageArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:request: %s", p, err)
-	}
-	if err := p.Request.Write(oprot); err != nil {
-		return fmt.Errorf("%T error writing struct: %s", p.Request, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:request: %s", p, err)
-	}
-	return err
-}
-
-func (p *GetNewImageArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("GetNewImageArgs(%+v)", *p)
-}
-
-type GetNewImageResult struct {
-	Success *GetNewImageResult_      `thrift:"success,0" json:"success"`
-	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
-}
-
-func NewGetNewImageResult() *GetNewImageResult {
-	return &GetNewImageResult{}
-}
-
-var GetNewImageResult_Success_DEFAULT *GetNewImageResult_
-
-func (p *GetNewImageResult) GetSuccess() *GetNewImageResult_ {
-	if !p.IsSetSuccess() {
-		return GetNewImageResult_Success_DEFAULT
-	}
-	return p.Success
-}
-
-var GetNewImageResult_Se_DEFAULT *errors.ServiceException
-
-func (p *GetNewImageResult) GetSe() *errors.ServiceException {
-	if !p.IsSetSe() {
-		return GetNewImageResult_Se_DEFAULT
-	}
-	return p.Se
-}
-func (p *GetNewImageResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *GetNewImageResult) IsSetSe() bool {
-	return p.Se != nil
-}
-
-func (p *GetNewImageResult) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 0:
-			if err := p.ReadField0(iprot); err != nil {
-				return err
-			}
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
-}
-
-func (p *GetNewImageResult) ReadField0(iprot thrift.TProtocol) error {
-	p.Success = &GetNewImageResult_{}
-	if err := p.Success.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
-	}
-	return nil
-}
-
-func (p *GetNewImageResult) ReadField1(iprot thrift.TProtocol) error {
-	p.Se = &errors.ServiceException{}
-	if err := p.Se.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
-	}
-	return nil
-}
-
-func (p *GetNewImageResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("getNewImage_result"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField0(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
-}
-
-func (p *GetNewImageResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Success, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *GetNewImageResult) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSe() {
-		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
-		}
-		if err := p.Se.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
-		}
-	}
-	return err
-}
-
-func (p *GetNewImageResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("GetNewImageResult(%+v)", *p)
 }
