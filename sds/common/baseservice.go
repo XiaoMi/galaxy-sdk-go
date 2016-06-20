@@ -592,7 +592,7 @@ func (p *GetServerVersionResult) ReadField0(iprot thrift.TProtocol) error {
 	p.Success = &Version{
 		Major: 1,
 
-		Patch: "5a7196a8",
+		Patch: "c7d8b4ac",
 	}
 	if err := p.Success.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
@@ -720,7 +720,7 @@ func (p *ValidateClientVersionArgs) ReadField1(iprot thrift.TProtocol) error {
 	p.ClientVersion = &Version{
 		Major: 1,
 
-		Patch: "5a7196a8",
+		Patch: "c7d8b4ac",
 	}
 	if err := p.ClientVersion.Read(iprot); err != nil {
 		return fmt.Errorf("%T error reading struct: %s", p.ClientVersion, err)

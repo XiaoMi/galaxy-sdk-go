@@ -287,6 +287,40 @@ func CannedAclFromString(s string) (CannedAcl, error) {
 
 func CannedAclPtr(v CannedAcl) *CannedAcl { return &v }
 
+type Permission int64
+
+const (
+	Permission_READ  Permission = 1
+	Permission_WRITE Permission = 2
+	Permission_ADMIN Permission = 3
+)
+
+func (p Permission) String() string {
+	switch p {
+	case Permission_READ:
+		return "Permission_READ"
+	case Permission_WRITE:
+		return "Permission_WRITE"
+	case Permission_ADMIN:
+		return "Permission_ADMIN"
+	}
+	return "<UNSET>"
+}
+
+func PermissionFromString(s string) (Permission, error) {
+	switch s {
+	case "Permission_READ":
+		return Permission_READ, nil
+	case "Permission_WRITE":
+		return Permission_WRITE, nil
+	case "Permission_ADMIN":
+		return Permission_ADMIN, nil
+	}
+	return Permission(0), fmt.Errorf("not a valid Permission string")
+}
+
+func PermissionPtr(v Permission) *Permission { return &v }
+
 //stream view type
 type StreamViewType int64
 
@@ -3172,17 +3206,19 @@ func (p *TableSchema) String() string {
 }
 
 type TableMetadata struct {
-	TableId                 *string              `thrift:"tableId,1" json:"tableId"`
-	DeveloperId             *string              `thrift:"developerId,2" json:"developerId"`
-	AppAcl                  AclConf              `thrift:"appAcl,3" json:"appAcl"`
-	Quota                   *TableQuota          `thrift:"quota,4" json:"quota"`
-	Throughput              *ProvisionThroughput `thrift:"throughput,5" json:"throughput"`
-	Description             *string              `thrift:"description,6" json:"description"`
-	Stream                  *StreamSpec          `thrift:"stream,7" json:"stream"`
-	EnableSysSnapshot       *bool                `thrift:"enableSysSnapshot,8" json:"enableSysSnapshot"`
-	ExceededThroughput      *ProvisionThroughput `thrift:"exceededThroughput,9" json:"exceededThroughput"`
-	SlaveThroughput         *ProvisionThroughput `thrift:"slaveThroughput,10" json:"slaveThroughput"`
-	ExceededSlaveThroughput *ProvisionThroughput `thrift:"exceededSlaveThroughput,11" json:"exceededSlaveThroughput"`
+	TableId                 *string                 `thrift:"tableId,1" json:"tableId"`
+	DeveloperId             *string                 `thrift:"developerId,2" json:"developerId"`
+	AppAcl                  AclConf                 `thrift:"appAcl,3" json:"appAcl"`
+	Quota                   *TableQuota             `thrift:"quota,4" json:"quota"`
+	Throughput              *ProvisionThroughput    `thrift:"throughput,5" json:"throughput"`
+	Description             *string                 `thrift:"description,6" json:"description"`
+	Stream                  *StreamSpec             `thrift:"stream,7" json:"stream"`
+	EnableSysSnapshot       *bool                   `thrift:"enableSysSnapshot,8" json:"enableSysSnapshot"`
+	ExceededThroughput      *ProvisionThroughput    `thrift:"exceededThroughput,9" json:"exceededThroughput"`
+	SlaveThroughput         *ProvisionThroughput    `thrift:"slaveThroughput,10" json:"slaveThroughput"`
+	ExceededSlaveThroughput *ProvisionThroughput    `thrift:"exceededSlaveThroughput,11" json:"exceededSlaveThroughput"`
+	Acl                     map[string][]Permission `thrift:"acl,12" json:"acl"`
+	SpaceId                 *string                 `thrift:"spaceId,13" json:"spaceId"`
 }
 
 func NewTableMetadata() *TableMetadata {
@@ -3284,6 +3320,21 @@ func (p *TableMetadata) GetExceededSlaveThroughput() *ProvisionThroughput {
 	}
 	return p.ExceededSlaveThroughput
 }
+
+var TableMetadata_Acl_DEFAULT map[string][]Permission
+
+func (p *TableMetadata) GetAcl() map[string][]Permission {
+	return p.Acl
+}
+
+var TableMetadata_SpaceId_DEFAULT string
+
+func (p *TableMetadata) GetSpaceId() string {
+	if !p.IsSetSpaceId() {
+		return TableMetadata_SpaceId_DEFAULT
+	}
+	return *p.SpaceId
+}
 func (p *TableMetadata) IsSetTableId() bool {
 	return p.TableId != nil
 }
@@ -3326,6 +3377,14 @@ func (p *TableMetadata) IsSetSlaveThroughput() bool {
 
 func (p *TableMetadata) IsSetExceededSlaveThroughput() bool {
 	return p.ExceededSlaveThroughput != nil
+}
+
+func (p *TableMetadata) IsSetAcl() bool {
+	return p.Acl != nil
+}
+
+func (p *TableMetadata) IsSetSpaceId() bool {
+	return p.SpaceId != nil
 }
 
 func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
@@ -3383,6 +3442,14 @@ func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
 			}
 		case 11:
 			if err := p.ReadField11(iprot); err != nil {
+				return err
+			}
+		case 12:
+			if err := p.ReadField12(iprot); err != nil {
+				return err
+			}
+		case 13:
+			if err := p.ReadField13(iprot); err != nil {
 				return err
 			}
 		default:
@@ -3525,6 +3592,56 @@ func (p *TableMetadata) ReadField11(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *TableMetadata) ReadField12(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(map[string][]Permission, size)
+	p.Acl = tMap
+	for i := 0; i < size; i++ {
+		var _key22 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key22 = v
+		}
+		_, size, err := iprot.ReadListBegin()
+		if err != nil {
+			return fmt.Errorf("error reading list begin: %s", err)
+		}
+		tSlice := make([]Permission, 0, size)
+		_val23 := tSlice
+		for i := 0; i < size; i++ {
+			var _elem24 Permission
+			if v, err := iprot.ReadI32(); err != nil {
+				return fmt.Errorf("error reading field 0: %s", err)
+			} else {
+				temp := Permission(v)
+				_elem24 = temp
+			}
+			_val23 = append(_val23, _elem24)
+		}
+		if err := iprot.ReadListEnd(); err != nil {
+			return fmt.Errorf("error reading list end: %s", err)
+		}
+		p.Acl[_key22] = _val23
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
+	}
+	return nil
+}
+
+func (p *TableMetadata) ReadField13(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 13: %s", err)
+	} else {
+		p.SpaceId = &v
+	}
+	return nil
+}
+
 func (p *TableMetadata) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("TableMetadata"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -3560,6 +3677,12 @@ func (p *TableMetadata) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField11(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField12(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField13(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -3750,6 +3873,55 @@ func (p *TableMetadata) writeField11(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 11:exceededSlaveThroughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableMetadata) writeField12(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAcl() {
+		if err := oprot.WriteFieldBegin("acl", thrift.MAP, 12); err != nil {
+			return fmt.Errorf("%T write field begin error 12:acl: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.LIST, len(p.Acl)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.Acl {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := oprot.WriteListBegin(thrift.I32, len(v)); err != nil {
+				return fmt.Errorf("error writing list begin: %s", err)
+			}
+			for _, v := range v {
+				if err := oprot.WriteI32(int32(v)); err != nil {
+					return fmt.Errorf("%T. (0) field write error: %s", p, err)
+				}
+			}
+			if err := oprot.WriteListEnd(); err != nil {
+				return fmt.Errorf("error writing list end: %s", err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 12:acl: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableMetadata) writeField13(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSpaceId() {
+		if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 13); err != nil {
+			return fmt.Errorf("%T write field begin error 13:spaceId: %s", p, err)
+		}
+		if err := oprot.WriteString(string(*p.SpaceId)); err != nil {
+			return fmt.Errorf("%T.spaceId (13) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 13:spaceId: %s", p, err)
 		}
 	}
 	return err
@@ -4726,17 +4898,17 @@ func (p *TableSplit) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key22 string
+		var _key25 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key22 = v
+			_key25 = v
 		}
-		_val23 := &Datum{}
-		if err := _val23.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val23, err)
+		_val26 := &Datum{}
+		if err := _val26.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val26, err)
 		}
-		p.StartKey[_key22] = _val23
+		p.StartKey[_key25] = _val26
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -4752,17 +4924,17 @@ func (p *TableSplit) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key24 string
+		var _key27 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key24 = v
+			_key27 = v
 		}
-		_val25 := &Datum{}
-		if err := _val25.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val25, err)
+		_val28 := &Datum{}
+		if err := _val28.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val28, err)
 		}
-		p.StopKey[_key24] = _val25
+		p.StopKey[_key27] = _val28
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -4947,17 +5119,17 @@ func (p *GetRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key26 string
+		var _key29 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key26 = v
+			_key29 = v
 		}
-		_val27 := &Datum{}
-		if err := _val27.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val27, err)
+		_val30 := &Datum{}
+		if err := _val30.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val30, err)
 		}
-		p.Keys[_key26] = _val27
+		p.Keys[_key29] = _val30
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -4973,13 +5145,13 @@ func (p *GetRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem28 string
+		var _elem31 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem28 = v
+			_elem31 = v
 		}
-		p.Attributes = append(p.Attributes, _elem28)
+		p.Attributes = append(p.Attributes, _elem31)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -5137,17 +5309,17 @@ func (p *GetResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Item = tMap
 	for i := 0; i < size; i++ {
-		var _key29 string
+		var _key32 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key29 = v
+			_key32 = v
 		}
-		_val30 := &Datum{}
-		if err := _val30.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val30, err)
+		_val33 := &Datum{}
+		if err := _val33.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val33, err)
 		}
-		p.Item[_key29] = _val30
+		p.Item[_key32] = _val33
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5306,17 +5478,17 @@ func (p *PutRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key31 string
+		var _key34 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key31 = v
+			_key34 = v
 		}
-		_val32 := &Datum{}
-		if err := _val32.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val32, err)
+		_val35 := &Datum{}
+		if err := _val35.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val35, err)
 		}
-		p.Record[_key31] = _val32
+		p.Record[_key34] = _val35
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5615,17 +5787,17 @@ func (p *IncrementRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key33 string
+		var _key36 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key33 = v
+			_key36 = v
 		}
-		_val34 := &Datum{}
-		if err := _val34.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val34, err)
+		_val37 := &Datum{}
+		if err := _val37.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val37, err)
 		}
-		p.Keys[_key33] = _val34
+		p.Keys[_key36] = _val37
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5641,17 +5813,17 @@ func (p *IncrementRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key35 string
+		var _key38 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key35 = v
+			_key38 = v
 		}
-		_val36 := &Datum{}
-		if err := _val36.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val36, err)
+		_val39 := &Datum{}
+		if err := _val39.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val39, err)
 		}
-		p.Amounts[_key35] = _val36
+		p.Amounts[_key38] = _val39
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5812,17 +5984,17 @@ func (p *IncrementResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key37 string
+		var _key40 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key37 = v
+			_key40 = v
 		}
-		_val38 := &Datum{}
-		if err := _val38.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val38, err)
+		_val41 := &Datum{}
+		if err := _val41.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val41, err)
 		}
-		p.Amounts[_key37] = _val38
+		p.Amounts[_key40] = _val41
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5996,17 +6168,17 @@ func (p *RemoveRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key39 string
+		var _key42 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key39 = v
+			_key42 = v
 		}
-		_val40 := &Datum{}
-		if err := _val40.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val40, err)
+		_val43 := &Datum{}
+		if err := _val43.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val43, err)
 		}
-		p.Keys[_key39] = _val40
+		p.Keys[_key42] = _val43
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6022,13 +6194,13 @@ func (p *RemoveRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem41 string
+		var _elem44 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem41 = v
+			_elem44 = v
 		}
-		p.Attributes = append(p.Attributes, _elem41)
+		p.Attributes = append(p.Attributes, _elem44)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -6886,17 +7058,17 @@ func (p *ScanRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key42 string
+		var _key45 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key42 = v
+			_key45 = v
 		}
-		_val43 := &Datum{}
-		if err := _val43.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val43, err)
+		_val46 := &Datum{}
+		if err := _val46.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val46, err)
 		}
-		p.StartKey[_key42] = _val43
+		p.StartKey[_key45] = _val46
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6912,17 +7084,17 @@ func (p *ScanRequest) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key44 string
+		var _key47 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key44 = v
+			_key47 = v
 		}
-		_val45 := &Datum{}
-		if err := _val45.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val45, err)
+		_val48 := &Datum{}
+		if err := _val48.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val48, err)
 		}
-		p.StopKey[_key44] = _val45
+		p.StopKey[_key47] = _val48
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6938,13 +7110,13 @@ func (p *ScanRequest) ReadField5(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem46 string
+		var _elem49 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem46 = v
+			_elem49 = v
 		}
-		p.Attributes = append(p.Attributes, _elem46)
+		p.Attributes = append(p.Attributes, _elem49)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7370,17 +7542,17 @@ func (p *ScanResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.NextStartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key47 string
+		var _key50 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key47 = v
+			_key50 = v
 		}
-		_val48 := &Datum{}
-		if err := _val48.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val48, err)
+		_val51 := &Datum{}
+		if err := _val51.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val51, err)
 		}
-		p.NextStartKey[_key47] = _val48
+		p.NextStartKey[_key50] = _val51
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7401,24 +7573,24 @@ func (p *ScanResult_) ReadField2(iprot thrift.TProtocol) error {
 			return fmt.Errorf("error reading map begin: %s", err)
 		}
 		tMap := make(Dictionary, size)
-		_elem49 := tMap
+		_elem52 := tMap
 		for i := 0; i < size; i++ {
-			var _key50 string
+			var _key53 string
 			if v, err := iprot.ReadString(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
-				_key50 = v
+				_key53 = v
 			}
-			_val51 := &Datum{}
-			if err := _val51.Read(iprot); err != nil {
-				return fmt.Errorf("%T error reading struct: %s", _val51, err)
+			_val54 := &Datum{}
+			if err := _val54.Read(iprot); err != nil {
+				return fmt.Errorf("%T error reading struct: %s", _val54, err)
 			}
-			_elem49[_key50] = _val51
+			_elem52[_key53] = _val54
 		}
 		if err := iprot.ReadMapEnd(); err != nil {
 			return fmt.Errorf("error reading map end: %s", err)
 		}
-		p.Records = append(p.Records, _elem49)
+		p.Records = append(p.Records, _elem52)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8203,11 +8375,11 @@ func (p *BatchRequest) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchRequestItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem52 := &BatchRequestItem{}
-		if err := _elem52.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem52, err)
+		_elem55 := &BatchRequestItem{}
+		if err := _elem55.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
 		}
-		p.Items = append(p.Items, _elem52)
+		p.Items = append(p.Items, _elem55)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8318,11 +8490,11 @@ func (p *BatchResult_) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchResultItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem53 := &BatchResultItem{}
-		if err := _elem53.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem53, err)
+		_elem56 := &BatchResultItem{}
+		if err := _elem56.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem56, err)
 		}
-		p.Items = append(p.Items, _elem53)
+		p.Items = append(p.Items, _elem56)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8469,19 +8641,19 @@ func (p *InternalMutationLogEntry) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(map[string][]byte, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key54 string
+		var _key57 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key54 = v
+			_key57 = v
 		}
-		var _val55 []byte
+		var _val58 []byte
 		if v, err := iprot.ReadBinary(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_val55 = v
+			_val58 = v
 		}
-		p.Record[_key54] = _val55
+		p.Record[_key57] = _val58
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -8704,17 +8876,17 @@ func (p *MutationLogEntry) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key56 string
+		var _key59 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key56 = v
+			_key59 = v
 		}
-		_val57 := &Datum{}
-		if err := _val57.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val57, err)
+		_val60 := &Datum{}
+		if err := _val60.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val60, err)
 		}
-		p.Record[_key56] = _val57
+		p.Record[_key59] = _val60
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -8946,17 +9118,17 @@ func (p *RecordImage) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key58 string
+		var _key61 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key58 = v
+			_key61 = v
 		}
-		_val59 := &Datum{}
-		if err := _val59.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val59, err)
+		_val62 := &Datum{}
+		if err := _val62.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val62, err)
 		}
-		p.Record[_key58] = _val59
+		p.Record[_key61] = _val62
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)

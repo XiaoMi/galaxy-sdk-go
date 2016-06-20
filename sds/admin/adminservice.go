@@ -123,26 +123,36 @@ type AdminService interface {
 	//
 	// Parameters:
 	//  - PhoneNumber
-	SubscribePhoneAlert(phoneNumber string) (err error)
+	//  - SpaceId
+	SubscribePhoneAlert(phoneNumber string, spaceId string) (err error)
 	// 取消关注电话
 	//
 	// Parameters:
 	//  - PhoneNumber
-	UnsubscribePhoneAlert(phoneNumber string) (err error)
+	//  - SpaceId
+	UnsubscribePhoneAlert(phoneNumber string, spaceId string) (err error)
 	// 添加关注邮箱
 	//
 	// Parameters:
 	//  - Email
-	SubscribeEmailAlert(email string) (err error)
+	//  - SpaceId
+	SubscribeEmailAlert(email string, spaceId string) (err error)
 	// 取消关注邮箱
 	//
 	// Parameters:
 	//  - Email
-	UnsubscribeEmailAlert(email string) (err error)
+	//  - SpaceId
+	UnsubscribeEmailAlert(email string, spaceId string) (err error)
 	// 查看所有关注电话
-	ListSubscribedPhone() (r []string, err error)
+	//
+	// Parameters:
+	//  - SpaceId
+	ListSubscribedPhone(spaceId string) (r []string, err error)
 	// 查看所有关注邮箱地址
-	ListSubscribedEmail() (r []string, err error)
+	//
+	// Parameters:
+	//  - SpaceId
+	ListSubscribedEmail(spaceId string) (r []string, err error)
 	// 获取表空间历史大小
 	//
 	// Parameters:
@@ -196,7 +206,10 @@ type AdminService interface {
 	//  - SnapshotName
 	GetSnapshotState(tableName string, snapshotName string) (r table.SnapshotState, err error)
 	// 查询用户各种quota的使用情况
-	GetQuotaInfo() (r *QuotaInfo, err error)
+	//
+	// Parameters:
+	//  - SpaceId
+	GetQuotaInfo(spaceId string) (r *QuotaInfo, err error)
 }
 
 //结构化存储管理接口
@@ -1631,14 +1644,15 @@ func (p *AdminServiceClient) recvPutClientMetrics() (err error) {
 //
 // Parameters:
 //  - PhoneNumber
-func (p *AdminServiceClient) SubscribePhoneAlert(phoneNumber string) (err error) {
-	if err = p.sendSubscribePhoneAlert(phoneNumber); err != nil {
+//  - SpaceId
+func (p *AdminServiceClient) SubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
+	if err = p.sendSubscribePhoneAlert(phoneNumber, spaceId); err != nil {
 		return
 	}
 	return p.recvSubscribePhoneAlert()
 }
 
-func (p *AdminServiceClient) sendSubscribePhoneAlert(phoneNumber string) (err error) {
+func (p *AdminServiceClient) sendSubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -1650,6 +1664,7 @@ func (p *AdminServiceClient) sendSubscribePhoneAlert(phoneNumber string) (err er
 	}
 	args := SubscribePhoneAlertArgs{
 		PhoneNumber: phoneNumber,
+		SpaceId:     spaceId,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -1705,14 +1720,15 @@ func (p *AdminServiceClient) recvSubscribePhoneAlert() (err error) {
 //
 // Parameters:
 //  - PhoneNumber
-func (p *AdminServiceClient) UnsubscribePhoneAlert(phoneNumber string) (err error) {
-	if err = p.sendUnsubscribePhoneAlert(phoneNumber); err != nil {
+//  - SpaceId
+func (p *AdminServiceClient) UnsubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
+	if err = p.sendUnsubscribePhoneAlert(phoneNumber, spaceId); err != nil {
 		return
 	}
 	return p.recvUnsubscribePhoneAlert()
 }
 
-func (p *AdminServiceClient) sendUnsubscribePhoneAlert(phoneNumber string) (err error) {
+func (p *AdminServiceClient) sendUnsubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -1724,6 +1740,7 @@ func (p *AdminServiceClient) sendUnsubscribePhoneAlert(phoneNumber string) (err 
 	}
 	args := UnsubscribePhoneAlertArgs{
 		PhoneNumber: phoneNumber,
+		SpaceId:     spaceId,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -1779,14 +1796,15 @@ func (p *AdminServiceClient) recvUnsubscribePhoneAlert() (err error) {
 //
 // Parameters:
 //  - Email
-func (p *AdminServiceClient) SubscribeEmailAlert(email string) (err error) {
-	if err = p.sendSubscribeEmailAlert(email); err != nil {
+//  - SpaceId
+func (p *AdminServiceClient) SubscribeEmailAlert(email string, spaceId string) (err error) {
+	if err = p.sendSubscribeEmailAlert(email, spaceId); err != nil {
 		return
 	}
 	return p.recvSubscribeEmailAlert()
 }
 
-func (p *AdminServiceClient) sendSubscribeEmailAlert(email string) (err error) {
+func (p *AdminServiceClient) sendSubscribeEmailAlert(email string, spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -1797,7 +1815,8 @@ func (p *AdminServiceClient) sendSubscribeEmailAlert(email string) (err error) {
 		return
 	}
 	args := SubscribeEmailAlertArgs{
-		Email: email,
+		Email:   email,
+		SpaceId: spaceId,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -1853,14 +1872,15 @@ func (p *AdminServiceClient) recvSubscribeEmailAlert() (err error) {
 //
 // Parameters:
 //  - Email
-func (p *AdminServiceClient) UnsubscribeEmailAlert(email string) (err error) {
-	if err = p.sendUnsubscribeEmailAlert(email); err != nil {
+//  - SpaceId
+func (p *AdminServiceClient) UnsubscribeEmailAlert(email string, spaceId string) (err error) {
+	if err = p.sendUnsubscribeEmailAlert(email, spaceId); err != nil {
 		return
 	}
 	return p.recvUnsubscribeEmailAlert()
 }
 
-func (p *AdminServiceClient) sendUnsubscribeEmailAlert(email string) (err error) {
+func (p *AdminServiceClient) sendUnsubscribeEmailAlert(email string, spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -1871,7 +1891,8 @@ func (p *AdminServiceClient) sendUnsubscribeEmailAlert(email string) (err error)
 		return
 	}
 	args := UnsubscribeEmailAlertArgs{
-		Email: email,
+		Email:   email,
+		SpaceId: spaceId,
 	}
 	if err = args.Write(oprot); err != nil {
 		return
@@ -1924,14 +1945,17 @@ func (p *AdminServiceClient) recvUnsubscribeEmailAlert() (err error) {
 }
 
 // 查看所有关注电话
-func (p *AdminServiceClient) ListSubscribedPhone() (r []string, err error) {
-	if err = p.sendListSubscribedPhone(); err != nil {
+//
+// Parameters:
+//  - SpaceId
+func (p *AdminServiceClient) ListSubscribedPhone(spaceId string) (r []string, err error) {
+	if err = p.sendListSubscribedPhone(spaceId); err != nil {
 		return
 	}
 	return p.recvListSubscribedPhone()
 }
 
-func (p *AdminServiceClient) sendListSubscribedPhone() (err error) {
+func (p *AdminServiceClient) sendListSubscribedPhone(spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -1941,7 +1965,9 @@ func (p *AdminServiceClient) sendListSubscribedPhone() (err error) {
 	if err = oprot.WriteMessageBegin("listSubscribedPhone", thrift.CALL, p.SeqId); err != nil {
 		return
 	}
-	args := ListSubscribedPhoneArgs{}
+	args := ListSubscribedPhoneArgs{
+		SpaceId: spaceId,
+	}
 	if err = args.Write(oprot); err != nil {
 		return
 	}
@@ -1994,14 +2020,17 @@ func (p *AdminServiceClient) recvListSubscribedPhone() (value []string, err erro
 }
 
 // 查看所有关注邮箱地址
-func (p *AdminServiceClient) ListSubscribedEmail() (r []string, err error) {
-	if err = p.sendListSubscribedEmail(); err != nil {
+//
+// Parameters:
+//  - SpaceId
+func (p *AdminServiceClient) ListSubscribedEmail(spaceId string) (r []string, err error) {
+	if err = p.sendListSubscribedEmail(spaceId); err != nil {
 		return
 	}
 	return p.recvListSubscribedEmail()
 }
 
-func (p *AdminServiceClient) sendListSubscribedEmail() (err error) {
+func (p *AdminServiceClient) sendListSubscribedEmail(spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -2011,7 +2040,9 @@ func (p *AdminServiceClient) sendListSubscribedEmail() (err error) {
 	if err = oprot.WriteMessageBegin("listSubscribedEmail", thrift.CALL, p.SeqId); err != nil {
 		return
 	}
-	args := ListSubscribedEmailArgs{}
+	args := ListSubscribedEmailArgs{
+		SpaceId: spaceId,
+	}
 	if err = args.Write(oprot); err != nil {
 		return
 	}
@@ -2749,14 +2780,17 @@ func (p *AdminServiceClient) recvGetSnapshotState() (value table.SnapshotState, 
 }
 
 // 查询用户各种quota的使用情况
-func (p *AdminServiceClient) GetQuotaInfo() (r *QuotaInfo, err error) {
-	if err = p.sendGetQuotaInfo(); err != nil {
+//
+// Parameters:
+//  - SpaceId
+func (p *AdminServiceClient) GetQuotaInfo(spaceId string) (r *QuotaInfo, err error) {
+	if err = p.sendGetQuotaInfo(spaceId); err != nil {
 		return
 	}
 	return p.recvGetQuotaInfo()
 }
 
-func (p *AdminServiceClient) sendGetQuotaInfo() (err error) {
+func (p *AdminServiceClient) sendGetQuotaInfo(spaceId string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -2766,7 +2800,9 @@ func (p *AdminServiceClient) sendGetQuotaInfo() (err error) {
 	if err = oprot.WriteMessageBegin("getQuotaInfo", thrift.CALL, p.SeqId); err != nil {
 		return
 	}
-	args := GetQuotaInfoArgs{}
+	args := GetQuotaInfoArgs{
+		SpaceId: spaceId,
+	}
 	if err = args.Write(oprot); err != nil {
 		return
 	}
@@ -3867,7 +3903,7 @@ func (p *adminServiceProcessorSubscribePhoneAlert) Process(seqId int32, iprot, o
 	iprot.ReadMessageEnd()
 	result := SubscribePhoneAlertResult{}
 	var err2 error
-	if err2 = p.handler.SubscribePhoneAlert(args.PhoneNumber); err2 != nil {
+	if err2 = p.handler.SubscribePhoneAlert(args.PhoneNumber, args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -3917,7 +3953,7 @@ func (p *adminServiceProcessorUnsubscribePhoneAlert) Process(seqId int32, iprot,
 	iprot.ReadMessageEnd()
 	result := UnsubscribePhoneAlertResult{}
 	var err2 error
-	if err2 = p.handler.UnsubscribePhoneAlert(args.PhoneNumber); err2 != nil {
+	if err2 = p.handler.UnsubscribePhoneAlert(args.PhoneNumber, args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -3967,7 +4003,7 @@ func (p *adminServiceProcessorSubscribeEmailAlert) Process(seqId int32, iprot, o
 	iprot.ReadMessageEnd()
 	result := SubscribeEmailAlertResult{}
 	var err2 error
-	if err2 = p.handler.SubscribeEmailAlert(args.Email); err2 != nil {
+	if err2 = p.handler.SubscribeEmailAlert(args.Email, args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -4017,7 +4053,7 @@ func (p *adminServiceProcessorUnsubscribeEmailAlert) Process(seqId int32, iprot,
 	iprot.ReadMessageEnd()
 	result := UnsubscribeEmailAlertResult{}
 	var err2 error
-	if err2 = p.handler.UnsubscribeEmailAlert(args.Email); err2 != nil {
+	if err2 = p.handler.UnsubscribeEmailAlert(args.Email, args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -4068,7 +4104,7 @@ func (p *adminServiceProcessorListSubscribedPhone) Process(seqId int32, iprot, o
 	result := ListSubscribedPhoneResult{}
 	var retval []string
 	var err2 error
-	if retval, err2 = p.handler.ListSubscribedPhone(); err2 != nil {
+	if retval, err2 = p.handler.ListSubscribedPhone(args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -4121,7 +4157,7 @@ func (p *adminServiceProcessorListSubscribedEmail) Process(seqId int32, iprot, o
 	result := ListSubscribedEmailResult{}
 	var retval []string
 	var err2 error
-	if retval, err2 = p.handler.ListSubscribedEmail(); err2 != nil {
+	if retval, err2 = p.handler.ListSubscribedEmail(args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -4636,7 +4672,7 @@ func (p *adminServiceProcessorGetQuotaInfo) Process(seqId int32, iprot, oprot th
 	result := GetQuotaInfoResult{}
 	var retval *QuotaInfo
 	var err2 error
-	if retval, err2 = p.handler.GetQuotaInfo(); err2 != nil {
+	if retval, err2 = p.handler.GetQuotaInfo(args.SpaceId); err2 != nil {
 		switch v := err2.(type) {
 		case *errors.ServiceException:
 			result.Se = v
@@ -9034,6 +9070,7 @@ func (p *PutClientMetricsResult) String() string {
 
 type SubscribePhoneAlertArgs struct {
 	PhoneNumber string `thrift:"phoneNumber,1" json:"phoneNumber"`
+	SpaceId     string `thrift:"spaceId,2" json:"spaceId"`
 }
 
 func NewSubscribePhoneAlertArgs() *SubscribePhoneAlertArgs {
@@ -9042,6 +9079,10 @@ func NewSubscribePhoneAlertArgs() *SubscribePhoneAlertArgs {
 
 func (p *SubscribePhoneAlertArgs) GetPhoneNumber() string {
 	return p.PhoneNumber
+}
+
+func (p *SubscribePhoneAlertArgs) GetSpaceId() string {
+	return p.SpaceId
 }
 func (p *SubscribePhoneAlertArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
@@ -9058,6 +9099,10 @@ func (p *SubscribePhoneAlertArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
 				return err
 			}
 		default:
@@ -9084,11 +9129,23 @@ func (p *SubscribePhoneAlertArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *SubscribePhoneAlertArgs) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *SubscribePhoneAlertArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("subscribePhoneAlert_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9109,6 +9166,19 @@ func (p *SubscribePhoneAlertArgs) writeField1(oprot thrift.TProtocol) (err error
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
 		return fmt.Errorf("%T write field end error 1:phoneNumber: %s", p, err)
+	}
+	return err
+}
+
+func (p *SubscribePhoneAlertArgs) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (2) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:spaceId: %s", p, err)
 	}
 	return err
 }
@@ -9220,6 +9290,7 @@ func (p *SubscribePhoneAlertResult) String() string {
 
 type UnsubscribePhoneAlertArgs struct {
 	PhoneNumber string `thrift:"phoneNumber,1" json:"phoneNumber"`
+	SpaceId     string `thrift:"spaceId,2" json:"spaceId"`
 }
 
 func NewUnsubscribePhoneAlertArgs() *UnsubscribePhoneAlertArgs {
@@ -9228,6 +9299,10 @@ func NewUnsubscribePhoneAlertArgs() *UnsubscribePhoneAlertArgs {
 
 func (p *UnsubscribePhoneAlertArgs) GetPhoneNumber() string {
 	return p.PhoneNumber
+}
+
+func (p *UnsubscribePhoneAlertArgs) GetSpaceId() string {
+	return p.SpaceId
 }
 func (p *UnsubscribePhoneAlertArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
@@ -9244,6 +9319,10 @@ func (p *UnsubscribePhoneAlertArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
 				return err
 			}
 		default:
@@ -9270,11 +9349,23 @@ func (p *UnsubscribePhoneAlertArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *UnsubscribePhoneAlertArgs) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *UnsubscribePhoneAlertArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("unsubscribePhoneAlert_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9295,6 +9386,19 @@ func (p *UnsubscribePhoneAlertArgs) writeField1(oprot thrift.TProtocol) (err err
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
 		return fmt.Errorf("%T write field end error 1:phoneNumber: %s", p, err)
+	}
+	return err
+}
+
+func (p *UnsubscribePhoneAlertArgs) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (2) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:spaceId: %s", p, err)
 	}
 	return err
 }
@@ -9405,7 +9509,8 @@ func (p *UnsubscribePhoneAlertResult) String() string {
 }
 
 type SubscribeEmailAlertArgs struct {
-	Email string `thrift:"email,1" json:"email"`
+	Email   string `thrift:"email,1" json:"email"`
+	SpaceId string `thrift:"spaceId,2" json:"spaceId"`
 }
 
 func NewSubscribeEmailAlertArgs() *SubscribeEmailAlertArgs {
@@ -9414,6 +9519,10 @@ func NewSubscribeEmailAlertArgs() *SubscribeEmailAlertArgs {
 
 func (p *SubscribeEmailAlertArgs) GetEmail() string {
 	return p.Email
+}
+
+func (p *SubscribeEmailAlertArgs) GetSpaceId() string {
+	return p.SpaceId
 }
 func (p *SubscribeEmailAlertArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
@@ -9430,6 +9539,10 @@ func (p *SubscribeEmailAlertArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
 				return err
 			}
 		default:
@@ -9456,11 +9569,23 @@ func (p *SubscribeEmailAlertArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *SubscribeEmailAlertArgs) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *SubscribeEmailAlertArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("subscribeEmailAlert_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9481,6 +9606,19 @@ func (p *SubscribeEmailAlertArgs) writeField1(oprot thrift.TProtocol) (err error
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
 		return fmt.Errorf("%T write field end error 1:email: %s", p, err)
+	}
+	return err
+}
+
+func (p *SubscribeEmailAlertArgs) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (2) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:spaceId: %s", p, err)
 	}
 	return err
 }
@@ -9591,7 +9729,8 @@ func (p *SubscribeEmailAlertResult) String() string {
 }
 
 type UnsubscribeEmailAlertArgs struct {
-	Email string `thrift:"email,1" json:"email"`
+	Email   string `thrift:"email,1" json:"email"`
+	SpaceId string `thrift:"spaceId,2" json:"spaceId"`
 }
 
 func NewUnsubscribeEmailAlertArgs() *UnsubscribeEmailAlertArgs {
@@ -9600,6 +9739,10 @@ func NewUnsubscribeEmailAlertArgs() *UnsubscribeEmailAlertArgs {
 
 func (p *UnsubscribeEmailAlertArgs) GetEmail() string {
 	return p.Email
+}
+
+func (p *UnsubscribeEmailAlertArgs) GetSpaceId() string {
+	return p.SpaceId
 }
 func (p *UnsubscribeEmailAlertArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
@@ -9616,6 +9759,10 @@ func (p *UnsubscribeEmailAlertArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
 				return err
 			}
 		default:
@@ -9642,11 +9789,23 @@ func (p *UnsubscribeEmailAlertArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *UnsubscribeEmailAlertArgs) ReadField2(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 2: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *UnsubscribeEmailAlertArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("unsubscribeEmailAlert_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -9667,6 +9826,19 @@ func (p *UnsubscribeEmailAlertArgs) writeField1(oprot thrift.TProtocol) (err err
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
 		return fmt.Errorf("%T write field end error 1:email: %s", p, err)
+	}
+	return err
+}
+
+func (p *UnsubscribeEmailAlertArgs) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (2) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:spaceId: %s", p, err)
 	}
 	return err
 }
@@ -9777,12 +9949,16 @@ func (p *UnsubscribeEmailAlertResult) String() string {
 }
 
 type ListSubscribedPhoneArgs struct {
+	SpaceId string `thrift:"spaceId,1" json:"spaceId"`
 }
 
 func NewListSubscribedPhoneArgs() *ListSubscribedPhoneArgs {
 	return &ListSubscribedPhoneArgs{}
 }
 
+func (p *ListSubscribedPhoneArgs) GetSpaceId() string {
+	return p.SpaceId
+}
 func (p *ListSubscribedPhoneArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
@@ -9795,8 +9971,15 @@ func (p *ListSubscribedPhoneArgs) Read(iprot thrift.TProtocol) error {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err := iprot.Skip(fieldTypeId); err != nil {
-			return err
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
 		}
 		if err := iprot.ReadFieldEnd(); err != nil {
 			return err
@@ -9808,9 +9991,21 @@ func (p *ListSubscribedPhoneArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *ListSubscribedPhoneArgs) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *ListSubscribedPhoneArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("listSubscribedPhone_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return fmt.Errorf("write field stop error: %s", err)
@@ -9819,6 +10014,19 @@ func (p *ListSubscribedPhoneArgs) Write(oprot thrift.TProtocol) error {
 		return fmt.Errorf("write struct stop error: %s", err)
 	}
 	return nil
+}
+
+func (p *ListSubscribedPhoneArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (1) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:spaceId: %s", p, err)
+	}
+	return err
 }
 
 func (p *ListSubscribedPhoneArgs) String() string {
@@ -9990,12 +10198,16 @@ func (p *ListSubscribedPhoneResult) String() string {
 }
 
 type ListSubscribedEmailArgs struct {
+	SpaceId string `thrift:"spaceId,1" json:"spaceId"`
 }
 
 func NewListSubscribedEmailArgs() *ListSubscribedEmailArgs {
 	return &ListSubscribedEmailArgs{}
 }
 
+func (p *ListSubscribedEmailArgs) GetSpaceId() string {
+	return p.SpaceId
+}
 func (p *ListSubscribedEmailArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
@@ -10008,8 +10220,15 @@ func (p *ListSubscribedEmailArgs) Read(iprot thrift.TProtocol) error {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err := iprot.Skip(fieldTypeId); err != nil {
-			return err
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
 		}
 		if err := iprot.ReadFieldEnd(); err != nil {
 			return err
@@ -10021,9 +10240,21 @@ func (p *ListSubscribedEmailArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *ListSubscribedEmailArgs) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *ListSubscribedEmailArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("listSubscribedEmail_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return fmt.Errorf("write field stop error: %s", err)
@@ -10032,6 +10263,19 @@ func (p *ListSubscribedEmailArgs) Write(oprot thrift.TProtocol) error {
 		return fmt.Errorf("write struct stop error: %s", err)
 	}
 	return nil
+}
+
+func (p *ListSubscribedEmailArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (1) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:spaceId: %s", p, err)
+	}
+	return err
 }
 
 func (p *ListSubscribedEmailArgs) String() string {
@@ -12404,12 +12648,16 @@ func (p *GetSnapshotStateResult) String() string {
 }
 
 type GetQuotaInfoArgs struct {
+	SpaceId string `thrift:"spaceId,1" json:"spaceId"`
 }
 
 func NewGetQuotaInfoArgs() *GetQuotaInfoArgs {
 	return &GetQuotaInfoArgs{}
 }
 
+func (p *GetQuotaInfoArgs) GetSpaceId() string {
+	return p.SpaceId
+}
 func (p *GetQuotaInfoArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error: %s", p, err)
@@ -12422,8 +12670,15 @@ func (p *GetQuotaInfoArgs) Read(iprot thrift.TProtocol) error {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err := iprot.Skip(fieldTypeId); err != nil {
-			return err
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
 		}
 		if err := iprot.ReadFieldEnd(); err != nil {
 			return err
@@ -12435,9 +12690,21 @@ func (p *GetQuotaInfoArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *GetQuotaInfoArgs) ReadField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return fmt.Errorf("error reading field 1: %s", err)
+	} else {
+		p.SpaceId = v
+	}
+	return nil
+}
+
 func (p *GetQuotaInfoArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("getQuotaInfo_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return fmt.Errorf("write field stop error: %s", err)
@@ -12446,6 +12713,19 @@ func (p *GetQuotaInfoArgs) Write(oprot thrift.TProtocol) error {
 		return fmt.Errorf("write struct stop error: %s", err)
 	}
 	return nil
+}
+
+func (p *GetQuotaInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("spaceId", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:spaceId: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.SpaceId)); err != nil {
+		return fmt.Errorf("%T.spaceId (1) field write error: %s", p, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:spaceId: %s", p, err)
+	}
+	return err
 }
 
 func (p *GetQuotaInfoArgs) String() string {

@@ -25,11 +25,13 @@ import (
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"strconv"
+	"sort"
 	"time"
 	"github.com/golang/glog"
 	"github.com/nu7hatch/gouuid"
@@ -207,11 +209,15 @@ func (p *SdsTHttpClient) Flush() error {
 	if err != nil {
 		return thrift.NewTTransportExceptionFromError(err)
 	}
+	canonicalizeResource := p.canonicalizeResource(uri)
+
 	for k, v := range *p.createHeaders() {
 		glog.V(2).Infof("%s: %s", k, v)
 		p.header.Add(k, v)
 	}
+
 	req.Header = p.header
+	req.Header.Add(auth.HK_AUTHORIZATION, p.authHeaders(&req.Header, canonicalizeResource))
 	glog.V(2).Infof("Send http request: %s\n", p.requestBuffer)
 	response, err := p.httpClient.Do(req)
 	if err != nil {
@@ -234,6 +240,95 @@ func (p *SdsTHttpClient) Flush() error {
 	return nil
 }
 
+func (p *SdsTHttpClient) canonicalizeResource(uri string) string {
+	subResource := [] string {"acl", "quota", "uploads", "partNumber", "uploadId",
+		"storageAccessToken", "metadata"}
+	parseUrl, _ := url.Parse(uri)
+	result := parseUrl.Path
+	queryArgs := parseUrl.Query()
+	canonicalizeQuery := make([]string, 0, len(queryArgs))
+	for k, _ := range queryArgs {
+		if (p.contains(&subResource, k)) {
+			canonicalizeQuery = append(canonicalizeQuery, k);
+		}
+	}
+	if len(canonicalizeQuery) != 0 {
+		i := 0
+		sort.Strings(canonicalizeQuery)
+		for _, v := range canonicalizeQuery {
+			if i == 0 {
+				result = fmt.Sprintf("%s?", result)
+			} else {
+				result = fmt.Sprintf("%s&", result)
+			}
+			values := queryArgs[v]
+			if len(values) == 1 && values[0] == "" {
+				result = fmt.Sprintf("%s%s", result, v)
+			} else {
+				result = fmt.Sprintf("%s%s=%s", result, v, values[len(values) -1])
+			}
+			i++
+		}
+	}
+	return result
+}
+
+func (p *SdsTHttpClient) contains(arr *[]string, target string) bool {
+	for _, v := range *arr {
+		if strings.EqualFold(v, target) {
+			return true;
+		}
+	}
+	return false;
+}
+
+func (p *SdsTHttpClient) getDate() string {
+	t := time.Now()
+	timeStr := t.UTC().Format(time.RFC1123)
+	return strings.Replace(timeStr, "UTC", "GMT", -1)
+}
+
+func (p *SdsTHttpClient) authHeaders(headers *http.Header, canonicalizeResource string) string {
+	stringToSign := "POST\n"
+	stringToSign = fmt.Sprintf("%s%s\n", stringToSign, p.getHeader(headers, "content-md5"))
+	stringToSign = fmt.Sprintf("%s%s\n\n", stringToSign, p.getHeader(headers, "content-type"))
+	stringToSign = fmt.Sprintf("%s%s", stringToSign, p.canonicalizeXiaomiHeaders(headers))
+	stringToSign = fmt.Sprintf("%s%s", stringToSign, canonicalizeResource)
+	mac := hmac.New(sha1.New, []byte(*p.credential.SecretKey))
+	mac.Write([]byte(stringToSign))
+	return fmt.Sprintf("Galaxy-V3 %s:%s", *p.credential.SecretKeyId, base64.StdEncoding.EncodeToString(mac.Sum(nil)))
+}
+
+func (p *SdsTHttpClient) canonicalizeXiaomiHeaders(headers *http.Header) string {
+	canonicalizedKeys := make([]string, 0, len(*headers))
+	canonicalizedHeaders := make(map[string]string)
+	for k, v := range *headers {
+		lowerKey := strings.ToLower(k)
+		if (strings.Index(lowerKey, "x-xiaomi-") == 0) {
+			canonicalizedKeys = append(canonicalizedKeys, lowerKey)
+			canonicalizedHeaders[lowerKey] = strings.Join(v, ",")
+		}
+	}
+	sort.Strings(canonicalizedKeys)
+	result := ""
+	for i := range canonicalizedKeys {
+		result = fmt.Sprintf("%s%s:%s\n", result, canonicalizedKeys[i],
+			canonicalizedHeaders[canonicalizedKeys[i]]);
+	}
+	return result
+}
+
+
+func (p *SdsTHttpClient) getHeader(headers *http.Header, key string) string {
+	for k, v := range *headers {
+		lowerKey := strings.ToLower(k)
+		if (strings.EqualFold(key, lowerKey)) {
+			return v[0];
+		}
+	}
+	return "";
+}
+
 func (p *SdsTHttpClient) createHeaders() *map[string]string {
 	var _ = sha1.Size
 	headers := make(map[string]string)
@@ -242,34 +337,10 @@ func (p *SdsTHttpClient) createHeaders() *map[string]string {
 	md5c := md5.New()
 	io.WriteString(md5c, p.requestBuffer.String())
 	headers[auth.HK_CONTENT_MD5] = fmt.Sprintf("%x", md5c.Sum(nil))
-
-	authHeader := auth.NewHttpAuthorizationHeader()
-	authHeader.Algorithm = auth.MacAlgorithmPtr(auth.MacAlgorithm_HmacSHA1)
-	authHeader.UserType = p.credential.GetTypeA1()
-	authHeader.SecretKeyId = p.credential.SecretKeyId
-
-	signedHeaders := make([]string, 0, len(headers))
-	signedValues := make([]string, 0, len(headers))
-	for k, v := range headers {
-		signedHeaders = append(signedHeaders, k)
-		signedValues = append(signedValues, v)
-	}
-	rawstr := strings.Join(signedValues, "\n")
-	mac := hmac.New(sha1.New, []byte(*p.credential.SecretKey))
-	mac.Write([]byte(rawstr))
-	authHeader.Signature = thrift.StringPtr(fmt.Sprintf("%x", mac.Sum(nil)))
-	authHeader.SignedHeaders = &signedHeaders
-	buff := thrift.NewTMemoryBuffer()
-	proto := thrift.NewTJSONProtocol(buff)
-	authHeader.Write(proto)
-	proto.Flush()
-	headers[auth.HK_AUTHORIZATION] = buff.String()
-
-	headers["Host"] = p.url.Host
+	headers[auth.MI_DATE] = p.getDate()
 	headers["Content-Type"] = "application/x-thrift"
 	headers["Content-Length"] = strconv.Itoa(p.requestBuffer.Len())
 	headers["User-Agent"] = p.agent
-
 	return &headers
 }
 

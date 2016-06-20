@@ -2188,15 +2188,19 @@ func (p *SnapshotTableView) String() string {
 }
 
 type QuotaInfo struct {
-	AccountId         *string `thrift:"accountId,1" json:"accountId"`
-	TableNum          *int32  `thrift:"tableNum,2" json:"tableNum"`
-	TableNumUsed      *int32  `thrift:"tableNumUsed,3" json:"tableNumUsed"`
-	Space             *int64  `thrift:"space,4" json:"space"`
-	SpaceUsed         *int64  `thrift:"spaceUsed,5" json:"spaceUsed"`
-	ReadCapacity      *int64  `thrift:"readCapacity,6" json:"readCapacity"`
-	ReadCapacityUsed  *int64  `thrift:"readCapacityUsed,7" json:"readCapacityUsed"`
-	WriteCapacity     *int64  `thrift:"writeCapacity,8" json:"writeCapacity"`
-	WriteCapacityUsed *int64  `thrift:"writeCapacityUsed,9" json:"writeCapacityUsed"`
+	AccountId              *string `thrift:"accountId,1" json:"accountId"`
+	TableNum               *int32  `thrift:"tableNum,2" json:"tableNum"`
+	TableNumUsed           *int32  `thrift:"tableNumUsed,3" json:"tableNumUsed"`
+	Space                  *int64  `thrift:"space,4" json:"space"`
+	SpaceUsed              *int64  `thrift:"spaceUsed,5" json:"spaceUsed"`
+	ReadCapacity           *int64  `thrift:"readCapacity,6" json:"readCapacity"`
+	ReadCapacityUsed       *int64  `thrift:"readCapacityUsed,7" json:"readCapacityUsed"`
+	WriteCapacity          *int64  `thrift:"writeCapacity,8" json:"writeCapacity"`
+	WriteCapacityUsed      *int64  `thrift:"writeCapacityUsed,9" json:"writeCapacityUsed"`
+	SlaveReadCapacity      *int64  `thrift:"slaveReadCapacity,10" json:"slaveReadCapacity"`
+	SlaveReadCapacityUsed  *int64  `thrift:"slaveReadCapacityUsed,11" json:"slaveReadCapacityUsed"`
+	SlaveWriteCapacity     *int64  `thrift:"slaveWriteCapacity,12" json:"slaveWriteCapacity"`
+	SlaveWriteCapacityUsed *int64  `thrift:"slaveWriteCapacityUsed,13" json:"slaveWriteCapacityUsed"`
 }
 
 func NewQuotaInfo() *QuotaInfo {
@@ -2283,6 +2287,42 @@ func (p *QuotaInfo) GetWriteCapacityUsed() int64 {
 	}
 	return *p.WriteCapacityUsed
 }
+
+var QuotaInfo_SlaveReadCapacity_DEFAULT int64
+
+func (p *QuotaInfo) GetSlaveReadCapacity() int64 {
+	if !p.IsSetSlaveReadCapacity() {
+		return QuotaInfo_SlaveReadCapacity_DEFAULT
+	}
+	return *p.SlaveReadCapacity
+}
+
+var QuotaInfo_SlaveReadCapacityUsed_DEFAULT int64
+
+func (p *QuotaInfo) GetSlaveReadCapacityUsed() int64 {
+	if !p.IsSetSlaveReadCapacityUsed() {
+		return QuotaInfo_SlaveReadCapacityUsed_DEFAULT
+	}
+	return *p.SlaveReadCapacityUsed
+}
+
+var QuotaInfo_SlaveWriteCapacity_DEFAULT int64
+
+func (p *QuotaInfo) GetSlaveWriteCapacity() int64 {
+	if !p.IsSetSlaveWriteCapacity() {
+		return QuotaInfo_SlaveWriteCapacity_DEFAULT
+	}
+	return *p.SlaveWriteCapacity
+}
+
+var QuotaInfo_SlaveWriteCapacityUsed_DEFAULT int64
+
+func (p *QuotaInfo) GetSlaveWriteCapacityUsed() int64 {
+	if !p.IsSetSlaveWriteCapacityUsed() {
+		return QuotaInfo_SlaveWriteCapacityUsed_DEFAULT
+	}
+	return *p.SlaveWriteCapacityUsed
+}
 func (p *QuotaInfo) IsSetAccountId() bool {
 	return p.AccountId != nil
 }
@@ -2317,6 +2357,22 @@ func (p *QuotaInfo) IsSetWriteCapacity() bool {
 
 func (p *QuotaInfo) IsSetWriteCapacityUsed() bool {
 	return p.WriteCapacityUsed != nil
+}
+
+func (p *QuotaInfo) IsSetSlaveReadCapacity() bool {
+	return p.SlaveReadCapacity != nil
+}
+
+func (p *QuotaInfo) IsSetSlaveReadCapacityUsed() bool {
+	return p.SlaveReadCapacityUsed != nil
+}
+
+func (p *QuotaInfo) IsSetSlaveWriteCapacity() bool {
+	return p.SlaveWriteCapacity != nil
+}
+
+func (p *QuotaInfo) IsSetSlaveWriteCapacityUsed() bool {
+	return p.SlaveWriteCapacityUsed != nil
 }
 
 func (p *QuotaInfo) Read(iprot thrift.TProtocol) error {
@@ -2366,6 +2422,22 @@ func (p *QuotaInfo) Read(iprot thrift.TProtocol) error {
 			}
 		case 9:
 			if err := p.ReadField9(iprot); err != nil {
+				return err
+			}
+		case 10:
+			if err := p.ReadField10(iprot); err != nil {
+				return err
+			}
+		case 11:
+			if err := p.ReadField11(iprot); err != nil {
+				return err
+			}
+		case 12:
+			if err := p.ReadField12(iprot); err != nil {
+				return err
+			}
+		case 13:
+			if err := p.ReadField13(iprot); err != nil {
 				return err
 			}
 		default:
@@ -2464,6 +2536,42 @@ func (p *QuotaInfo) ReadField9(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *QuotaInfo) ReadField10(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 10: %s", err)
+	} else {
+		p.SlaveReadCapacity = &v
+	}
+	return nil
+}
+
+func (p *QuotaInfo) ReadField11(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 11: %s", err)
+	} else {
+		p.SlaveReadCapacityUsed = &v
+	}
+	return nil
+}
+
+func (p *QuotaInfo) ReadField12(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 12: %s", err)
+	} else {
+		p.SlaveWriteCapacity = &v
+	}
+	return nil
+}
+
+func (p *QuotaInfo) ReadField13(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 13: %s", err)
+	} else {
+		p.SlaveWriteCapacityUsed = &v
+	}
+	return nil
+}
+
 func (p *QuotaInfo) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("QuotaInfo"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -2493,6 +2601,18 @@ func (p *QuotaInfo) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField9(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField10(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField11(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField12(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField13(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -2634,6 +2754,66 @@ func (p *QuotaInfo) writeField9(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 9:writeCapacityUsed: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *QuotaInfo) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSlaveReadCapacity() {
+		if err := oprot.WriteFieldBegin("slaveReadCapacity", thrift.I64, 10); err != nil {
+			return fmt.Errorf("%T write field begin error 10:slaveReadCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.SlaveReadCapacity)); err != nil {
+			return fmt.Errorf("%T.slaveReadCapacity (10) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 10:slaveReadCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *QuotaInfo) writeField11(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSlaveReadCapacityUsed() {
+		if err := oprot.WriteFieldBegin("slaveReadCapacityUsed", thrift.I64, 11); err != nil {
+			return fmt.Errorf("%T write field begin error 11:slaveReadCapacityUsed: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.SlaveReadCapacityUsed)); err != nil {
+			return fmt.Errorf("%T.slaveReadCapacityUsed (11) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 11:slaveReadCapacityUsed: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *QuotaInfo) writeField12(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSlaveWriteCapacity() {
+		if err := oprot.WriteFieldBegin("slaveWriteCapacity", thrift.I64, 12); err != nil {
+			return fmt.Errorf("%T write field begin error 12:slaveWriteCapacity: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.SlaveWriteCapacity)); err != nil {
+			return fmt.Errorf("%T.slaveWriteCapacity (12) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 12:slaveWriteCapacity: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *QuotaInfo) writeField13(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSlaveWriteCapacityUsed() {
+		if err := oprot.WriteFieldBegin("slaveWriteCapacityUsed", thrift.I64, 13); err != nil {
+			return fmt.Errorf("%T write field begin error 13:slaveWriteCapacityUsed: %s", p, err)
+		}
+		if err := oprot.WriteI64(int64(*p.SlaveWriteCapacityUsed)); err != nil {
+			return fmt.Errorf("%T.slaveWriteCapacityUsed (13) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 13:slaveWriteCapacityUsed: %s", p, err)
 		}
 	}
 	return err

@@ -39,12 +39,12 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "   findAllAppInfo()")
 	fmt.Fprintln(os.Stderr, "  i64 getTableSize(string tableName)")
 	fmt.Fprintln(os.Stderr, "  void putClientMetrics(ClientMetrics clientMetrics)")
-	fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string phoneNumber)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string phoneNumber)")
-	fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string email)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string email)")
-	fmt.Fprintln(os.Stderr, "   listSubscribedPhone()")
-	fmt.Fprintln(os.Stderr, "   listSubscribedEmail()")
+	fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string phoneNumber, string spaceId)")
+	fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string phoneNumber, string spaceId)")
+	fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string email, string spaceId)")
+	fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string email, string spaceId)")
+	fmt.Fprintln(os.Stderr, "   listSubscribedPhone(string spaceId)")
+	fmt.Fprintln(os.Stderr, "   listSubscribedEmail(string spaceId)")
 	fmt.Fprintln(os.Stderr, "   getTableHistorySize(string tableName, i64 startDate, i64 stopDate)")
 	fmt.Fprintln(os.Stderr, "  void renameTable(string srcName, string destName)")
 	fmt.Fprintln(os.Stderr, "  TableSnapshots listSnapshots(string tableName)")
@@ -54,7 +54,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "   listAllSnapshots()")
 	fmt.Fprintln(os.Stderr, "  void cancelSnapshotTable(string tableName, string snapshotName)")
 	fmt.Fprintln(os.Stderr, "  SnapshotState getSnapshotState(string tableName, string snapshotName)")
-	fmt.Fprintln(os.Stderr, "  QuotaInfo getQuotaInfo()")
+	fmt.Fprintln(os.Stderr, "  QuotaInfo getQuotaInfo(string spaceId)")
 	fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
 	fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
 	fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
@@ -472,59 +472,71 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "subscribePhoneAlert":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 1 args")
+		if flag.NArg()-1 != 2 {
+			fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.SubscribePhoneAlert(value0))
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.SubscribePhoneAlert(value0, value1))
 		fmt.Print("\n")
 		break
 	case "unsubscribePhoneAlert":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 1 args")
+		if flag.NArg()-1 != 2 {
+			fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.UnsubscribePhoneAlert(value0))
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.UnsubscribePhoneAlert(value0, value1))
 		fmt.Print("\n")
 		break
 	case "subscribeEmailAlert":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 1 args")
+		if flag.NArg()-1 != 2 {
+			fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.SubscribeEmailAlert(value0))
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.SubscribeEmailAlert(value0, value1))
 		fmt.Print("\n")
 		break
 	case "unsubscribeEmailAlert":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 1 args")
+		if flag.NArg()-1 != 2 {
+			fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.UnsubscribeEmailAlert(value0))
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.UnsubscribeEmailAlert(value0, value1))
 		fmt.Print("\n")
 		break
 	case "listSubscribedPhone":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 0 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 1 args")
 			flag.Usage()
 		}
-		fmt.Print(client.ListSubscribedPhone())
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		fmt.Print(client.ListSubscribedPhone(value0))
 		fmt.Print("\n")
 		break
 	case "listSubscribedEmail":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 0 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 1 args")
 			flag.Usage()
 		}
-		fmt.Print(client.ListSubscribedEmail())
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		fmt.Print(client.ListSubscribedEmail(value0))
 		fmt.Print("\n")
 		break
 	case "getTableHistorySize":
@@ -534,14 +546,14 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		argvalue1, err162 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err162 != nil {
+		argvalue1, err168 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+		if err168 != nil {
 			Usage()
 			return
 		}
 		value1 := argvalue1
-		argvalue2, err163 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-		if err163 != nil {
+		argvalue2, err169 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+		if err169 != nil {
 			Usage()
 			return
 		}
@@ -644,11 +656,13 @@ func main() {
 		fmt.Print("\n")
 		break
 	case "getQuotaInfo":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "GetQuotaInfo requires 0 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "GetQuotaInfo requires 1 args")
 			flag.Usage()
 		}
-		fmt.Print(client.GetQuotaInfo())
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		fmt.Print(client.GetQuotaInfo(value0))
 		fmt.Print("\n")
 		break
 	case "getServerVersion":
@@ -664,19 +678,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
 			flag.Usage()
 		}
-		arg179 := flag.Arg(1)
-		mbTrans180 := thrift.NewTMemoryBufferLen(len(arg179))
-		defer mbTrans180.Close()
-		_, err181 := mbTrans180.WriteString(arg179)
-		if err181 != nil {
+		arg186 := flag.Arg(1)
+		mbTrans187 := thrift.NewTMemoryBufferLen(len(arg186))
+		defer mbTrans187.Close()
+		_, err188 := mbTrans187.WriteString(arg186)
+		if err188 != nil {
 			Usage()
 			return
 		}
-		factory182 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt183 := factory182.GetProtocol(mbTrans180)
+		factory189 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt190 := factory189.GetProtocol(mbTrans187)
 		argvalue0 := admin.NewVersion()
-		err184 := argvalue0.Read(jsProt183)
-		if err184 != nil {
+		err191 := argvalue0.Read(jsProt190)
+		if err191 != nil {
 			Usage()
 			return
 		}

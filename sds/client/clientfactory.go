@@ -228,46 +228,46 @@ func (p *AdminClientProxy) PutClientMetrics(clientMetrics *admin.ClientMetrics) 
 	return client.PutClientMetrics(clientMetrics)
 }
 
-func (p *AdminClientProxy) SubscribePhoneAlert(tableName string, phoneNumber string) (err error) {
+func (p *AdminClientProxy) SubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=subscribePhoneAlert")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.SubscribePhoneAlert(tableName, phoneNumber)
+	return client.SubscribePhoneAlert(phoneNumber, spaceId)
 }
 
-func (p *AdminClientProxy) UnsubscribePhoneAlert(tableName string, phoneNumber string) (err error) {
+func (p *AdminClientProxy) UnsubscribePhoneAlert(phoneNumber string, spaceId string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=unsubscribePhoneAlert")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.UnsubscribePhoneAlert(tableName, phoneNumber)
+	return client.UnsubscribePhoneAlert(phoneNumber, spaceId)
 }
 
-func (p *AdminClientProxy) SubscribeEmailAlert(tableName string, email string) (err error) {
+func (p *AdminClientProxy) SubscribeEmailAlert(email string, spaceId string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=subscribeEmailAlert")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.SubscribeEmailAlert(tableName, email)
+	return client.SubscribeEmailAlert(email, spaceId)
 }
 
-func (p *AdminClientProxy) UnsubscribeEmailAlert(tableName string, email string) (err error) {
+func (p *AdminClientProxy) UnsubscribeEmailAlert(email string, spaceId string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=unsubscribeEmailAlert")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.UnsubscribeEmailAlert(tableName, email)
+	return client.UnsubscribeEmailAlert(email, spaceId)
 }
 
-func (p *AdminClientProxy) ListSubscribedPhone(tableName string) (r []string, err error) {
+func (p *AdminClientProxy) ListSubscribedPhone(spaceId string) (r []string, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=listSubscribedPhone")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.ListSubscribedPhone(tableName)
+	return client.ListSubscribedPhone(spaceId)
 }
 
-func (p *AdminClientProxy) ListSubscribedEmail(tableName string) (r []string, err error) {
+func (p *AdminClientProxy) ListSubscribedEmail(spaceId string) (r []string, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=listSubscribedEmail")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.ListSubscribedEmail(tableName)
+	return client.ListSubscribedEmail(spaceId)
 }
 
 func (p *AdminClientProxy) GetTableHistorySize(tableName string, startDate int64, stopDate int64) (r map[int64]int64, err error) {
@@ -275,97 +275,6 @@ func (p *AdminClientProxy) GetTableHistorySize(tableName string, startDate int64
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetTableHistorySize(tableName, startDate, stopDate)
-}
-
-func (p *AdminClientProxy) CreateSubscriber(tableName string, subscriberName string) (r *table.Subscriber, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=createSubscriber")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.CreateSubscriber(tableName, subscriberName)
-}
-
-func (p *AdminClientProxy) DeleteSubscriber(tableName string, subscriberName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=deleteSubscriber")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.DeleteSubscriber(tableName, subscriberName)
-}
-
-func (p *AdminClientProxy) GetSubscriber(tableName string, subscriberName string) (r *table.Subscriber, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSubscriber")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetSubscriber(tableName, subscriberName)
-}
-
-func (p *AdminClientProxy) GetSubscribers(tableName string) (r []*table.Subscriber, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSubscribers")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetSubscribers(tableName)
-}
-
-func (p *AdminClientProxy) GetPartitions(tableName string) (r []*table.Partition, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getPartitions")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetPartitions(tableName)
-}
-
-func (p *AdminClientProxy) GetPartition(tableName string, partitionId int32) (r *table.Partition, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getPartition")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetPartition(tableName, partitionId)
-}
-
-func (p *AdminClientProxy) GetPartitionConsumedOffset(tableName string, partitionId int32, subscriberName string) (r *table.ConsumedOffset, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getPartitionConsumedOffset")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetPartitionConsumedOffset(tableName, partitionId, subscriberName)
-}
-
-func (p *AdminClientProxy) GetPartitionCommittedOffset(tableName string, partitionId int32, subscriberName string) (r *table.CommittedOffset, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getPartitionCommittedOffset")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetPartitionCommittedOffset(tableName, partitionId, subscriberName)
-}
-
-func (p *AdminClientProxy) CreateSinker(subscribedTableName string, subscriberName string, sinkedTableName string, endpoint string) (r *table.Sinker, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=createSinker")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.CreateSinker(subscribedTableName, subscriberName, sinkedTableName, endpoint)
-}
-
-func (p *AdminClientProxy) DeleteSinker(tableName string) (err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=deleteSinker")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.DeleteSinker(tableName)
-}
-
-func (p *AdminClientProxy) GetSinker(tableName string) (r *table.Sinker, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSinker")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetSinker(tableName)
-}
-
-func (p *AdminClientProxy) GetPartitionStatistics(tableName string, partitionId int32) (r *table.PartitionStatistics, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getPartitionStatistics")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetPartitionStatistics(tableName, partitionId)
-}
-
-func (p *AdminClientProxy) GetSubscriberStatistics(tableName string, partitionId int32, subscriberName string) (r *table.SubscriberStatistics, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSubscriberStatistics")
-	defer trans.Close()
-	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.GetSubscriberStatistics(tableName, partitionId, subscriberName)
 }
 
 func (p *AdminClientProxy) RenameTable(srcName string, destName string) (err error) {
@@ -423,6 +332,13 @@ func (p *AdminClientProxy) GetSnapshotState(tableName string, snapshotName strin
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetSnapshotState(tableName, snapshotName)
+}
+
+func (p *AdminClientProxy) GetQuotaInfo(spaceId string) (r *admin.QuotaInfo, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetQuotaInfo(spaceId)
 }
 
 ////////////////////////////
@@ -591,34 +507,6 @@ func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchRes
 		}
 	}
 	return nil, err
-}
-
-func (p *TableClientProxy) ConsumePartitionData(request *table.DataConsumeRequest) (r *table.DataConsumeResult_, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=consumePartitionData")
-	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.ConsumePartitionData(request)
-}
-
-func (p *TableClientProxy) ConsumePartitionEdit(request *table.EditConsumeRequest) (r *table.EditConsumeResult_, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=consumePartitionEdit")
-	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.ConsumePartitionEdit(request)
-}
-
-func (p *TableClientProxy) CommitConsumedPartitionData(request *table.DataCommitRequest) (r *table.DataCommitResult_, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=commitConsumedPartitionData")
-	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.CommitConsumedPartitionData(request)
-}
-
-func (p *TableClientProxy) CommitConsumedPartitionEdit(request *table.EditCommitRequest) (r *table.EditCommitResult_, err error) {
-	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=commitConsumedPartitionEdit")
-	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.CommitConsumedPartitionEdit(request)
 }
 
 func (p *TableClientProxy) PutToRebuildIndex(request *table.PutRequest) (r *table.PutResult_, err error) {
