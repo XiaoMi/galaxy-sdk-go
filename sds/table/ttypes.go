@@ -3219,6 +3219,7 @@ type TableMetadata struct {
 	ExceededSlaveThroughput *ProvisionThroughput    `thrift:"exceededSlaveThroughput,11" json:"exceededSlaveThroughput"`
 	Acl                     map[string][]Permission `thrift:"acl,12" json:"acl"`
 	SpaceId                 *string                 `thrift:"spaceId,13" json:"spaceId"`
+	EnableEgAcl             bool                    `thrift:"enableEgAcl,14" json:"enableEgAcl"`
 }
 
 func NewTableMetadata() *TableMetadata {
@@ -3335,6 +3336,12 @@ func (p *TableMetadata) GetSpaceId() string {
 	}
 	return *p.SpaceId
 }
+
+var TableMetadata_EnableEgAcl_DEFAULT bool = false
+
+func (p *TableMetadata) GetEnableEgAcl() bool {
+	return p.EnableEgAcl
+}
 func (p *TableMetadata) IsSetTableId() bool {
 	return p.TableId != nil
 }
@@ -3385,6 +3392,10 @@ func (p *TableMetadata) IsSetAcl() bool {
 
 func (p *TableMetadata) IsSetSpaceId() bool {
 	return p.SpaceId != nil
+}
+
+func (p *TableMetadata) IsSetEnableEgAcl() bool {
+	return p.EnableEgAcl != TableMetadata_EnableEgAcl_DEFAULT
 }
 
 func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
@@ -3450,6 +3461,10 @@ func (p *TableMetadata) Read(iprot thrift.TProtocol) error {
 			}
 		case 13:
 			if err := p.ReadField13(iprot); err != nil {
+				return err
+			}
+		case 14:
+			if err := p.ReadField14(iprot); err != nil {
 				return err
 			}
 		default:
@@ -3642,6 +3657,15 @@ func (p *TableMetadata) ReadField13(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *TableMetadata) ReadField14(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 14: %s", err)
+	} else {
+		p.EnableEgAcl = v
+	}
+	return nil
+}
+
 func (p *TableMetadata) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("TableMetadata"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
@@ -3683,6 +3707,9 @@ func (p *TableMetadata) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField13(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField14(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -3922,6 +3949,21 @@ func (p *TableMetadata) writeField13(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 13:spaceId: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableMetadata) writeField14(oprot thrift.TProtocol) (err error) {
+	if p.IsSetEnableEgAcl() {
+		if err := oprot.WriteFieldBegin("enableEgAcl", thrift.BOOL, 14); err != nil {
+			return fmt.Errorf("%T write field begin error 14:enableEgAcl: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(p.EnableEgAcl)); err != nil {
+			return fmt.Errorf("%T.enableEgAcl (14) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 14:enableEgAcl: %s", p, err)
 		}
 	}
 	return err
