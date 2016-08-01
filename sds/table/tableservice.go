@@ -58,6 +58,12 @@ type TableService interface {
 	// Parameters:
 	//  - Request
 	Batch(request *BatchRequest) (r *BatchResult_, err error)
+	// 批量条件写操作，消耗各自对应的写配额。同一个batch中多个操作修改同一行数据可能导致未定义行为（数据不一致），
+	// 应当避免，另外如果一个batch包含同一行的写操作，其执行顺序是不确定的，不推荐使用
+	//
+	// Parameters:
+	//  - Request
+	BatchCheckAndMutate(request *BatchRequest) (r *BatchResult_, err error)
 	// 用于重建二级索引， 当表中存在与request相同的记录，成功写入
 	//
 	// Parameters:
@@ -529,6 +535,82 @@ func (p *TableServiceClient) recvBatch() (value *BatchResult_, err error) {
 	return
 }
 
+// 批量条件写操作，消耗各自对应的写配额。同一个batch中多个操作修改同一行数据可能导致未定义行为（数据不一致），
+// 应当避免，另外如果一个batch包含同一行的写操作，其执行顺序是不确定的，不推荐使用
+//
+// Parameters:
+//  - Request
+func (p *TableServiceClient) BatchCheckAndMutate(request *BatchRequest) (r *BatchResult_, err error) {
+	if err = p.sendBatchCheckAndMutate(request); err != nil {
+		return
+	}
+	return p.recvBatchCheckAndMutate()
+}
+
+func (p *TableServiceClient) sendBatchCheckAndMutate(request *BatchRequest) (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	if err = oprot.WriteMessageBegin("batchCheckAndMutate", thrift.CALL, p.SeqId); err != nil {
+		return
+	}
+	args := BatchCheckAndMutateArgs{
+		Request: request,
+	}
+	if err = args.Write(oprot); err != nil {
+		return
+	}
+	if err = oprot.WriteMessageEnd(); err != nil {
+		return
+	}
+	return oprot.Flush()
+}
+
+func (p *TableServiceClient) recvBatchCheckAndMutate() (value *BatchResult_, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error75 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error76 error
+		error76, err = error75.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error76
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "batchCheckAndMutate failed: out of sequence response")
+		return
+	}
+	result := BatchCheckAndMutateResult{}
+	if err = result.Read(iprot); err != nil {
+		return
+	}
+	if err = iprot.ReadMessageEnd(); err != nil {
+		return
+	}
+	if result.Se != nil {
+		err = result.Se
+		return
+	}
+	value = result.GetSuccess()
+	return
+}
+
 // 用于重建二级索引， 当表中存在与request相同的记录，成功写入
 //
 // Parameters:
@@ -573,16 +655,16 @@ func (p *TableServiceClient) recvPutToRebuildIndex() (value *PutResult_, err err
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error75 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error76 error
-		error76, err = error75.Read(iprot)
+		error77 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error78 error
+		error78, err = error77.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error76
+		err = error78
 		return
 	}
 	if p.SeqId != seqId {
@@ -609,15 +691,16 @@ type TableServiceProcessor struct {
 }
 
 func NewTableServiceProcessor(handler TableService) *TableServiceProcessor {
-	self77 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self77.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
-	self77.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
-	self77.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
-	self77.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
-	self77.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
-	self77.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
-	self77.AddToProcessorMap("putToRebuildIndex", &tableServiceProcessorPutToRebuildIndex{handler: handler})
-	return self77
+	self79 := &TableServiceProcessor{common.NewBaseServiceProcessor(handler)}
+	self79.AddToProcessorMap("get", &tableServiceProcessorGet{handler: handler})
+	self79.AddToProcessorMap("put", &tableServiceProcessorPut{handler: handler})
+	self79.AddToProcessorMap("increment", &tableServiceProcessorIncrement{handler: handler})
+	self79.AddToProcessorMap("remove", &tableServiceProcessorRemove{handler: handler})
+	self79.AddToProcessorMap("scan", &tableServiceProcessorScan{handler: handler})
+	self79.AddToProcessorMap("batch", &tableServiceProcessorBatch{handler: handler})
+	self79.AddToProcessorMap("batchCheckAndMutate", &tableServiceProcessorBatchCheckAndMutate{handler: handler})
+	self79.AddToProcessorMap("putToRebuildIndex", &tableServiceProcessorPutToRebuildIndex{handler: handler})
+	return self79
 }
 
 type tableServiceProcessorGet struct {
@@ -921,6 +1004,59 @@ func (p *tableServiceProcessorBatch) Process(seqId int32, iprot, oprot thrift.TP
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("batch", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type tableServiceProcessorBatchCheckAndMutate struct {
+	handler TableService
+}
+
+func (p *tableServiceProcessorBatchCheckAndMutate) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := BatchCheckAndMutateArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("batchCheckAndMutate", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	result := BatchCheckAndMutateResult{}
+	var retval *BatchResult_
+	var err2 error
+	if retval, err2 = p.handler.BatchCheckAndMutate(args.Request); err2 != nil {
+		switch v := err2.(type) {
+		case *errors.ServiceException:
+			result.Se = v
+		default:
+			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing batchCheckAndMutate: "+err2.Error())
+			oprot.WriteMessageBegin("batchCheckAndMutate", thrift.EXCEPTION, seqId)
+			x.Write(oprot)
+			oprot.WriteMessageEnd()
+			oprot.Flush()
+			return true, err2
+		}
+	} else {
+		result.Success = retval
+	}
+	if err2 = oprot.WriteMessageBegin("batchCheckAndMutate", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -2425,6 +2561,244 @@ func (p *BatchResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("BatchResult(%+v)", *p)
+}
+
+type BatchCheckAndMutateArgs struct {
+	Request *BatchRequest `thrift:"request,1" json:"request"`
+}
+
+func NewBatchCheckAndMutateArgs() *BatchCheckAndMutateArgs {
+	return &BatchCheckAndMutateArgs{}
+}
+
+var BatchCheckAndMutateArgs_Request_DEFAULT *BatchRequest
+
+func (p *BatchCheckAndMutateArgs) GetRequest() *BatchRequest {
+	if !p.IsSetRequest() {
+		return BatchCheckAndMutateArgs_Request_DEFAULT
+	}
+	return p.Request
+}
+func (p *BatchCheckAndMutateArgs) IsSetRequest() bool {
+	return p.Request != nil
+}
+
+func (p *BatchCheckAndMutateArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateArgs) ReadField1(iprot thrift.TProtocol) error {
+	p.Request = &BatchRequest{}
+	if err := p.Request.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Request, err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("batchCheckAndMutate_args"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("request", thrift.STRUCT, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:request: %s", p, err)
+	}
+	if err := p.Request.Write(oprot); err != nil {
+		return fmt.Errorf("%T error writing struct: %s", p.Request, err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:request: %s", p, err)
+	}
+	return err
+}
+
+func (p *BatchCheckAndMutateArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BatchCheckAndMutateArgs(%+v)", *p)
+}
+
+type BatchCheckAndMutateResult struct {
+	Success *BatchResult_            `thrift:"success,0" json:"success"`
+	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
+}
+
+func NewBatchCheckAndMutateResult() *BatchCheckAndMutateResult {
+	return &BatchCheckAndMutateResult{}
+}
+
+var BatchCheckAndMutateResult_Success_DEFAULT *BatchResult_
+
+func (p *BatchCheckAndMutateResult) GetSuccess() *BatchResult_ {
+	if !p.IsSetSuccess() {
+		return BatchCheckAndMutateResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var BatchCheckAndMutateResult_Se_DEFAULT *errors.ServiceException
+
+func (p *BatchCheckAndMutateResult) GetSe() *errors.ServiceException {
+	if !p.IsSetSe() {
+		return BatchCheckAndMutateResult_Se_DEFAULT
+	}
+	return p.Se
+}
+func (p *BatchCheckAndMutateResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *BatchCheckAndMutateResult) IsSetSe() bool {
+	return p.Se != nil
+}
+
+func (p *BatchCheckAndMutateResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.ReadField0(iprot); err != nil {
+				return err
+			}
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateResult) ReadField0(iprot thrift.TProtocol) error {
+	p.Success = &BatchResult_{}
+	if err := p.Success.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateResult) ReadField1(iprot thrift.TProtocol) error {
+	p.Se = &errors.ServiceException{}
+	if err := p.Se.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("batchCheckAndMutate_result"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *BatchCheckAndMutateResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Success, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *BatchCheckAndMutateResult) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSe() {
+		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
+		}
+		if err := p.Se.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *BatchCheckAndMutateResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BatchCheckAndMutateResult(%+v)", *p)
 }
 
 type PutToRebuildIndexArgs struct {

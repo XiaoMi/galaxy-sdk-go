@@ -509,6 +509,42 @@ func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchRes
 	return nil, err
 }
 
+func (p *TableClientProxy) BatchCheckAndMutate(request *table.BatchRequest) (r *table.BatchResult_, err error) {
+	for retry := 0; retry <= errors.MAX_RETRY; {
+		action := request.GetItems()[0].GetAction()
+		rq := request.GetItems()[0].GetRequest()
+		var tableName string
+		switch(action) {
+		case table.BatchOp_GET:
+			tableName = rq.GetGetRequest().GetTableName()
+			break
+		case table.BatchOp_PUT:
+			tableName = rq.GetPutRequest().GetTableName()
+			break
+		case table.BatchOp_INCREMENT:
+			tableName = rq.GetIncrementRequest().GetTableName()
+			break
+		case table.BatchOp_REMOVE:
+			tableName = rq.GetRemoveRequest().GetTableName()
+			break
+		}
+		query := fmt.Sprintf("type=batchCheckAndMutate&name=%s", tableName)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
+		defer trans.Close()
+		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		if r, e := client.BatchCheckAndMutate(request); e != nil {
+			if p.shouldRetry(e) {
+				err = e
+				retry += 1
+				continue
+			}
+			return r, e
+		} else {
+			return r, e
+		}
+	}
+	return nil, err
+}
 func (p *TableClientProxy) PutToRebuildIndex(request *table.PutRequest) (r *table.PutResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
 		query := fmt.Sprintf("type=putToRebuild&name=%s", request.GetTableName())

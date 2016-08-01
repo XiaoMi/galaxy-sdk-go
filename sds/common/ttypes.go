@@ -69,7 +69,7 @@ func NewVersion() *Version {
 	return &Version{
 		Major: 1,
 
-		Patch: "65edda3c",
+		Patch: "33dc456c",
 	}
 }
 
@@ -85,7 +85,7 @@ func (p *Version) GetMinor() int32 {
 	return p.Minor
 }
 
-var Version_Patch_DEFAULT string = "65edda3c"
+var Version_Patch_DEFAULT string = "33dc456c"
 
 func (p *Version) GetPatch() string {
 	return p.Patch
