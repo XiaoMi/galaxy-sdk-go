@@ -321,6 +321,41 @@ func PermissionFromString(s string) (Permission, error) {
 
 func PermissionPtr(v Permission) *Permission { return &v }
 
+//数据一致性级别
+type ConsistencyLevel int64
+
+const (
+	ConsistencyLevel_STRONG   ConsistencyLevel = 0
+	ConsistencyLevel_EVENTUAL ConsistencyLevel = 1
+	ConsistencyLevel_WEAK     ConsistencyLevel = 2
+)
+
+func (p ConsistencyLevel) String() string {
+	switch p {
+	case ConsistencyLevel_STRONG:
+		return "ConsistencyLevel_STRONG"
+	case ConsistencyLevel_EVENTUAL:
+		return "ConsistencyLevel_EVENTUAL"
+	case ConsistencyLevel_WEAK:
+		return "ConsistencyLevel_WEAK"
+	}
+	return "<UNSET>"
+}
+
+func ConsistencyLevelFromString(s string) (ConsistencyLevel, error) {
+	switch s {
+	case "ConsistencyLevel_STRONG":
+		return ConsistencyLevel_STRONG, nil
+	case "ConsistencyLevel_EVENTUAL":
+		return ConsistencyLevel_EVENTUAL, nil
+	case "ConsistencyLevel_WEAK":
+		return ConsistencyLevel_WEAK, nil
+	}
+	return ConsistencyLevel(0), fmt.Errorf("not a valid ConsistencyLevel string")
+}
+
+func ConsistencyLevelPtr(v ConsistencyLevel) *ConsistencyLevel { return &v }
+
 //stream view type
 type StreamViewType int64
 
@@ -2494,6 +2529,539 @@ func (p *EntityGroupSpec) String() string {
 	return fmt.Sprintf("EntityGroupSpec(%+v)", *p)
 }
 
+type GlobalSecondaryIndexSpec struct {
+	IndexEntityGroup        *EntityGroupSpec     `thrift:"indexEntityGroup,1" json:"indexEntityGroup"`
+	IndexPrimaryKey         IndexSpec            `thrift:"indexPrimaryKey,2" json:"indexPrimaryKey"`
+	Projections             Attributes           `thrift:"projections,3" json:"projections"`
+	ConsistencyLevel        ConsistencyLevel     `thrift:"consistencyLevel,4" json:"consistencyLevel"`
+	Unique                  bool                 `thrift:"unique,5" json:"unique"`
+	Throughput              *ProvisionThroughput `thrift:"throughput,6" json:"throughput"`
+	SlaveThroughput         *ProvisionThroughput `thrift:"slaveThroughput,7" json:"slaveThroughput"`
+	ExceededThroughput      *ProvisionThroughput `thrift:"exceededThroughput,8" json:"exceededThroughput"`
+	ExceededSlaveThroughput *ProvisionThroughput `thrift:"exceededSlaveThroughput,9" json:"exceededSlaveThroughput"`
+	PreSplits               int32                `thrift:"preSplits,10" json:"preSplits"`
+}
+
+func NewGlobalSecondaryIndexSpec() *GlobalSecondaryIndexSpec {
+	return &GlobalSecondaryIndexSpec{
+		ConsistencyLevel: 0,
+
+		PreSplits: 1,
+	}
+}
+
+var GlobalSecondaryIndexSpec_IndexEntityGroup_DEFAULT *EntityGroupSpec
+
+func (p *GlobalSecondaryIndexSpec) GetIndexEntityGroup() *EntityGroupSpec {
+	if !p.IsSetIndexEntityGroup() {
+		return GlobalSecondaryIndexSpec_IndexEntityGroup_DEFAULT
+	}
+	return p.IndexEntityGroup
+}
+
+var GlobalSecondaryIndexSpec_IndexPrimaryKey_DEFAULT IndexSpec
+
+func (p *GlobalSecondaryIndexSpec) GetIndexPrimaryKey() IndexSpec {
+	return p.IndexPrimaryKey
+}
+
+var GlobalSecondaryIndexSpec_Projections_DEFAULT Attributes
+
+func (p *GlobalSecondaryIndexSpec) GetProjections() Attributes {
+	return p.Projections
+}
+
+var GlobalSecondaryIndexSpec_ConsistencyLevel_DEFAULT ConsistencyLevel = 0
+
+func (p *GlobalSecondaryIndexSpec) GetConsistencyLevel() ConsistencyLevel {
+	return p.ConsistencyLevel
+}
+
+var GlobalSecondaryIndexSpec_Unique_DEFAULT bool = false
+
+func (p *GlobalSecondaryIndexSpec) GetUnique() bool {
+	return p.Unique
+}
+
+var GlobalSecondaryIndexSpec_Throughput_DEFAULT *ProvisionThroughput
+
+func (p *GlobalSecondaryIndexSpec) GetThroughput() *ProvisionThroughput {
+	if !p.IsSetThroughput() {
+		return GlobalSecondaryIndexSpec_Throughput_DEFAULT
+	}
+	return p.Throughput
+}
+
+var GlobalSecondaryIndexSpec_SlaveThroughput_DEFAULT *ProvisionThroughput
+
+func (p *GlobalSecondaryIndexSpec) GetSlaveThroughput() *ProvisionThroughput {
+	if !p.IsSetSlaveThroughput() {
+		return GlobalSecondaryIndexSpec_SlaveThroughput_DEFAULT
+	}
+	return p.SlaveThroughput
+}
+
+var GlobalSecondaryIndexSpec_ExceededThroughput_DEFAULT *ProvisionThroughput
+
+func (p *GlobalSecondaryIndexSpec) GetExceededThroughput() *ProvisionThroughput {
+	if !p.IsSetExceededThroughput() {
+		return GlobalSecondaryIndexSpec_ExceededThroughput_DEFAULT
+	}
+	return p.ExceededThroughput
+}
+
+var GlobalSecondaryIndexSpec_ExceededSlaveThroughput_DEFAULT *ProvisionThroughput
+
+func (p *GlobalSecondaryIndexSpec) GetExceededSlaveThroughput() *ProvisionThroughput {
+	if !p.IsSetExceededSlaveThroughput() {
+		return GlobalSecondaryIndexSpec_ExceededSlaveThroughput_DEFAULT
+	}
+	return p.ExceededSlaveThroughput
+}
+
+var GlobalSecondaryIndexSpec_PreSplits_DEFAULT int32 = 1
+
+func (p *GlobalSecondaryIndexSpec) GetPreSplits() int32 {
+	return p.PreSplits
+}
+func (p *GlobalSecondaryIndexSpec) IsSetIndexEntityGroup() bool {
+	return p.IndexEntityGroup != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetIndexPrimaryKey() bool {
+	return p.IndexPrimaryKey != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetProjections() bool {
+	return p.Projections != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetConsistencyLevel() bool {
+	return p.ConsistencyLevel != GlobalSecondaryIndexSpec_ConsistencyLevel_DEFAULT
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetUnique() bool {
+	return p.Unique != GlobalSecondaryIndexSpec_Unique_DEFAULT
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetThroughput() bool {
+	return p.Throughput != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetSlaveThroughput() bool {
+	return p.SlaveThroughput != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetExceededThroughput() bool {
+	return p.ExceededThroughput != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetExceededSlaveThroughput() bool {
+	return p.ExceededSlaveThroughput != nil
+}
+
+func (p *GlobalSecondaryIndexSpec) IsSetPreSplits() bool {
+	return p.PreSplits != GlobalSecondaryIndexSpec_PreSplits_DEFAULT
+}
+
+func (p *GlobalSecondaryIndexSpec) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error: %s", p, err)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.ReadField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.ReadField2(iprot); err != nil {
+				return err
+			}
+		case 3:
+			if err := p.ReadField3(iprot); err != nil {
+				return err
+			}
+		case 4:
+			if err := p.ReadField4(iprot); err != nil {
+				return err
+			}
+		case 5:
+			if err := p.ReadField5(iprot); err != nil {
+				return err
+			}
+		case 6:
+			if err := p.ReadField6(iprot); err != nil {
+				return err
+			}
+		case 7:
+			if err := p.ReadField7(iprot); err != nil {
+				return err
+			}
+		case 8:
+			if err := p.ReadField8(iprot); err != nil {
+				return err
+			}
+		case 9:
+			if err := p.ReadField9(iprot); err != nil {
+				return err
+			}
+		case 10:
+			if err := p.ReadField10(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField1(iprot thrift.TProtocol) error {
+	p.IndexEntityGroup = &EntityGroupSpec{
+		EnableHash: true,
+	}
+	if err := p.IndexEntityGroup.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.IndexEntityGroup, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField2(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make(IndexSpec, 0, size)
+	p.IndexPrimaryKey = tSlice
+	for i := 0; i < size; i++ {
+		_elem11 := &KeySpec{
+			Asc: true,
+		}
+		if err := _elem11.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem11, err)
+		}
+		p.IndexPrimaryKey = append(p.IndexPrimaryKey, _elem11)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list begin: %s", err)
+	}
+	tSlice := make(Attributes, 0, size)
+	p.Projections = tSlice
+	for i := 0; i < size; i++ {
+		var _elem12 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_elem12 = v
+		}
+		p.Projections = append(p.Projections, _elem12)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s", err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 4: %s", err)
+	} else {
+		temp := ConsistencyLevel(v)
+		p.ConsistencyLevel = temp
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField5(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return fmt.Errorf("error reading field 5: %s", err)
+	} else {
+		p.Unique = v
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField6(iprot thrift.TProtocol) error {
+	p.Throughput = &ProvisionThroughput{}
+	if err := p.Throughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Throughput, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField7(iprot thrift.TProtocol) error {
+	p.SlaveThroughput = &ProvisionThroughput{}
+	if err := p.SlaveThroughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.SlaveThroughput, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField8(iprot thrift.TProtocol) error {
+	p.ExceededThroughput = &ProvisionThroughput{}
+	if err := p.ExceededThroughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.ExceededThroughput, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField9(iprot thrift.TProtocol) error {
+	p.ExceededSlaveThroughput = &ProvisionThroughput{}
+	if err := p.ExceededSlaveThroughput.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.ExceededSlaveThroughput, err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) ReadField10(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return fmt.Errorf("error reading field 10: %s", err)
+	} else {
+		p.PreSplits = v
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("GlobalSecondaryIndexSpec"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField3(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField4(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField5(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField6(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField7(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField8(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField9(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField10(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetIndexEntityGroup() {
+		if err := oprot.WriteFieldBegin("indexEntityGroup", thrift.STRUCT, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:indexEntityGroup: %s", p, err)
+		}
+		if err := p.IndexEntityGroup.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.IndexEntityGroup, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 1:indexEntityGroup: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetIndexPrimaryKey() {
+		if err := oprot.WriteFieldBegin("indexPrimaryKey", thrift.LIST, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:indexPrimaryKey: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.IndexPrimaryKey)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.IndexPrimaryKey {
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:indexPrimaryKey: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetProjections() {
+		if err := oprot.WriteFieldBegin("projections", thrift.LIST, 3); err != nil {
+			return fmt.Errorf("%T write field begin error 3:projections: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Projections)); err != nil {
+			return fmt.Errorf("error writing list begin: %s", err)
+		}
+		for _, v := range p.Projections {
+			if err := oprot.WriteString(string(v)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 3:projections: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetConsistencyLevel() {
+		if err := oprot.WriteFieldBegin("consistencyLevel", thrift.I32, 4); err != nil {
+			return fmt.Errorf("%T write field begin error 4:consistencyLevel: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.ConsistencyLevel)); err != nil {
+			return fmt.Errorf("%T.consistencyLevel (4) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 4:consistencyLevel: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetUnique() {
+		if err := oprot.WriteFieldBegin("unique", thrift.BOOL, 5); err != nil {
+			return fmt.Errorf("%T write field begin error 5:unique: %s", p, err)
+		}
+		if err := oprot.WriteBool(bool(p.Unique)); err != nil {
+			return fmt.Errorf("%T.unique (5) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 5:unique: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetThroughput() {
+		if err := oprot.WriteFieldBegin("throughput", thrift.STRUCT, 6); err != nil {
+			return fmt.Errorf("%T write field begin error 6:throughput: %s", p, err)
+		}
+		if err := p.Throughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Throughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 6:throughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField7(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSlaveThroughput() {
+		if err := oprot.WriteFieldBegin("slaveThroughput", thrift.STRUCT, 7); err != nil {
+			return fmt.Errorf("%T write field begin error 7:slaveThroughput: %s", p, err)
+		}
+		if err := p.SlaveThroughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.SlaveThroughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 7:slaveThroughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField8(oprot thrift.TProtocol) (err error) {
+	if p.IsSetExceededThroughput() {
+		if err := oprot.WriteFieldBegin("exceededThroughput", thrift.STRUCT, 8); err != nil {
+			return fmt.Errorf("%T write field begin error 8:exceededThroughput: %s", p, err)
+		}
+		if err := p.ExceededThroughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.ExceededThroughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 8:exceededThroughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetExceededSlaveThroughput() {
+		if err := oprot.WriteFieldBegin("exceededSlaveThroughput", thrift.STRUCT, 9); err != nil {
+			return fmt.Errorf("%T write field begin error 9:exceededSlaveThroughput: %s", p, err)
+		}
+		if err := p.ExceededSlaveThroughput.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.ExceededSlaveThroughput, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 9:exceededSlaveThroughput: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetPreSplits() {
+		if err := oprot.WriteFieldBegin("preSplits", thrift.I32, 10); err != nil {
+			return fmt.Errorf("%T write field begin error 10:preSplits: %s", p, err)
+		}
+		if err := oprot.WriteI32(int32(p.PreSplits)); err != nil {
+			return fmt.Errorf("%T.preSplits (10) field write error: %s", p, err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 10:preSplits: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *GlobalSecondaryIndexSpec) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("GlobalSecondaryIndexSpec(%+v)", *p)
+}
+
 type StreamSpec struct {
 	EnableStream *bool           `thrift:"enableStream,1" json:"enableStream"`
 	ViewType     *StreamViewType `thrift:"viewType,2" json:"viewType"`
@@ -2606,13 +3174,13 @@ func (p *StreamSpec) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make([]string, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem11 string
+		var _elem13 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem11 = v
+			_elem13 = v
 		}
-		p.Attributes = append(p.Attributes, _elem11)
+		p.Attributes = append(p.Attributes, _elem13)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -2703,14 +3271,15 @@ func (p *StreamSpec) String() string {
 }
 
 type TableSchema struct {
-	Version          *int32                              `thrift:"version,1" json:"version"`
-	EntityGroup      *EntityGroupSpec                    `thrift:"entityGroup,2" json:"entityGroup"`
-	PrimaryIndex     IndexSpec                           `thrift:"primaryIndex,3" json:"primaryIndex"`
-	SecondaryIndexes map[string]*LocalSecondaryIndexSpec `thrift:"secondaryIndexes,4" json:"secondaryIndexes"`
-	Attributes       map[string]DataType                 `thrift:"attributes,5" json:"attributes"`
-	Ttl              int32                               `thrift:"ttl,6" json:"ttl"`
-	PreSplits        int32                               `thrift:"preSplits,7" json:"preSplits"`
-	Streams          map[string]*StreamSpec              `thrift:"streams,8" json:"streams"`
+	Version                *int32                               `thrift:"version,1" json:"version"`
+	EntityGroup            *EntityGroupSpec                     `thrift:"entityGroup,2" json:"entityGroup"`
+	PrimaryIndex           IndexSpec                            `thrift:"primaryIndex,3" json:"primaryIndex"`
+	SecondaryIndexes       map[string]*LocalSecondaryIndexSpec  `thrift:"secondaryIndexes,4" json:"secondaryIndexes"`
+	Attributes             map[string]DataType                  `thrift:"attributes,5" json:"attributes"`
+	Ttl                    int32                                `thrift:"ttl,6" json:"ttl"`
+	PreSplits              int32                                `thrift:"preSplits,7" json:"preSplits"`
+	Streams                map[string]*StreamSpec               `thrift:"streams,8" json:"streams"`
+	GlobalSecondaryIndexes map[string]*GlobalSecondaryIndexSpec `thrift:"globalSecondaryIndexes,9" json:"globalSecondaryIndexes"`
 }
 
 func NewTableSchema() *TableSchema {
@@ -2772,6 +3341,12 @@ var TableSchema_Streams_DEFAULT map[string]*StreamSpec
 func (p *TableSchema) GetStreams() map[string]*StreamSpec {
 	return p.Streams
 }
+
+var TableSchema_GlobalSecondaryIndexes_DEFAULT map[string]*GlobalSecondaryIndexSpec
+
+func (p *TableSchema) GetGlobalSecondaryIndexes() map[string]*GlobalSecondaryIndexSpec {
+	return p.GlobalSecondaryIndexes
+}
 func (p *TableSchema) IsSetVersion() bool {
 	return p.Version != nil
 }
@@ -2798,6 +3373,10 @@ func (p *TableSchema) IsSetPreSplits() bool {
 
 func (p *TableSchema) IsSetStreams() bool {
 	return p.Streams != nil
+}
+
+func (p *TableSchema) IsSetGlobalSecondaryIndexes() bool {
+	return p.GlobalSecondaryIndexes != nil
 }
 
 func (p *TableSchema) Read(iprot thrift.TProtocol) error {
@@ -2845,6 +3424,10 @@ func (p *TableSchema) Read(iprot thrift.TProtocol) error {
 			if err := p.ReadField8(iprot); err != nil {
 				return err
 			}
+		case 9:
+			if err := p.ReadField9(iprot); err != nil {
+				return err
+			}
 		default:
 			if err := iprot.Skip(fieldTypeId); err != nil {
 				return err
@@ -2887,13 +3470,13 @@ func (p *TableSchema) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(IndexSpec, 0, size)
 	p.PrimaryIndex = tSlice
 	for i := 0; i < size; i++ {
-		_elem12 := &KeySpec{
+		_elem14 := &KeySpec{
 			Asc: true,
 		}
-		if err := _elem12.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem12, err)
+		if err := _elem14.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem14, err)
 		}
-		p.PrimaryIndex = append(p.PrimaryIndex, _elem12)
+		p.PrimaryIndex = append(p.PrimaryIndex, _elem14)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -2909,19 +3492,19 @@ func (p *TableSchema) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(map[string]*LocalSecondaryIndexSpec, size)
 	p.SecondaryIndexes = tMap
 	for i := 0; i < size; i++ {
-		var _key13 string
+		var _key15 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key13 = v
+			_key15 = v
 		}
-		_val14 := &LocalSecondaryIndexSpec{
+		_val16 := &LocalSecondaryIndexSpec{
 			ConsistencyMode: 0,
 		}
-		if err := _val14.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val14, err)
+		if err := _val16.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val16, err)
 		}
-		p.SecondaryIndexes[_key13] = _val14
+		p.SecondaryIndexes[_key15] = _val16
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -2937,20 +3520,20 @@ func (p *TableSchema) ReadField5(iprot thrift.TProtocol) error {
 	tMap := make(map[string]DataType, size)
 	p.Attributes = tMap
 	for i := 0; i < size; i++ {
-		var _key15 string
+		var _key17 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key15 = v
+			_key17 = v
 		}
-		var _val16 DataType
+		var _val18 DataType
 		if v, err := iprot.ReadI32(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
 			temp := DataType(v)
-			_val16 = temp
+			_val18 = temp
 		}
-		p.Attributes[_key15] = _val16
+		p.Attributes[_key17] = _val18
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -2984,17 +3567,47 @@ func (p *TableSchema) ReadField8(iprot thrift.TProtocol) error {
 	tMap := make(map[string]*StreamSpec, size)
 	p.Streams = tMap
 	for i := 0; i < size; i++ {
-		var _key17 string
+		var _key19 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key17 = v
+			_key19 = v
 		}
-		_val18 := &StreamSpec{}
-		if err := _val18.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val18, err)
+		_val20 := &StreamSpec{}
+		if err := _val20.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val20, err)
 		}
-		p.Streams[_key17] = _val18
+		p.Streams[_key19] = _val20
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s", err)
+	}
+	return nil
+}
+
+func (p *TableSchema) ReadField9(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s", err)
+	}
+	tMap := make(map[string]*GlobalSecondaryIndexSpec, size)
+	p.GlobalSecondaryIndexes = tMap
+	for i := 0; i < size; i++ {
+		var _key21 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s", err)
+		} else {
+			_key21 = v
+		}
+		_val22 := &GlobalSecondaryIndexSpec{
+			ConsistencyLevel: 0,
+
+			PreSplits: 1,
+		}
+		if err := _val22.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val22, err)
+		}
+		p.GlobalSecondaryIndexes[_key21] = _val22
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -3028,6 +3641,9 @@ func (p *TableSchema) Write(oprot thrift.TProtocol) error {
 		return err
 	}
 	if err := p.writeField8(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField9(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -3193,6 +3809,32 @@ func (p *TableSchema) writeField8(oprot thrift.TProtocol) (err error) {
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 8:streams: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *TableSchema) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetGlobalSecondaryIndexes() {
+		if err := oprot.WriteFieldBegin("globalSecondaryIndexes", thrift.MAP, 9); err != nil {
+			return fmt.Errorf("%T write field begin error 9:globalSecondaryIndexes: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.GlobalSecondaryIndexes)); err != nil {
+			return fmt.Errorf("error writing map begin: %s", err)
+		}
+		for k, v := range p.GlobalSecondaryIndexes {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p, err)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v, err)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s", err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 9:globalSecondaryIndexes: %s", p, err)
 		}
 	}
 	return err
@@ -3508,32 +4150,32 @@ func (p *TableMetadata) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(AclConf, size)
 	p.AppAcl = tMap
 	for i := 0; i < size; i++ {
-		var _key19 string
+		var _key23 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key19 = v
+			_key23 = v
 		}
 		_, size, err := iprot.ReadListBegin()
 		if err != nil {
 			return fmt.Errorf("error reading list begin: %s", err)
 		}
 		tSlice := make([]CannedAcl, 0, size)
-		_val20 := tSlice
+		_val24 := tSlice
 		for i := 0; i < size; i++ {
-			var _elem21 CannedAcl
+			var _elem25 CannedAcl
 			if v, err := iprot.ReadI32(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
 				temp := CannedAcl(v)
-				_elem21 = temp
+				_elem25 = temp
 			}
-			_val20 = append(_val20, _elem21)
+			_val24 = append(_val24, _elem25)
 		}
 		if err := iprot.ReadListEnd(); err != nil {
 			return fmt.Errorf("error reading list end: %s", err)
 		}
-		p.AppAcl[_key19] = _val20
+		p.AppAcl[_key23] = _val24
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -3615,32 +4257,32 @@ func (p *TableMetadata) ReadField12(iprot thrift.TProtocol) error {
 	tMap := make(map[string][]Permission, size)
 	p.Acl = tMap
 	for i := 0; i < size; i++ {
-		var _key22 string
+		var _key26 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key22 = v
+			_key26 = v
 		}
 		_, size, err := iprot.ReadListBegin()
 		if err != nil {
 			return fmt.Errorf("error reading list begin: %s", err)
 		}
 		tSlice := make([]Permission, 0, size)
-		_val23 := tSlice
+		_val27 := tSlice
 		for i := 0; i < size; i++ {
-			var _elem24 Permission
+			var _elem28 Permission
 			if v, err := iprot.ReadI32(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
 				temp := Permission(v)
-				_elem24 = temp
+				_elem28 = temp
 			}
-			_val23 = append(_val23, _elem24)
+			_val27 = append(_val27, _elem28)
 		}
 		if err := iprot.ReadListEnd(); err != nil {
 			return fmt.Errorf("error reading list end: %s", err)
 		}
-		p.Acl[_key22] = _val23
+		p.Acl[_key26] = _val27
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -4940,17 +5582,17 @@ func (p *TableSplit) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key25 string
+		var _key29 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key25 = v
+			_key29 = v
 		}
-		_val26 := &Datum{}
-		if err := _val26.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val26, err)
+		_val30 := &Datum{}
+		if err := _val30.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val30, err)
 		}
-		p.StartKey[_key25] = _val26
+		p.StartKey[_key29] = _val30
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -4966,17 +5608,17 @@ func (p *TableSplit) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key27 string
+		var _key31 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key27 = v
+			_key31 = v
 		}
-		_val28 := &Datum{}
-		if err := _val28.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val28, err)
+		_val32 := &Datum{}
+		if err := _val32.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val32, err)
 		}
-		p.StopKey[_key27] = _val28
+		p.StopKey[_key31] = _val32
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5161,17 +5803,17 @@ func (p *GetRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key29 string
+		var _key33 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key29 = v
+			_key33 = v
 		}
-		_val30 := &Datum{}
-		if err := _val30.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val30, err)
+		_val34 := &Datum{}
+		if err := _val34.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val34, err)
 		}
-		p.Keys[_key29] = _val30
+		p.Keys[_key33] = _val34
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5187,13 +5829,13 @@ func (p *GetRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem31 string
+		var _elem35 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem31 = v
+			_elem35 = v
 		}
-		p.Attributes = append(p.Attributes, _elem31)
+		p.Attributes = append(p.Attributes, _elem35)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -5351,17 +5993,17 @@ func (p *GetResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Item = tMap
 	for i := 0; i < size; i++ {
-		var _key32 string
+		var _key36 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key32 = v
+			_key36 = v
 		}
-		_val33 := &Datum{}
-		if err := _val33.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val33, err)
+		_val37 := &Datum{}
+		if err := _val37.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val37, err)
 		}
-		p.Item[_key32] = _val33
+		p.Item[_key36] = _val37
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5520,17 +6162,17 @@ func (p *PutRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key34 string
+		var _key38 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key34 = v
+			_key38 = v
 		}
-		_val35 := &Datum{}
-		if err := _val35.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val35, err)
+		_val39 := &Datum{}
+		if err := _val39.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val39, err)
 		}
-		p.Record[_key34] = _val35
+		p.Record[_key38] = _val39
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5829,17 +6471,17 @@ func (p *IncrementRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key36 string
+		var _key40 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key36 = v
+			_key40 = v
 		}
-		_val37 := &Datum{}
-		if err := _val37.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val37, err)
+		_val41 := &Datum{}
+		if err := _val41.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val41, err)
 		}
-		p.Keys[_key36] = _val37
+		p.Keys[_key40] = _val41
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -5855,17 +6497,17 @@ func (p *IncrementRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key38 string
+		var _key42 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key38 = v
+			_key42 = v
 		}
-		_val39 := &Datum{}
-		if err := _val39.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val39, err)
+		_val43 := &Datum{}
+		if err := _val43.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val43, err)
 		}
-		p.Amounts[_key38] = _val39
+		p.Amounts[_key42] = _val43
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6026,17 +6668,17 @@ func (p *IncrementResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Amounts = tMap
 	for i := 0; i < size; i++ {
-		var _key40 string
+		var _key44 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key40 = v
+			_key44 = v
 		}
-		_val41 := &Datum{}
-		if err := _val41.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val41, err)
+		_val45 := &Datum{}
+		if err := _val45.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val45, err)
 		}
-		p.Amounts[_key40] = _val41
+		p.Amounts[_key44] = _val45
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6210,17 +6852,17 @@ func (p *RemoveRequest) ReadField2(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Keys = tMap
 	for i := 0; i < size; i++ {
-		var _key42 string
+		var _key46 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key42 = v
+			_key46 = v
 		}
-		_val43 := &Datum{}
-		if err := _val43.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val43, err)
+		_val47 := &Datum{}
+		if err := _val47.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val47, err)
 		}
-		p.Keys[_key42] = _val43
+		p.Keys[_key46] = _val47
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -6236,13 +6878,13 @@ func (p *RemoveRequest) ReadField3(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem44 string
+		var _elem48 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem44 = v
+			_elem48 = v
 		}
-		p.Attributes = append(p.Attributes, _elem44)
+		p.Attributes = append(p.Attributes, _elem48)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7100,17 +7742,17 @@ func (p *ScanRequest) ReadField3(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key45 string
+		var _key49 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key45 = v
+			_key49 = v
 		}
-		_val46 := &Datum{}
-		if err := _val46.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val46, err)
+		_val50 := &Datum{}
+		if err := _val50.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val50, err)
 		}
-		p.StartKey[_key45] = _val46
+		p.StartKey[_key49] = _val50
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7126,17 +7768,17 @@ func (p *ScanRequest) ReadField4(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.StopKey = tMap
 	for i := 0; i < size; i++ {
-		var _key47 string
+		var _key51 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key47 = v
+			_key51 = v
 		}
-		_val48 := &Datum{}
-		if err := _val48.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val48, err)
+		_val52 := &Datum{}
+		if err := _val52.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val52, err)
 		}
-		p.StopKey[_key47] = _val48
+		p.StopKey[_key51] = _val52
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7152,13 +7794,13 @@ func (p *ScanRequest) ReadField5(iprot thrift.TProtocol) error {
 	tSlice := make(Attributes, 0, size)
 	p.Attributes = tSlice
 	for i := 0; i < size; i++ {
-		var _elem49 string
+		var _elem53 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_elem49 = v
+			_elem53 = v
 		}
-		p.Attributes = append(p.Attributes, _elem49)
+		p.Attributes = append(p.Attributes, _elem53)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -7584,17 +8226,17 @@ func (p *ScanResult_) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.NextStartKey = tMap
 	for i := 0; i < size; i++ {
-		var _key50 string
+		var _key54 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key50 = v
+			_key54 = v
 		}
-		_val51 := &Datum{}
-		if err := _val51.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val51, err)
+		_val55 := &Datum{}
+		if err := _val55.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val55, err)
 		}
-		p.NextStartKey[_key50] = _val51
+		p.NextStartKey[_key54] = _val55
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -7615,24 +8257,24 @@ func (p *ScanResult_) ReadField2(iprot thrift.TProtocol) error {
 			return fmt.Errorf("error reading map begin: %s", err)
 		}
 		tMap := make(Dictionary, size)
-		_elem52 := tMap
+		_elem56 := tMap
 		for i := 0; i < size; i++ {
-			var _key53 string
+			var _key57 string
 			if v, err := iprot.ReadString(); err != nil {
 				return fmt.Errorf("error reading field 0: %s", err)
 			} else {
-				_key53 = v
+				_key57 = v
 			}
-			_val54 := &Datum{}
-			if err := _val54.Read(iprot); err != nil {
-				return fmt.Errorf("%T error reading struct: %s", _val54, err)
+			_val58 := &Datum{}
+			if err := _val58.Read(iprot); err != nil {
+				return fmt.Errorf("%T error reading struct: %s", _val58, err)
 			}
-			_elem52[_key53] = _val54
+			_elem56[_key57] = _val58
 		}
 		if err := iprot.ReadMapEnd(); err != nil {
 			return fmt.Errorf("error reading map end: %s", err)
 		}
-		p.Records = append(p.Records, _elem52)
+		p.Records = append(p.Records, _elem56)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8417,11 +9059,11 @@ func (p *BatchRequest) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchRequestItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem55 := &BatchRequestItem{}
-		if err := _elem55.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem55, err)
+		_elem59 := &BatchRequestItem{}
+		if err := _elem59.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem59, err)
 		}
-		p.Items = append(p.Items, _elem55)
+		p.Items = append(p.Items, _elem59)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8532,11 +9174,11 @@ func (p *BatchResult_) ReadField1(iprot thrift.TProtocol) error {
 	tSlice := make([]*BatchResultItem, 0, size)
 	p.Items = tSlice
 	for i := 0; i < size; i++ {
-		_elem56 := &BatchResultItem{}
-		if err := _elem56.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem56, err)
+		_elem60 := &BatchResultItem{}
+		if err := _elem60.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _elem60, err)
 		}
-		p.Items = append(p.Items, _elem56)
+		p.Items = append(p.Items, _elem60)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s", err)
@@ -8683,19 +9325,19 @@ func (p *InternalMutationLogEntry) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(map[string][]byte, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key57 string
+		var _key61 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key57 = v
+			_key61 = v
 		}
-		var _val58 []byte
+		var _val62 []byte
 		if v, err := iprot.ReadBinary(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_val58 = v
+			_val62 = v
 		}
-		p.Record[_key57] = _val58
+		p.Record[_key61] = _val62
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -8918,17 +9560,17 @@ func (p *MutationLogEntry) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key59 string
+		var _key63 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key59 = v
+			_key63 = v
 		}
-		_val60 := &Datum{}
-		if err := _val60.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val60, err)
+		_val64 := &Datum{}
+		if err := _val64.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val64, err)
 		}
-		p.Record[_key59] = _val60
+		p.Record[_key63] = _val64
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
@@ -9160,17 +9802,17 @@ func (p *RecordImage) ReadField1(iprot thrift.TProtocol) error {
 	tMap := make(Dictionary, size)
 	p.Record = tMap
 	for i := 0; i < size; i++ {
-		var _key61 string
+		var _key65 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s", err)
 		} else {
-			_key61 = v
+			_key65 = v
 		}
-		_val62 := &Datum{}
-		if err := _val62.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val62, err)
+		_val66 := &Datum{}
+		if err := _val66.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val66, err)
 		}
-		p.Record[_key61] = _val62
+		p.Record[_key65] = _val66
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s", err)
