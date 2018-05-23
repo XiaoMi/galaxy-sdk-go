@@ -6,11 +6,12 @@ package table
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/rpc/authorization"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
+	"github.com/XiaoMi/galaxy-sdk-go/rpc/authorization"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -25,3 +26,4 @@ var _ = authorization.GoUnusedProtection__
 
 func init() {
 }
+

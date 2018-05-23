@@ -6,8 +6,9 @@ package io
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -16,1135 +17,1028 @@ var _ = fmt.Printf
 var _ = bytes.Equal
 
 var _ = table.GoUnusedProtection__
-var GoUnusedProtection__ int
+var GoUnusedProtection__ int;
 
 //SLFile格式存储类型
 type SLFileType int64
-
 const (
-	SLFileType_DATUM_MAP SLFileType = 1
-	SLFileType_RC_BASIC  SLFileType = 2
+  SLFileType_DATUM_MAP SLFileType = 1
+  SLFileType_RC_BASIC SLFileType = 2
 )
 
 func (p SLFileType) String() string {
-	switch p {
-	case SLFileType_DATUM_MAP:
-		return "SLFileType_DATUM_MAP"
-	case SLFileType_RC_BASIC:
-		return "SLFileType_RC_BASIC"
-	}
-	return "<UNSET>"
+  switch p {
+  case SLFileType_DATUM_MAP: return "SLFileType_DATUM_MAP"
+  case SLFileType_RC_BASIC: return "SLFileType_RC_BASIC"
+  }
+  return "<UNSET>"
 }
 
 func SLFileTypeFromString(s string) (SLFileType, error) {
-	switch s {
-	case "SLFileType_DATUM_MAP":
-		return SLFileType_DATUM_MAP, nil
-	case "SLFileType_RC_BASIC":
-		return SLFileType_RC_BASIC, nil
-	}
-	return SLFileType(0), fmt.Errorf("not a valid SLFileType string")
+  switch s {
+  case "SLFileType_DATUM_MAP": return SLFileType_DATUM_MAP, nil 
+  case "SLFileType_RC_BASIC": return SLFileType_RC_BASIC, nil 
+  }
+  return SLFileType(0), fmt.Errorf("not a valid SLFileType string")
 }
+
 
 func SLFileTypePtr(v SLFileType) *SLFileType { return &v }
 
 type DatumMapMeta struct {
-	KeyIdMap map[int16]string `thrift:"keyIdMap,1" json:"keyIdMap"`
+  KeyIdMap map[int16]string `thrift:"keyIdMap,1" json:"keyIdMap"`
 }
 
 func NewDatumMapMeta() *DatumMapMeta {
-	return &DatumMapMeta{}
+  return &DatumMapMeta{}
 }
 
 var DatumMapMeta_KeyIdMap_DEFAULT map[int16]string
 
 func (p *DatumMapMeta) GetKeyIdMap() map[int16]string {
-	return p.KeyIdMap
+return p.KeyIdMap
 }
 func (p *DatumMapMeta) IsSetKeyIdMap() bool {
-	return p.KeyIdMap != nil
+  return p.KeyIdMap != nil
 }
 
 func (p *DatumMapMeta) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *DatumMapMeta) ReadField1(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s", err)
-	}
-	tMap := make(map[int16]string, size)
-	p.KeyIdMap = tMap
-	for i := 0; i < size; i++ {
-		var _key0 int16
-		if v, err := iprot.ReadI16(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_key0 = v
-		}
-		var _val1 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_val1 = v
-		}
-		p.KeyIdMap[_key0] = _val1
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
+func (p *DatumMapMeta)  ReadField1(iprot thrift.TProtocol) error {
+  _, _, size, err := iprot.ReadMapBegin()
+  if err != nil {
+    return fmt.Errorf("error reading map begin: %s", err)
+  }
+  tMap := make(map[int16]string, size)
+  p.KeyIdMap =  tMap
+  for i := 0; i < size; i ++ {
+var _key0 int16
+    if v, err := iprot.ReadI16(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _key0 = v
+}
+var _val1 string
+    if v, err := iprot.ReadString(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _val1 = v
+}
+    p.KeyIdMap[_key0] = _val1
+  }
+  if err := iprot.ReadMapEnd(); err != nil {
+    return fmt.Errorf("error reading map end: %s", err)
+  }
+  return nil
 }
 
 func (p *DatumMapMeta) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("DatumMapMeta"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("DatumMapMeta"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *DatumMapMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetKeyIdMap() {
-		if err := oprot.WriteFieldBegin("keyIdMap", thrift.MAP, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:keyIdMap: %s", p, err)
-		}
-		if err := oprot.WriteMapBegin(thrift.I16, thrift.STRING, len(p.KeyIdMap)); err != nil {
-			return fmt.Errorf("error writing map begin: %s", err)
-		}
-		for k, v := range p.KeyIdMap {
-			if err := oprot.WriteI16(int16(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-			if err := oprot.WriteString(string(v)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:keyIdMap: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetKeyIdMap() {
+    if err := oprot.WriteFieldBegin("keyIdMap", thrift.MAP, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:keyIdMap: %s", p, err); }
+    if err := oprot.WriteMapBegin(thrift.I16, thrift.STRING, len(p.KeyIdMap)); err != nil {
+      return fmt.Errorf("error writing map begin: %s", err)
+    }
+    for k, v := range p.KeyIdMap {
+      if err := oprot.WriteI16(int16(k)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+      if err := oprot.WriteString(string(v)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+    }
+    if err := oprot.WriteMapEnd(); err != nil {
+      return fmt.Errorf("error writing map end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:keyIdMap: %s", p, err); }
+  }
+  return err
 }
 
 func (p *DatumMapMeta) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("DatumMapMeta(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("DatumMapMeta(%+v)", *p)
 }
 
 type RCBasicMeta struct {
-	Keys  []string                  `thrift:"keys,1" json:"keys"`
-	Types map[string]table.DataType `thrift:"types,2" json:"types"`
+  Keys []string `thrift:"keys,1" json:"keys"`
+  Types map[string]table.DataType `thrift:"types,2" json:"types"`
 }
 
 func NewRCBasicMeta() *RCBasicMeta {
-	return &RCBasicMeta{}
+  return &RCBasicMeta{}
 }
 
 var RCBasicMeta_Keys_DEFAULT []string
 
 func (p *RCBasicMeta) GetKeys() []string {
-	return p.Keys
+return p.Keys
 }
-
 var RCBasicMeta_Types_DEFAULT map[string]table.DataType
 
 func (p *RCBasicMeta) GetTypes() map[string]table.DataType {
-	return p.Types
+return p.Types
 }
 func (p *RCBasicMeta) IsSetKeys() bool {
-	return p.Keys != nil
+  return p.Keys != nil
 }
 
 func (p *RCBasicMeta) IsSetTypes() bool {
-	return p.Types != nil
+  return p.Types != nil
 }
 
 func (p *RCBasicMeta) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *RCBasicMeta) ReadField1(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return fmt.Errorf("error reading list begin: %s", err)
-	}
-	tSlice := make([]string, 0, size)
-	p.Keys = tSlice
-	for i := 0; i < size; i++ {
-		var _elem2 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_elem2 = v
-		}
-		p.Keys = append(p.Keys, _elem2)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return fmt.Errorf("error reading list end: %s", err)
-	}
-	return nil
+func (p *RCBasicMeta)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
+  if err != nil {
+    return fmt.Errorf("error reading list begin: %s", err)
+  }
+  tSlice := make([]string, 0, size)
+  p.Keys =  tSlice
+  for i := 0; i < size; i ++ {
+var _elem2 string
+    if v, err := iprot.ReadString(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _elem2 = v
+}
+    p.Keys = append(p.Keys, _elem2)
+  }
+  if err := iprot.ReadListEnd(); err != nil {
+    return fmt.Errorf("error reading list end: %s", err)
+  }
+  return nil
 }
 
-func (p *RCBasicMeta) ReadField2(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s", err)
-	}
-	tMap := make(map[string]table.DataType, size)
-	p.Types = tMap
-	for i := 0; i < size; i++ {
-		var _key3 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_key3 = v
-		}
-		var _val4 table.DataType
-		if v, err := iprot.ReadI32(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			temp := table.DataType(v)
-			_val4 = temp
-		}
-		p.Types[_key3] = _val4
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
+func (p *RCBasicMeta)  ReadField2(iprot thrift.TProtocol) error {
+  _, _, size, err := iprot.ReadMapBegin()
+  if err != nil {
+    return fmt.Errorf("error reading map begin: %s", err)
+  }
+  tMap := make(map[string]table.DataType, size)
+  p.Types =  tMap
+  for i := 0; i < size; i ++ {
+var _key3 string
+    if v, err := iprot.ReadString(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _key3 = v
+}
+var _val4 table.DataType
+    if v, err := iprot.ReadI32(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    temp := table.DataType(v)
+    _val4 = temp
+}
+    p.Types[_key3] = _val4
+  }
+  if err := iprot.ReadMapEnd(); err != nil {
+    return fmt.Errorf("error reading map end: %s", err)
+  }
+  return nil
 }
 
 func (p *RCBasicMeta) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("RCBasicMeta"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("RCBasicMeta"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *RCBasicMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetKeys() {
-		if err := oprot.WriteFieldBegin("keys", thrift.LIST, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:keys: %s", p, err)
-		}
-		if err := oprot.WriteListBegin(thrift.STRING, len(p.Keys)); err != nil {
-			return fmt.Errorf("error writing list begin: %s", err)
-		}
-		for _, v := range p.Keys {
-			if err := oprot.WriteString(string(v)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return fmt.Errorf("error writing list end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:keys: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetKeys() {
+    if err := oprot.WriteFieldBegin("keys", thrift.LIST, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:keys: %s", p, err); }
+    if err := oprot.WriteListBegin(thrift.STRING, len(p.Keys)); err != nil {
+      return fmt.Errorf("error writing list begin: %s", err)
+    }
+    for _, v := range p.Keys {
+      if err := oprot.WriteString(string(v)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+    }
+    if err := oprot.WriteListEnd(); err != nil {
+      return fmt.Errorf("error writing list end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:keys: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RCBasicMeta) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetTypes() {
-		if err := oprot.WriteFieldBegin("types", thrift.MAP, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:types: %s", p, err)
-		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.I32, len(p.Types)); err != nil {
-			return fmt.Errorf("error writing map begin: %s", err)
-		}
-		for k, v := range p.Types {
-			if err := oprot.WriteString(string(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-			if err := oprot.WriteI32(int32(v)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:types: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetTypes() {
+    if err := oprot.WriteFieldBegin("types", thrift.MAP, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:types: %s", p, err); }
+    if err := oprot.WriteMapBegin(thrift.STRING, thrift.I32, len(p.Types)); err != nil {
+      return fmt.Errorf("error writing map begin: %s", err)
+    }
+    for k, v := range p.Types {
+      if err := oprot.WriteString(string(k)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+      if err := oprot.WriteI32(int32(v)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+    }
+    if err := oprot.WriteMapEnd(); err != nil {
+      return fmt.Errorf("error writing map end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:types: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RCBasicMeta) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("RCBasicMeta(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RCBasicMeta(%+v)", *p)
 }
 
 type RCBasicRowGroupHeader struct {
-	Count  *int32  `thrift:"count,1" json:"count"`
-	Offset []int32 `thrift:"offset,2" json:"offset"`
+  Count *int32 `thrift:"count,1" json:"count"`
+  Offset []int32 `thrift:"offset,2" json:"offset"`
 }
 
 func NewRCBasicRowGroupHeader() *RCBasicRowGroupHeader {
-	return &RCBasicRowGroupHeader{}
+  return &RCBasicRowGroupHeader{}
 }
 
 var RCBasicRowGroupHeader_Count_DEFAULT int32
-
 func (p *RCBasicRowGroupHeader) GetCount() int32 {
-	if !p.IsSetCount() {
-		return RCBasicRowGroupHeader_Count_DEFAULT
-	}
-	return *p.Count
+  if !p.IsSetCount() {
+    return RCBasicRowGroupHeader_Count_DEFAULT
+  }
+return *p.Count
 }
-
 var RCBasicRowGroupHeader_Offset_DEFAULT []int32
 
 func (p *RCBasicRowGroupHeader) GetOffset() []int32 {
-	return p.Offset
+return p.Offset
 }
 func (p *RCBasicRowGroupHeader) IsSetCount() bool {
-	return p.Count != nil
+  return p.Count != nil
 }
 
 func (p *RCBasicRowGroupHeader) IsSetOffset() bool {
-	return p.Offset != nil
+  return p.Offset != nil
 }
 
 func (p *RCBasicRowGroupHeader) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *RCBasicRowGroupHeader) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.Count = &v
-	}
-	return nil
+func (p *RCBasicRowGroupHeader)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 1: %s", err)
+} else {
+  p.Count = &v
+}
+  return nil
 }
 
-func (p *RCBasicRowGroupHeader) ReadField2(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return fmt.Errorf("error reading list begin: %s", err)
-	}
-	tSlice := make([]int32, 0, size)
-	p.Offset = tSlice
-	for i := 0; i < size; i++ {
-		var _elem5 int32
-		if v, err := iprot.ReadI32(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_elem5 = v
-		}
-		p.Offset = append(p.Offset, _elem5)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return fmt.Errorf("error reading list end: %s", err)
-	}
-	return nil
+func (p *RCBasicRowGroupHeader)  ReadField2(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
+  if err != nil {
+    return fmt.Errorf("error reading list begin: %s", err)
+  }
+  tSlice := make([]int32, 0, size)
+  p.Offset =  tSlice
+  for i := 0; i < size; i ++ {
+var _elem5 int32
+    if v, err := iprot.ReadI32(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _elem5 = v
+}
+    p.Offset = append(p.Offset, _elem5)
+  }
+  if err := iprot.ReadListEnd(); err != nil {
+    return fmt.Errorf("error reading list end: %s", err)
+  }
+  return nil
 }
 
 func (p *RCBasicRowGroupHeader) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("RCBasicRowGroupHeader"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("RCBasicRowGroupHeader"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *RCBasicRowGroupHeader) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCount() {
-		if err := oprot.WriteFieldBegin("count", thrift.I32, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:count: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.Count)); err != nil {
-			return fmt.Errorf("%T.count (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:count: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetCount() {
+    if err := oprot.WriteFieldBegin("count", thrift.I32, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:count: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.Count)); err != nil {
+    return fmt.Errorf("%T.count (1) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:count: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RCBasicRowGroupHeader) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetOffset() {
-		if err := oprot.WriteFieldBegin("offset", thrift.LIST, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:offset: %s", p, err)
-		}
-		if err := oprot.WriteListBegin(thrift.I32, len(p.Offset)); err != nil {
-			return fmt.Errorf("error writing list begin: %s", err)
-		}
-		for _, v := range p.Offset {
-			if err := oprot.WriteI32(int32(v)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return fmt.Errorf("error writing list end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:offset: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetOffset() {
+    if err := oprot.WriteFieldBegin("offset", thrift.LIST, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:offset: %s", p, err); }
+    if err := oprot.WriteListBegin(thrift.I32, len(p.Offset)); err != nil {
+      return fmt.Errorf("error writing list begin: %s", err)
+    }
+    for _, v := range p.Offset {
+      if err := oprot.WriteI32(int32(v)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+    }
+    if err := oprot.WriteListEnd(); err != nil {
+      return fmt.Errorf("error writing list end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:offset: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RCBasicRowGroupHeader) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("RCBasicRowGroupHeader(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RCBasicRowGroupHeader(%+v)", *p)
 }
 
 type SLFileMeta struct {
-	TypeA1       *SLFileType   `thrift:"type,1" json:"type"`
-	DatumMapMeta *DatumMapMeta `thrift:"datumMapMeta,2" json:"datumMapMeta"`
-	RcBasicMeta  *RCBasicMeta  `thrift:"rcBasicMeta,3" json:"rcBasicMeta"`
+  TypeA1 *SLFileType `thrift:"type,1" json:"type"`
+  DatumMapMeta *DatumMapMeta `thrift:"datumMapMeta,2" json:"datumMapMeta"`
+  RcBasicMeta *RCBasicMeta `thrift:"rcBasicMeta,3" json:"rcBasicMeta"`
 }
 
 func NewSLFileMeta() *SLFileMeta {
-	return &SLFileMeta{}
+  return &SLFileMeta{}
 }
 
 var SLFileMeta_TypeA1_DEFAULT SLFileType
-
 func (p *SLFileMeta) GetTypeA1() SLFileType {
-	if !p.IsSetTypeA1() {
-		return SLFileMeta_TypeA1_DEFAULT
-	}
-	return *p.TypeA1
+  if !p.IsSetTypeA1() {
+    return SLFileMeta_TypeA1_DEFAULT
+  }
+return *p.TypeA1
 }
-
 var SLFileMeta_DatumMapMeta_DEFAULT *DatumMapMeta
-
 func (p *SLFileMeta) GetDatumMapMeta() *DatumMapMeta {
-	if !p.IsSetDatumMapMeta() {
-		return SLFileMeta_DatumMapMeta_DEFAULT
-	}
-	return p.DatumMapMeta
+  if !p.IsSetDatumMapMeta() {
+    return SLFileMeta_DatumMapMeta_DEFAULT
+  }
+return p.DatumMapMeta
 }
-
 var SLFileMeta_RcBasicMeta_DEFAULT *RCBasicMeta
-
 func (p *SLFileMeta) GetRcBasicMeta() *RCBasicMeta {
-	if !p.IsSetRcBasicMeta() {
-		return SLFileMeta_RcBasicMeta_DEFAULT
-	}
-	return p.RcBasicMeta
+  if !p.IsSetRcBasicMeta() {
+    return SLFileMeta_RcBasicMeta_DEFAULT
+  }
+return p.RcBasicMeta
 }
 func (p *SLFileMeta) IsSetTypeA1() bool {
-	return p.TypeA1 != nil
+  return p.TypeA1 != nil
 }
 
 func (p *SLFileMeta) IsSetDatumMapMeta() bool {
-	return p.DatumMapMeta != nil
+  return p.DatumMapMeta != nil
 }
 
 func (p *SLFileMeta) IsSetRcBasicMeta() bool {
-	return p.RcBasicMeta != nil
+  return p.RcBasicMeta != nil
 }
 
 func (p *SLFileMeta) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		case 3:
-			if err := p.ReadField3(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *SLFileMeta) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		temp := SLFileType(v)
-		p.TypeA1 = &temp
-	}
-	return nil
+func (p *SLFileMeta)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 1: %s", err)
+} else {
+  temp := SLFileType(v)
+  p.TypeA1 = &temp
+}
+  return nil
 }
 
-func (p *SLFileMeta) ReadField2(iprot thrift.TProtocol) error {
-	p.DatumMapMeta = &DatumMapMeta{}
-	if err := p.DatumMapMeta.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.DatumMapMeta, err)
-	}
-	return nil
+func (p *SLFileMeta)  ReadField2(iprot thrift.TProtocol) error {
+  p.DatumMapMeta = &DatumMapMeta{}
+  if err := p.DatumMapMeta.Read(iprot); err != nil {
+    return fmt.Errorf("%T error reading struct: %s", p.DatumMapMeta, err)
+  }
+  return nil
 }
 
-func (p *SLFileMeta) ReadField3(iprot thrift.TProtocol) error {
-	p.RcBasicMeta = &RCBasicMeta{}
-	if err := p.RcBasicMeta.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.RcBasicMeta, err)
-	}
-	return nil
+func (p *SLFileMeta)  ReadField3(iprot thrift.TProtocol) error {
+  p.RcBasicMeta = &RCBasicMeta{}
+  if err := p.RcBasicMeta.Read(iprot); err != nil {
+    return fmt.Errorf("%T error reading struct: %s", p.RcBasicMeta, err)
+  }
+  return nil
 }
 
 func (p *SLFileMeta) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("SLFileMeta"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField3(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("SLFileMeta"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := p.writeField3(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *SLFileMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetTypeA1() {
-		if err := oprot.WriteFieldBegin("type", thrift.I32, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:type: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.TypeA1)); err != nil {
-			return fmt.Errorf("%T.type (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:type: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetTypeA1() {
+    if err := oprot.WriteFieldBegin("type", thrift.I32, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:type: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.TypeA1)); err != nil {
+    return fmt.Errorf("%T.type (1) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:type: %s", p, err); }
+  }
+  return err
 }
 
 func (p *SLFileMeta) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDatumMapMeta() {
-		if err := oprot.WriteFieldBegin("datumMapMeta", thrift.STRUCT, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:datumMapMeta: %s", p, err)
-		}
-		if err := p.DatumMapMeta.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.DatumMapMeta, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:datumMapMeta: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetDatumMapMeta() {
+    if err := oprot.WriteFieldBegin("datumMapMeta", thrift.STRUCT, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:datumMapMeta: %s", p, err); }
+    if err := p.DatumMapMeta.Write(oprot); err != nil {
+      return fmt.Errorf("%T error writing struct: %s", p.DatumMapMeta, err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:datumMapMeta: %s", p, err); }
+  }
+  return err
 }
 
 func (p *SLFileMeta) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetRcBasicMeta() {
-		if err := oprot.WriteFieldBegin("rcBasicMeta", thrift.STRUCT, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:rcBasicMeta: %s", p, err)
-		}
-		if err := p.RcBasicMeta.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.RcBasicMeta, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:rcBasicMeta: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetRcBasicMeta() {
+    if err := oprot.WriteFieldBegin("rcBasicMeta", thrift.STRUCT, 3); err != nil {
+      return fmt.Errorf("%T write field begin error 3:rcBasicMeta: %s", p, err); }
+    if err := p.RcBasicMeta.Write(oprot); err != nil {
+      return fmt.Errorf("%T error writing struct: %s", p.RcBasicMeta, err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 3:rcBasicMeta: %s", p, err); }
+  }
+  return err
 }
 
 func (p *SLFileMeta) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SLFileMeta(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("SLFileMeta(%+v)", *p)
 }
 
 type DatumMapRecord struct {
-	Data     map[int16]*table.Datum `thrift:"data,1" json:"data"`
-	KeyIdMap map[int16]string       `thrift:"keyIdMap,2" json:"keyIdMap"`
+  Data map[int16]*table.Datum `thrift:"data,1" json:"data"`
+  KeyIdMap map[int16]string `thrift:"keyIdMap,2" json:"keyIdMap"`
 }
 
 func NewDatumMapRecord() *DatumMapRecord {
-	return &DatumMapRecord{}
+  return &DatumMapRecord{}
 }
 
 var DatumMapRecord_Data_DEFAULT map[int16]*table.Datum
 
 func (p *DatumMapRecord) GetData() map[int16]*table.Datum {
-	return p.Data
+return p.Data
 }
-
 var DatumMapRecord_KeyIdMap_DEFAULT map[int16]string
 
 func (p *DatumMapRecord) GetKeyIdMap() map[int16]string {
-	return p.KeyIdMap
+return p.KeyIdMap
 }
 func (p *DatumMapRecord) IsSetData() bool {
-	return p.Data != nil
+  return p.Data != nil
 }
 
 func (p *DatumMapRecord) IsSetKeyIdMap() bool {
-	return p.KeyIdMap != nil
+  return p.KeyIdMap != nil
 }
 
 func (p *DatumMapRecord) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *DatumMapRecord) ReadField1(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s", err)
-	}
-	tMap := make(map[int16]*table.Datum, size)
-	p.Data = tMap
-	for i := 0; i < size; i++ {
-		var _key6 int16
-		if v, err := iprot.ReadI16(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_key6 = v
-		}
-		_val7 := &table.Datum{}
-		if err := _val7.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val7, err)
-		}
-		p.Data[_key6] = _val7
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
+func (p *DatumMapRecord)  ReadField1(iprot thrift.TProtocol) error {
+  _, _, size, err := iprot.ReadMapBegin()
+  if err != nil {
+    return fmt.Errorf("error reading map begin: %s", err)
+  }
+  tMap := make(map[int16]*table.Datum, size)
+  p.Data =  tMap
+  for i := 0; i < size; i ++ {
+var _key6 int16
+    if v, err := iprot.ReadI16(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _key6 = v
+}
+    _val7 := &table.Datum{}
+    if err := _val7.Read(iprot); err != nil {
+      return fmt.Errorf("%T error reading struct: %s", _val7, err)
+    }
+    p.Data[_key6] = _val7
+  }
+  if err := iprot.ReadMapEnd(); err != nil {
+    return fmt.Errorf("error reading map end: %s", err)
+  }
+  return nil
 }
 
-func (p *DatumMapRecord) ReadField2(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s", err)
-	}
-	tMap := make(map[int16]string, size)
-	p.KeyIdMap = tMap
-	for i := 0; i < size; i++ {
-		var _key8 int16
-		if v, err := iprot.ReadI16(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_key8 = v
-		}
-		var _val9 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_val9 = v
-		}
-		p.KeyIdMap[_key8] = _val9
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
+func (p *DatumMapRecord)  ReadField2(iprot thrift.TProtocol) error {
+  _, _, size, err := iprot.ReadMapBegin()
+  if err != nil {
+    return fmt.Errorf("error reading map begin: %s", err)
+  }
+  tMap := make(map[int16]string, size)
+  p.KeyIdMap =  tMap
+  for i := 0; i < size; i ++ {
+var _key8 int16
+    if v, err := iprot.ReadI16(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _key8 = v
+}
+var _val9 string
+    if v, err := iprot.ReadString(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _val9 = v
+}
+    p.KeyIdMap[_key8] = _val9
+  }
+  if err := iprot.ReadMapEnd(); err != nil {
+    return fmt.Errorf("error reading map end: %s", err)
+  }
+  return nil
 }
 
 func (p *DatumMapRecord) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("DatumMapRecord"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("DatumMapRecord"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *DatumMapRecord) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetData() {
-		if err := oprot.WriteFieldBegin("data", thrift.MAP, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:data: %s", p, err)
-		}
-		if err := oprot.WriteMapBegin(thrift.I16, thrift.STRUCT, len(p.Data)); err != nil {
-			return fmt.Errorf("error writing map begin: %s", err)
-		}
-		for k, v := range p.Data {
-			if err := oprot.WriteI16(int16(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-			if err := v.Write(oprot); err != nil {
-				return fmt.Errorf("%T error writing struct: %s", v, err)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:data: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetData() {
+    if err := oprot.WriteFieldBegin("data", thrift.MAP, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:data: %s", p, err); }
+    if err := oprot.WriteMapBegin(thrift.I16, thrift.STRUCT, len(p.Data)); err != nil {
+      return fmt.Errorf("error writing map begin: %s", err)
+    }
+    for k, v := range p.Data {
+      if err := oprot.WriteI16(int16(k)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+      if err := v.Write(oprot); err != nil {
+        return fmt.Errorf("%T error writing struct: %s", v, err)
+      }
+    }
+    if err := oprot.WriteMapEnd(); err != nil {
+      return fmt.Errorf("error writing map end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:data: %s", p, err); }
+  }
+  return err
 }
 
 func (p *DatumMapRecord) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetKeyIdMap() {
-		if err := oprot.WriteFieldBegin("keyIdMap", thrift.MAP, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:keyIdMap: %s", p, err)
-		}
-		if err := oprot.WriteMapBegin(thrift.I16, thrift.STRING, len(p.KeyIdMap)); err != nil {
-			return fmt.Errorf("error writing map begin: %s", err)
-		}
-		for k, v := range p.KeyIdMap {
-			if err := oprot.WriteI16(int16(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-			if err := oprot.WriteString(string(v)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:keyIdMap: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetKeyIdMap() {
+    if err := oprot.WriteFieldBegin("keyIdMap", thrift.MAP, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:keyIdMap: %s", p, err); }
+    if err := oprot.WriteMapBegin(thrift.I16, thrift.STRING, len(p.KeyIdMap)); err != nil {
+      return fmt.Errorf("error writing map begin: %s", err)
+    }
+    for k, v := range p.KeyIdMap {
+      if err := oprot.WriteI16(int16(k)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+      if err := oprot.WriteString(string(v)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+    }
+    if err := oprot.WriteMapEnd(); err != nil {
+      return fmt.Errorf("error writing map end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:keyIdMap: %s", p, err); }
+  }
+  return err
 }
 
 func (p *DatumMapRecord) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("DatumMapRecord(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("DatumMapRecord(%+v)", *p)
 }
 
 type ValueList struct {
-	Values []*table.Value `thrift:"values,1" json:"values"`
+  Values []*table.Value `thrift:"values,1" json:"values"`
 }
 
 func NewValueList() *ValueList {
-	return &ValueList{}
+  return &ValueList{}
 }
 
 var ValueList_Values_DEFAULT []*table.Value
 
 func (p *ValueList) GetValues() []*table.Value {
-	return p.Values
+return p.Values
 }
 func (p *ValueList) IsSetValues() bool {
-	return p.Values != nil
+  return p.Values != nil
 }
 
 func (p *ValueList) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *ValueList) ReadField1(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return fmt.Errorf("error reading list begin: %s", err)
-	}
-	tSlice := make([]*table.Value, 0, size)
-	p.Values = tSlice
-	for i := 0; i < size; i++ {
-		_elem10 := &table.Value{}
-		if err := _elem10.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _elem10, err)
-		}
-		p.Values = append(p.Values, _elem10)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return fmt.Errorf("error reading list end: %s", err)
-	}
-	return nil
+func (p *ValueList)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
+  if err != nil {
+    return fmt.Errorf("error reading list begin: %s", err)
+  }
+  tSlice := make([]*table.Value, 0, size)
+  p.Values =  tSlice
+  for i := 0; i < size; i ++ {
+    _elem10 := &table.Value{}
+    if err := _elem10.Read(iprot); err != nil {
+      return fmt.Errorf("%T error reading struct: %s", _elem10, err)
+    }
+    p.Values = append(p.Values, _elem10)
+  }
+  if err := iprot.ReadListEnd(); err != nil {
+    return fmt.Errorf("error reading list end: %s", err)
+  }
+  return nil
 }
 
 func (p *ValueList) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("ValueList"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("ValueList"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *ValueList) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetValues() {
-		if err := oprot.WriteFieldBegin("values", thrift.LIST, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:values: %s", p, err)
-		}
-		if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Values)); err != nil {
-			return fmt.Errorf("error writing list begin: %s", err)
-		}
-		for _, v := range p.Values {
-			if err := v.Write(oprot); err != nil {
-				return fmt.Errorf("%T error writing struct: %s", v, err)
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
-			return fmt.Errorf("error writing list end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:values: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetValues() {
+    if err := oprot.WriteFieldBegin("values", thrift.LIST, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:values: %s", p, err); }
+    if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Values)); err != nil {
+      return fmt.Errorf("error writing list begin: %s", err)
+    }
+    for _, v := range p.Values {
+      if err := v.Write(oprot); err != nil {
+        return fmt.Errorf("%T error writing struct: %s", v, err)
+      }
+    }
+    if err := oprot.WriteListEnd(); err != nil {
+      return fmt.Errorf("error writing list end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:values: %s", p, err); }
+  }
+  return err
 }
 
 func (p *ValueList) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ValueList(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("ValueList(%+v)", *p)
 }
 
 type DatumMap struct {
-	Data table.Dictionary `thrift:"data,1" json:"data"`
+  Data table.Dictionary `thrift:"data,1" json:"data"`
 }
 
 func NewDatumMap() *DatumMap {
-	return &DatumMap{}
+  return &DatumMap{}
 }
 
 var DatumMap_Data_DEFAULT table.Dictionary
 
 func (p *DatumMap) GetData() table.Dictionary {
-	return p.Data
+return p.Data
 }
 func (p *DatumMap) IsSetData() bool {
-	return p.Data != nil
+  return p.Data != nil
 }
 
 func (p *DatumMap) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *DatumMap) ReadField1(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s", err)
-	}
-	tMap := make(table.Dictionary, size)
-	p.Data = tMap
-	for i := 0; i < size; i++ {
-		var _key11 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s", err)
-		} else {
-			_key11 = v
-		}
-		_val12 := &table.Datum{}
-		if err := _val12.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val12, err)
-		}
-		p.Data[_key11] = _val12
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s", err)
-	}
-	return nil
+func (p *DatumMap)  ReadField1(iprot thrift.TProtocol) error {
+  _, _, size, err := iprot.ReadMapBegin()
+  if err != nil {
+    return fmt.Errorf("error reading map begin: %s", err)
+  }
+  tMap := make(table.Dictionary, size)
+  p.Data =  tMap
+  for i := 0; i < size; i ++ {
+var _key11 string
+    if v, err := iprot.ReadString(); err != nil {
+    return fmt.Errorf("error reading field 0: %s", err)
+} else {
+    _key11 = v
+}
+    _val12 := &table.Datum{}
+    if err := _val12.Read(iprot); err != nil {
+      return fmt.Errorf("%T error reading struct: %s", _val12, err)
+    }
+    p.Data[_key11] = _val12
+  }
+  if err := iprot.ReadMapEnd(); err != nil {
+    return fmt.Errorf("error reading map end: %s", err)
+  }
+  return nil
 }
 
 func (p *DatumMap) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("DatumMap"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("DatumMap"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *DatumMap) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetData() {
-		if err := oprot.WriteFieldBegin("data", thrift.MAP, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:data: %s", p, err)
-		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Data)); err != nil {
-			return fmt.Errorf("error writing map begin: %s", err)
-		}
-		for k, v := range p.Data {
-			if err := oprot.WriteString(string(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p, err)
-			}
-			if err := v.Write(oprot); err != nil {
-				return fmt.Errorf("%T error writing struct: %s", v, err)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s", err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:data: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetData() {
+    if err := oprot.WriteFieldBegin("data", thrift.MAP, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:data: %s", p, err); }
+    if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Data)); err != nil {
+      return fmt.Errorf("error writing map begin: %s", err)
+    }
+    for k, v := range p.Data {
+      if err := oprot.WriteString(string(k)); err != nil {
+      return fmt.Errorf("%T. (0) field write error: %s", p, err) }
+      if err := v.Write(oprot); err != nil {
+        return fmt.Errorf("%T error writing struct: %s", v, err)
+      }
+    }
+    if err := oprot.WriteMapEnd(); err != nil {
+      return fmt.Errorf("error writing map end: %s", err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:data: %s", p, err); }
+  }
+  return err
 }
 
 func (p *DatumMap) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("DatumMap(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("DatumMap(%+v)", *p)
 }
+

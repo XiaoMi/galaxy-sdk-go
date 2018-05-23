@@ -4,372 +4,425 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/thrift"
-	"math"
-	"net"
-	"net/url"
-	"os"
-	"sds/table"
-	"strconv"
-	"strings"
+        "flag"
+        "fmt"
+        "math"
+        "net"
+        "net/url"
+        "os"
+        "strconv"
+        "strings"
+        "github.com/XiaoMi/galaxy-sdk-go/thrift"
+        "sds/table"
 )
 
 func Usage() {
-	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
-	flag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  GetResult get(GetRequest request)")
-	fmt.Fprintln(os.Stderr, "  PutResult put(PutRequest request)")
-	fmt.Fprintln(os.Stderr, "  IncrementResult increment(IncrementRequest request)")
-	fmt.Fprintln(os.Stderr, "  RemoveResult remove(RemoveRequest request)")
-	fmt.Fprintln(os.Stderr, "  ScanResult scan(ScanRequest request)")
-	fmt.Fprintln(os.Stderr, "  BatchResult batch(BatchRequest request)")
-	fmt.Fprintln(os.Stderr, "  BatchResult batchCheckAndMutate(BatchRequest request)")
-	fmt.Fprintln(os.Stderr, "  PutResult putToRebuildIndex(PutRequest request)")
-	fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
-	fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
-	fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
-	fmt.Fprintln(os.Stderr)
-	os.Exit(0)
+  fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
+  flag.PrintDefaults()
+  fmt.Fprintln(os.Stderr, "\nFunctions:")
+  fmt.Fprintln(os.Stderr, "  GetResult get(GetRequest request)")
+  fmt.Fprintln(os.Stderr, "  PutResult put(PutRequest request)")
+  fmt.Fprintln(os.Stderr, "  IncrementResult increment(IncrementRequest request)")
+  fmt.Fprintln(os.Stderr, "  RemoveResult remove(RemoveRequest request)")
+  fmt.Fprintln(os.Stderr, "   realRemove( requestList)")
+  fmt.Fprintln(os.Stderr, "  ScanResult scan(ScanRequest request)")
+  fmt.Fprintln(os.Stderr, "  BatchResult batch(BatchRequest request)")
+  fmt.Fprintln(os.Stderr, "  BatchResult batchCheckAndMutate(BatchRequest request)")
+  fmt.Fprintln(os.Stderr, "  PutResult putToRebuildIndex(PutRequest request)")
+  fmt.Fprintln(os.Stderr, "  BatchResult partialAllowedBatch(BatchRequest request)")
+  fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
+  fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
+  fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
+  fmt.Fprintln(os.Stderr)
+  os.Exit(0)
 }
 
 func main() {
-	flag.Usage = Usage
-	var host string
-	var port int
-	var protocol string
-	var urlString string
-	var framed bool
-	var useHttp bool
-	var parsedUrl url.URL
-	var trans thrift.TTransport
-	_ = strconv.Atoi
-	_ = math.Abs
-	flag.Usage = Usage
-	flag.StringVar(&host, "h", "localhost", "Specify host and port")
-	flag.IntVar(&port, "p", 9090, "Specify port")
-	flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
-	flag.StringVar(&urlString, "u", "", "Specify the url")
-	flag.BoolVar(&framed, "framed", false, "Use framed transport")
-	flag.BoolVar(&useHttp, "http", false, "Use http")
-	flag.Parse()
-
-	if len(urlString) > 0 {
-		parsedUrl, err := url.Parse(urlString)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-			flag.Usage()
-		}
-		host = parsedUrl.Host
-		useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http"
-	} else if useHttp {
-		_, err := url.Parse(fmt.Sprint("http://", host, ":", port))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-			flag.Usage()
-		}
-	}
-
-	cmd := flag.Arg(0)
-	var err error
-	if useHttp {
-		trans, err = thrift.NewTHttpClient(parsedUrl.String())
-	} else {
-		portStr := fmt.Sprint(port)
-		if strings.Contains(host, ":") {
-			host, portStr, err = net.SplitHostPort(host)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "error with host:", err)
-				os.Exit(1)
-			}
-		}
-		trans, err = thrift.NewTSocket(net.JoinHostPort(host, portStr))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "error resolving address:", err)
-			os.Exit(1)
-		}
-		if framed {
-			trans = thrift.NewTFramedTransport(trans)
-		}
-	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating transport", err)
-		os.Exit(1)
-	}
-	defer trans.Close()
-	var protocolFactory thrift.TProtocolFactory
-	switch protocol {
-	case "compact":
-		protocolFactory = thrift.NewTCompactProtocolFactory()
-		break
-	case "simplejson":
-		protocolFactory = thrift.NewTSimpleJSONProtocolFactory()
-		break
-	case "json":
-		protocolFactory = thrift.NewTJSONProtocolFactory()
-		break
-	case "binary", "":
-		protocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
-		break
-	default:
-		fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
-		Usage()
-		os.Exit(1)
-	}
-	client := table.NewTableServiceClientFactory(trans, protocolFactory)
-	if err := trans.Open(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
-		os.Exit(1)
-	}
-
-	switch cmd {
-	case "get":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Get requires 1 args")
-			flag.Usage()
-		}
-		arg84 := flag.Arg(1)
-		mbTrans85 := thrift.NewTMemoryBufferLen(len(arg84))
-		defer mbTrans85.Close()
-		_, err86 := mbTrans85.WriteString(arg84)
-		if err86 != nil {
-			Usage()
-			return
-		}
-		factory87 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt88 := factory87.GetProtocol(mbTrans85)
-		argvalue0 := table.NewGetRequest()
-		err89 := argvalue0.Read(jsProt88)
-		if err89 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Get(value0))
-		fmt.Print("\n")
-		break
-	case "put":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Put requires 1 args")
-			flag.Usage()
-		}
-		arg90 := flag.Arg(1)
-		mbTrans91 := thrift.NewTMemoryBufferLen(len(arg90))
-		defer mbTrans91.Close()
-		_, err92 := mbTrans91.WriteString(arg90)
-		if err92 != nil {
-			Usage()
-			return
-		}
-		factory93 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt94 := factory93.GetProtocol(mbTrans91)
-		argvalue0 := table.NewPutRequest()
-		err95 := argvalue0.Read(jsProt94)
-		if err95 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Put(value0))
-		fmt.Print("\n")
-		break
-	case "increment":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Increment requires 1 args")
-			flag.Usage()
-		}
-		arg96 := flag.Arg(1)
-		mbTrans97 := thrift.NewTMemoryBufferLen(len(arg96))
-		defer mbTrans97.Close()
-		_, err98 := mbTrans97.WriteString(arg96)
-		if err98 != nil {
-			Usage()
-			return
-		}
-		factory99 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt100 := factory99.GetProtocol(mbTrans97)
-		argvalue0 := table.NewIncrementRequest()
-		err101 := argvalue0.Read(jsProt100)
-		if err101 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Increment(value0))
-		fmt.Print("\n")
-		break
-	case "remove":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Remove requires 1 args")
-			flag.Usage()
-		}
-		arg102 := flag.Arg(1)
-		mbTrans103 := thrift.NewTMemoryBufferLen(len(arg102))
-		defer mbTrans103.Close()
-		_, err104 := mbTrans103.WriteString(arg102)
-		if err104 != nil {
-			Usage()
-			return
-		}
-		factory105 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt106 := factory105.GetProtocol(mbTrans103)
-		argvalue0 := table.NewRemoveRequest()
-		err107 := argvalue0.Read(jsProt106)
-		if err107 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Remove(value0))
-		fmt.Print("\n")
-		break
-	case "scan":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Scan requires 1 args")
-			flag.Usage()
-		}
-		arg108 := flag.Arg(1)
-		mbTrans109 := thrift.NewTMemoryBufferLen(len(arg108))
-		defer mbTrans109.Close()
-		_, err110 := mbTrans109.WriteString(arg108)
-		if err110 != nil {
-			Usage()
-			return
-		}
-		factory111 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt112 := factory111.GetProtocol(mbTrans109)
-		argvalue0 := table.NewScanRequest()
-		err113 := argvalue0.Read(jsProt112)
-		if err113 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Scan(value0))
-		fmt.Print("\n")
-		break
-	case "batch":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Batch requires 1 args")
-			flag.Usage()
-		}
-		arg114 := flag.Arg(1)
-		mbTrans115 := thrift.NewTMemoryBufferLen(len(arg114))
-		defer mbTrans115.Close()
-		_, err116 := mbTrans115.WriteString(arg114)
-		if err116 != nil {
-			Usage()
-			return
-		}
-		factory117 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt118 := factory117.GetProtocol(mbTrans115)
-		argvalue0 := table.NewBatchRequest()
-		err119 := argvalue0.Read(jsProt118)
-		if err119 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.Batch(value0))
-		fmt.Print("\n")
-		break
-	case "batchCheckAndMutate":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "BatchCheckAndMutate requires 1 args")
-			flag.Usage()
-		}
-		arg120 := flag.Arg(1)
-		mbTrans121 := thrift.NewTMemoryBufferLen(len(arg120))
-		defer mbTrans121.Close()
-		_, err122 := mbTrans121.WriteString(arg120)
-		if err122 != nil {
-			Usage()
-			return
-		}
-		factory123 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt124 := factory123.GetProtocol(mbTrans121)
-		argvalue0 := table.NewBatchRequest()
-		err125 := argvalue0.Read(jsProt124)
-		if err125 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.BatchCheckAndMutate(value0))
-		fmt.Print("\n")
-		break
-	case "putToRebuildIndex":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "PutToRebuildIndex requires 1 args")
-			flag.Usage()
-		}
-		arg126 := flag.Arg(1)
-		mbTrans127 := thrift.NewTMemoryBufferLen(len(arg126))
-		defer mbTrans127.Close()
-		_, err128 := mbTrans127.WriteString(arg126)
-		if err128 != nil {
-			Usage()
-			return
-		}
-		factory129 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt130 := factory129.GetProtocol(mbTrans127)
-		argvalue0 := table.NewPutRequest()
-		err131 := argvalue0.Read(jsProt130)
-		if err131 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.PutToRebuildIndex(value0))
-		fmt.Print("\n")
-		break
-	case "getServerVersion":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "GetServerVersion requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.GetServerVersion())
-		fmt.Print("\n")
-		break
-	case "validateClientVersion":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
-			flag.Usage()
-		}
-		arg132 := flag.Arg(1)
-		mbTrans133 := thrift.NewTMemoryBufferLen(len(arg132))
-		defer mbTrans133.Close()
-		_, err134 := mbTrans133.WriteString(arg132)
-		if err134 != nil {
-			Usage()
-			return
-		}
-		factory135 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt136 := factory135.GetProtocol(mbTrans133)
-		argvalue0 := table.NewVersion()
-		err137 := argvalue0.Read(jsProt136)
-		if err137 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.ValidateClientVersion(value0))
-		fmt.Print("\n")
-		break
-	case "getServerTime":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "GetServerTime requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.GetServerTime())
-		fmt.Print("\n")
-		break
-	case "":
-		Usage()
-		break
-	default:
-		fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
-	}
+  flag.Usage = Usage
+  var host string
+  var port int
+  var protocol string
+  var urlString string
+  var framed bool
+  var useHttp bool
+  var parsedUrl url.URL
+  var trans thrift.TTransport
+  _ = strconv.Atoi
+  _ = math.Abs
+  flag.Usage = Usage
+  flag.StringVar(&host, "h", "localhost", "Specify host and port")
+  flag.IntVar(&port, "p", 9090, "Specify port")
+  flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
+  flag.StringVar(&urlString, "u", "", "Specify the url")
+  flag.BoolVar(&framed, "framed", false, "Use framed transport")
+  flag.BoolVar(&useHttp, "http", false, "Use http")
+  flag.Parse()
+  
+  if len(urlString) > 0 {
+    parsedUrl, err := url.Parse(urlString)
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+      flag.Usage()
+    }
+    host = parsedUrl.Host
+    useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http"
+  } else if useHttp {
+    _, err := url.Parse(fmt.Sprint("http://", host, ":", port))
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+      flag.Usage()
+    }
+  }
+  
+  cmd := flag.Arg(0)
+  var err error
+  if useHttp {
+    trans, err = thrift.NewTHttpClient(parsedUrl.String())
+  } else {
+    portStr := fmt.Sprint(port)
+    if strings.Contains(host, ":") {
+           host, portStr, err = net.SplitHostPort(host)
+           if err != nil {
+                   fmt.Fprintln(os.Stderr, "error with host:", err)
+                   os.Exit(1)
+           }
+    }
+    trans, err = thrift.NewTSocket(net.JoinHostPort(host, portStr))
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "error resolving address:", err)
+      os.Exit(1)
+    }
+    if framed {
+      trans = thrift.NewTFramedTransport(trans)
+    }
+  }
+  if err != nil {
+    fmt.Fprintln(os.Stderr, "Error creating transport", err)
+    os.Exit(1)
+  }
+  defer trans.Close()
+  var protocolFactory thrift.TProtocolFactory
+  switch protocol {
+  case "compact":
+    protocolFactory = thrift.NewTCompactProtocolFactory()
+    break
+  case "simplejson":
+    protocolFactory = thrift.NewTSimpleJSONProtocolFactory()
+    break
+  case "json":
+    protocolFactory = thrift.NewTJSONProtocolFactory()
+    break
+  case "binary", "":
+    protocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
+    break
+  default:
+    fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
+    Usage()
+    os.Exit(1)
+  }
+  client := table.NewTableServiceClientFactory(trans, protocolFactory)
+  if err := trans.Open(); err != nil {
+    fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
+    os.Exit(1)
+  }
+  
+  switch cmd {
+  case "get":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Get requires 1 args")
+      flag.Usage()
+    }
+    arg97 := flag.Arg(1)
+    mbTrans98 := thrift.NewTMemoryBufferLen(len(arg97))
+    defer mbTrans98.Close()
+    _, err99 := mbTrans98.WriteString(arg97)
+    if err99 != nil {
+      Usage()
+      return
+    }
+    factory100 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt101 := factory100.GetProtocol(mbTrans98)
+    argvalue0 := table.NewGetRequest()
+    err102 := argvalue0.Read(jsProt101)
+    if err102 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Get(value0))
+    fmt.Print("\n")
+    break
+  case "put":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Put requires 1 args")
+      flag.Usage()
+    }
+    arg103 := flag.Arg(1)
+    mbTrans104 := thrift.NewTMemoryBufferLen(len(arg103))
+    defer mbTrans104.Close()
+    _, err105 := mbTrans104.WriteString(arg103)
+    if err105 != nil {
+      Usage()
+      return
+    }
+    factory106 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt107 := factory106.GetProtocol(mbTrans104)
+    argvalue0 := table.NewPutRequest()
+    err108 := argvalue0.Read(jsProt107)
+    if err108 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Put(value0))
+    fmt.Print("\n")
+    break
+  case "increment":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Increment requires 1 args")
+      flag.Usage()
+    }
+    arg109 := flag.Arg(1)
+    mbTrans110 := thrift.NewTMemoryBufferLen(len(arg109))
+    defer mbTrans110.Close()
+    _, err111 := mbTrans110.WriteString(arg109)
+    if err111 != nil {
+      Usage()
+      return
+    }
+    factory112 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt113 := factory112.GetProtocol(mbTrans110)
+    argvalue0 := table.NewIncrementRequest()
+    err114 := argvalue0.Read(jsProt113)
+    if err114 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Increment(value0))
+    fmt.Print("\n")
+    break
+  case "remove":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Remove requires 1 args")
+      flag.Usage()
+    }
+    arg115 := flag.Arg(1)
+    mbTrans116 := thrift.NewTMemoryBufferLen(len(arg115))
+    defer mbTrans116.Close()
+    _, err117 := mbTrans116.WriteString(arg115)
+    if err117 != nil {
+      Usage()
+      return
+    }
+    factory118 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt119 := factory118.GetProtocol(mbTrans116)
+    argvalue0 := table.NewRemoveRequest()
+    err120 := argvalue0.Read(jsProt119)
+    if err120 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Remove(value0))
+    fmt.Print("\n")
+    break
+  case "realRemove":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "RealRemove requires 1 args")
+      flag.Usage()
+    }
+    arg121 := flag.Arg(1)
+    mbTrans122 := thrift.NewTMemoryBufferLen(len(arg121))
+    defer mbTrans122.Close()
+    _, err123 := mbTrans122.WriteString(arg121)
+    if err123 != nil { 
+      Usage()
+      return
+    }
+    factory124 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt125 := factory124.GetProtocol(mbTrans122)
+    containerStruct0 := table.NewRealRemoveArgs()
+    err126 := containerStruct0.ReadField1(jsProt125)
+    if err126 != nil {
+      Usage()
+      return
+    }
+    argvalue0 := containerStruct0.RequestList
+    value0 := argvalue0
+    fmt.Print(client.RealRemove(value0))
+    fmt.Print("\n")
+    break
+  case "scan":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Scan requires 1 args")
+      flag.Usage()
+    }
+    arg127 := flag.Arg(1)
+    mbTrans128 := thrift.NewTMemoryBufferLen(len(arg127))
+    defer mbTrans128.Close()
+    _, err129 := mbTrans128.WriteString(arg127)
+    if err129 != nil {
+      Usage()
+      return
+    }
+    factory130 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt131 := factory130.GetProtocol(mbTrans128)
+    argvalue0 := table.NewScanRequest()
+    err132 := argvalue0.Read(jsProt131)
+    if err132 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Scan(value0))
+    fmt.Print("\n")
+    break
+  case "batch":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "Batch requires 1 args")
+      flag.Usage()
+    }
+    arg133 := flag.Arg(1)
+    mbTrans134 := thrift.NewTMemoryBufferLen(len(arg133))
+    defer mbTrans134.Close()
+    _, err135 := mbTrans134.WriteString(arg133)
+    if err135 != nil {
+      Usage()
+      return
+    }
+    factory136 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt137 := factory136.GetProtocol(mbTrans134)
+    argvalue0 := table.NewBatchRequest()
+    err138 := argvalue0.Read(jsProt137)
+    if err138 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.Batch(value0))
+    fmt.Print("\n")
+    break
+  case "batchCheckAndMutate":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "BatchCheckAndMutate requires 1 args")
+      flag.Usage()
+    }
+    arg139 := flag.Arg(1)
+    mbTrans140 := thrift.NewTMemoryBufferLen(len(arg139))
+    defer mbTrans140.Close()
+    _, err141 := mbTrans140.WriteString(arg139)
+    if err141 != nil {
+      Usage()
+      return
+    }
+    factory142 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt143 := factory142.GetProtocol(mbTrans140)
+    argvalue0 := table.NewBatchRequest()
+    err144 := argvalue0.Read(jsProt143)
+    if err144 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.BatchCheckAndMutate(value0))
+    fmt.Print("\n")
+    break
+  case "putToRebuildIndex":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "PutToRebuildIndex requires 1 args")
+      flag.Usage()
+    }
+    arg145 := flag.Arg(1)
+    mbTrans146 := thrift.NewTMemoryBufferLen(len(arg145))
+    defer mbTrans146.Close()
+    _, err147 := mbTrans146.WriteString(arg145)
+    if err147 != nil {
+      Usage()
+      return
+    }
+    factory148 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt149 := factory148.GetProtocol(mbTrans146)
+    argvalue0 := table.NewPutRequest()
+    err150 := argvalue0.Read(jsProt149)
+    if err150 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.PutToRebuildIndex(value0))
+    fmt.Print("\n")
+    break
+  case "partialAllowedBatch":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "PartialAllowedBatch requires 1 args")
+      flag.Usage()
+    }
+    arg151 := flag.Arg(1)
+    mbTrans152 := thrift.NewTMemoryBufferLen(len(arg151))
+    defer mbTrans152.Close()
+    _, err153 := mbTrans152.WriteString(arg151)
+    if err153 != nil {
+      Usage()
+      return
+    }
+    factory154 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt155 := factory154.GetProtocol(mbTrans152)
+    argvalue0 := table.NewBatchRequest()
+    err156 := argvalue0.Read(jsProt155)
+    if err156 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.PartialAllowedBatch(value0))
+    fmt.Print("\n")
+    break
+  case "getServerVersion":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetServerVersion requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetServerVersion())
+    fmt.Print("\n")
+    break
+  case "validateClientVersion":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
+      flag.Usage()
+    }
+    arg157 := flag.Arg(1)
+    mbTrans158 := thrift.NewTMemoryBufferLen(len(arg157))
+    defer mbTrans158.Close()
+    _, err159 := mbTrans158.WriteString(arg157)
+    if err159 != nil {
+      Usage()
+      return
+    }
+    factory160 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt161 := factory160.GetProtocol(mbTrans158)
+    argvalue0 := table.NewVersion()
+    err162 := argvalue0.Read(jsProt161)
+    if err162 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.ValidateClientVersion(value0))
+    fmt.Print("\n")
+    break
+  case "getServerTime":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetServerTime requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetServerTime())
+    fmt.Print("\n")
+    break
+  case "":
+    Usage()
+    break
+  default:
+    fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
+  }
 }

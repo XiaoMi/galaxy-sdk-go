@@ -306,18 +306,18 @@ func (p *AdminClientProxy) DeleteSnapshot(tableName string, snapshotName string)
 	return client.DeleteSnapshot(tableName, snapshotName)
 }
 
-func (p *AdminClientProxy) RestoreSnapshot(tableName string, snapshotName string, destTableName string, isSystem bool) (err error) {
+func (p *AdminClientProxy) RestoreSnapshot(tableName string, snapshotName string, destTableName string, isSystem table.SnapshotType) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=restoreSnapshot")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.RestoreSnapshot(tableName, snapshotName, destTableName, isSystem)
 }
 
-func (p *AdminClientProxy) ListAllSnapshots() (r []*admin.SnapshotTableView, err error) {
+func (p *AdminClientProxy) ListAllSnapshots(spaceId string) (r []*admin.SnapshotTableView, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=listAllSnapshots")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
-	return client.ListAllSnapshots()
+	return client.ListAllSnapshots(spaceId)
 }
 
 func (p *AdminClientProxy) CancelSnapshotTable(tableName string, snapshotName string) (err error) {
@@ -340,6 +340,92 @@ func (p *AdminClientProxy) GetQuotaInfo(spaceId string) (r *admin.QuotaInfo, err
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.GetQuotaInfo(spaceId)
 }
+
+func (p *AdminClientProxy) GetCeilStreamCheckpoint(tableName string, topicName string, timestamp int64) (r *admin.StreamCheckpoint, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetCeilStreamCheckpoint(tableName, topicName, timestamp)
+}
+
+func (p *AdminClientProxy) GetDefaultColdStandBy() (r *table.ColdStandBy, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetDefaultColdStandBy()
+}
+
+func (p *AdminClientProxy) GetDevelopId() (r string, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetDevelopId()
+}
+
+func (p *AdminClientProxy) GetFloorStreamCheckpoint(tableName string, topicName string, timestamp int64) (r *admin.StreamCheckpoint, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetFloorStreamCheckpoint(tableName, topicName, timestamp)
+}
+
+func (p *AdminClientProxy) GetGrantRule(spaceId string) (r *admin.GrantRule, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetGrantRule(spaceId)
+}
+
+func (p *AdminClientProxy) GetIndexTableSplits(tableName string, indexName string, startKey table.Dictionary, stopKey table.Dictionary) (r []*table.TableSplit, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetIndexTableSplits(tableName, indexName, startKey, stopKey)
+}
+
+func (p *AdminClientProxy) SetGrantRule(spaceId string, grantRule *admin.GrantRule) (err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.SetGrantRule(spaceId, grantRule)
+}
+
+func (p *AdminClientProxy) GetLatestStreamCheckpoint(tableName string, topicName string) (r *admin.StreamCheckpoint, err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.GetLatestStreamCheckpoint(tableName, topicName)
+}
+
+
+func (p *AdminClientProxy) ListAllDeletedTables(spaceId string) (r []*table.TableInfo, err error){
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.ListAllDeletedTables(spaceId)
+}
+
+func (p *AdminClientProxy) RecoverTable(srcTableName string, destTableName string, topicName string, timestamp int64) (err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.RecoverTable(srcTableName, destTableName, topicName, timestamp)
+}
+
+func (p *AdminClientProxy) RestoreTable(deletedTableName string, destTableName string) (err error) {
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.RestoreTable(deletedTableName, destTableName)
+}
+
+func (p *AdminClientProxy) SetSpaceId(tableName string, spaceId string) (err error){
+	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
+	defer trans.Close()
+	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	return client.SetSpaceId(tableName, spaceId)
+}
+
 
 ////////////////////////////
 // Table client proxy
@@ -452,6 +538,29 @@ func (p *TableClientProxy) Remove(request *table.RemoveRequest) (r *table.Remove
 	return nil, err
 }
 
+func (p *TableClientProxy) RealRemove(request []*table.RemoveRequest) (r []*table.RemoveResult_,
+	err error) {
+	for retry := 0; retry <= errors.MAX_RETRY; {
+		query := fmt.Sprintf("type=realRemove&name=%s", request[0].GetTableName())
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
+		defer trans.Close()
+		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		if r, e := client.RealRemove(request); e != nil {
+			if p.shouldRetry(e) {
+				err = e
+				retry += 1
+				continue
+			}
+			return r, e
+		} else {
+			return r, e
+		}
+	}
+	return nil, err
+}
+
+
+
 func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
 		query := fmt.Sprintf("type=scan&name=%s", request.GetTableName())
@@ -471,6 +580,8 @@ func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult
 	}
 	return nil, err
 }
+
+
 
 func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
@@ -508,6 +619,45 @@ func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchRes
 	}
 	return nil, err
 }
+
+func (p *TableClientProxy) PartialAllowedBatch(request *table.BatchRequest) (r *table.BatchResult_, err error) {
+	for retry := 0; retry <= errors.MAX_RETRY; {
+		action := request.GetItems()[0].GetAction()
+		rq := request.GetItems()[0].GetRequest()
+		var tableName string
+		switch(action) {
+		case table.BatchOp_GET:
+			tableName = rq.GetGetRequest().GetTableName()
+			break
+		case table.BatchOp_PUT:
+			tableName = rq.GetPutRequest().GetTableName()
+			break
+		case table.BatchOp_INCREMENT:
+			tableName = rq.GetIncrementRequest().GetTableName()
+			break
+		case table.BatchOp_REMOVE:
+			tableName = rq.GetRemoveRequest().GetTableName()
+			break
+		}
+		query := fmt.Sprintf("type=batch&name=%s", tableName)
+		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
+		defer trans.Close()
+		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		if r, e := client.Batch(request); e != nil {
+			if p.shouldRetry(e) {
+				err = e
+				retry += 1
+				continue
+			}
+			return r, e
+		} else {
+			return r, e
+		}
+	}
+	return nil, err
+}
+
+
 
 func (p *TableClientProxy) BatchCheckAndMutate(request *table.BatchRequest) (r *table.BatchResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {

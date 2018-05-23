@@ -6,9 +6,10 @@ package auth
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -19,7 +20,6 @@ var _ = bytes.Equal
 var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
 var SIGNATURE_SUPPORT map[UserType]bool
-
 const HK_AUTHORIZATION = "Authorization"
 const HK_HOST = "Host"
 const HK_TIMESTAMP = "X-Xiaomi-Timestamp"
@@ -33,20 +33,20 @@ const HK_SECRET_KEY = "X-Xiaomi-Secret-Key"
 const HK_SIGNATURE = "X-Xiaomi-Signature"
 const HK_MAC_ALGORITHM = "X-Xiaomi-Mac-Algorithm"
 const HK_SUPPORT_ACCOUNT_KEY = "X-Xiaomi-Support-Account-Key"
-
 var SUGGESTED_SIGNATURE_HEADERS []string
 
 func init() {
-	SIGNATURE_SUPPORT = map[UserType]bool{
-		1:  false,
-		2:  true,
-		10: true,
-		11: true,
-		12: false,
-		13: false,
-	}
+SIGNATURE_SUPPORT = map[UserType]bool{
+    1: false,
+    2: true,
+    10: true,
+    11: true,
+    12: false,
+    13: false,
+}
 
-	SUGGESTED_SIGNATURE_HEADERS = []string{
-		"Host", "X-Xiaomi-Timestamp", "X-Xiaomi-Content-MD5"}
+SUGGESTED_SIGNATURE_HEADERS = []string{
+  "Host",   "X-Xiaomi-Timestamp",   "X-Xiaomi-Content-MD5", }
 
 }
+

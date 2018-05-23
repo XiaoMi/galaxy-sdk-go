@@ -6,8 +6,9 @@ package io
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -19,3 +20,4 @@ var _ = table.GoUnusedProtection__
 
 func init() {
 }
+

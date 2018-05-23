@@ -6,8 +6,9 @@ package common
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -16,7 +17,6 @@ var _ = fmt.Printf
 var _ = bytes.Equal
 
 var _ = errors.GoUnusedProtection__
-
 const DEFAULT_CLIENT_TIMEOUT = 10000
 const DEFAULT_MAX_CLIENT_TIMEOUT = 10000
 const DEFAULT_ADMIN_CLIENT_TIMEOUT = 30000
@@ -27,6 +27,7 @@ const API_ROOT_PATH = "/v1/api"
 const AUTH_SERVICE_PATH = "/v1/api/auth"
 const ADMIN_SERVICE_PATH = "/v1/api/admin"
 const TABLE_SERVICE_PATH = "/v1/api/table"
+const RESTFUL_SERVICE_PATH = "/v1/api/restful"
 const SCAN_COUNT = "count"
 const DEFAULT_THRIFT_HEADER = "application/x-thrift"
 const THRIFT_JSON_HEADER = "application/x-thrift-json"
@@ -36,35 +37,34 @@ const THRIFT_JSON_PROTOCOL_CLASS = "TJSONProtocol"
 const THRIFT_BINARY_PROTOCOL_CLASS = "TBinaryProtocol"
 const THRIFT_COMPACT_PROTOCOL_CLASS = "TCompactProtocol"
 const THRIFT_BINARY_PROTOCOL_ACCELERATED_CLASS = "TBinaryProtocolAccelerated"
-
 var THRIFT_HEADER_MAP map[ThriftProtocol]string
 var HEADER_THRIFT_MAP map[string]ThriftProtocol
 var THRIFT_PROTOCOL_MAP map[ThriftProtocol]string
-
 const HK_REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout"
 const HK_ERROR_CODE_HEADER = "X-Xiaomi-Error-Code"
 const MAX_CONTENT_SIZE = 524288
 
 func init() {
-	THRIFT_HEADER_MAP = map[ThriftProtocol]string{
-		0: "application/x-thrift-compact",
-		1: "application/x-thrift-json",
-		2: "application/x-thrift-binary",
-		3: "application/x-thrift-binary",
-	}
+THRIFT_HEADER_MAP = map[ThriftProtocol]string{
+    0: "application/x-thrift-compact",
+    1: "application/x-thrift-json",
+    2: "application/x-thrift-binary",
+    3: "application/x-thrift-binary",
+}
 
-	HEADER_THRIFT_MAP = map[string]ThriftProtocol{
-		"application/x-thrift-compact": 0,
-		"application/x-thrift-json":    1,
-		"application/x-thrift-binary":  2,
-		"application/x-thrift":         1,
-	}
+HEADER_THRIFT_MAP = map[string]ThriftProtocol{
+  "application/x-thrift-compact":   0,
+  "application/x-thrift-json":   1,
+  "application/x-thrift-binary":   2,
+  "application/x-thrift":   1,
+}
 
-	THRIFT_PROTOCOL_MAP = map[ThriftProtocol]string{
-		0: "TCompactProtocol",
-		1: "TJSONProtocol",
-		2: "TBinaryProtocol",
-		3: "TBinaryProtocolAccelerated",
-	}
+THRIFT_PROTOCOL_MAP = map[ThriftProtocol]string{
+    0: "TCompactProtocol",
+    1: "TJSONProtocol",
+    2: "TBinaryProtocol",
+    3: "TBinaryProtocolAccelerated",
+}
 
 }
+

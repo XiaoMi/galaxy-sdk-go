@@ -18,3 +18,4 @@ const MAGIC = "RSF"
 
 func init() {
 }
+

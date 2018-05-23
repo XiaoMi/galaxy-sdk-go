@@ -6,9 +6,10 @@ package auth
 import (
 	"bytes"
 	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+
 )
 
 // (needed to ensure safety because of naive import list construction.)
@@ -18,405 +19,380 @@ var _ = bytes.Equal
 
 var _ = errors.GoUnusedProtection__
 var _ = common.GoUnusedProtection__
-
 type AuthService interface {
-	common.BaseService
-	//结构化存储授权相关接口(目前尚未开放)
+  common.BaseService
+  //结构化存储授权相关接口(目前尚未开放)
 
-	// 通过第三方认证系统换发Storage Access Token，采用App Secret登录无需此过程
-	//
-	// Parameters:
-	//  - OauthInfo
-	CreateCredential(oauthInfo *OAuthInfo) (r *Credential, err error)
+  // 通过第三方认证系统换发Storage Access Token，采用App Secret登录无需此过程
+  // 
+  // Parameters:
+  //  - OauthInfo
+  CreateCredential(oauthInfo *OAuthInfo) (r *Credential, err error)
 }
 
 //结构化存储授权相关接口(目前尚未开放)
 type AuthServiceClient struct {
-	*common.BaseServiceClient
+  *common.BaseServiceClient
 }
 
 func NewAuthServiceClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *AuthServiceClient {
-	return &AuthServiceClient{BaseServiceClient: common.NewBaseServiceClientFactory(t, f)}
-}
+  return &AuthServiceClient{BaseServiceClient: common.NewBaseServiceClientFactory(t, f)}}
 
 func NewAuthServiceClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *AuthServiceClient {
-	return &AuthServiceClient{BaseServiceClient: common.NewBaseServiceClientProtocol(t, iprot, oprot)}
+  return &AuthServiceClient{BaseServiceClient: common.NewBaseServiceClientProtocol(t, iprot, oprot)}
 }
 
 // 通过第三方认证系统换发Storage Access Token，采用App Secret登录无需此过程
-//
+// 
 // Parameters:
 //  - OauthInfo
 func (p *AuthServiceClient) CreateCredential(oauthInfo *OAuthInfo) (r *Credential, err error) {
-	if err = p.sendCreateCredential(oauthInfo); err != nil {
-		return
-	}
-	return p.recvCreateCredential()
+  if err = p.sendCreateCredential(oauthInfo); err != nil { return }
+  return p.recvCreateCredential()
 }
 
-func (p *AuthServiceClient) sendCreateCredential(oauthInfo *OAuthInfo) (err error) {
-	oprot := p.OutputProtocol
-	if oprot == nil {
-		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.OutputProtocol = oprot
-	}
-	p.SeqId++
-	if err = oprot.WriteMessageBegin("createCredential", thrift.CALL, p.SeqId); err != nil {
-		return
-	}
-	args := CreateCredentialArgs{
-		OauthInfo: oauthInfo,
-	}
-	if err = args.Write(oprot); err != nil {
-		return
-	}
-	if err = oprot.WriteMessageEnd(); err != nil {
-		return
-	}
-	return oprot.Flush()
+func (p *AuthServiceClient) sendCreateCredential(oauthInfo *OAuthInfo)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("createCredential", thrift.CALL, p.SeqId); err != nil {
+    return
+  }
+  args := CreateCredentialArgs{
+  OauthInfo : oauthInfo,
+  }
+  if err = args.Write(oprot); err != nil {
+    return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+    return
+  }
+  return oprot.Flush()
 }
+
 
 func (p *AuthServiceClient) recvCreateCredential() (value *Credential, err error) {
-	iprot := p.InputProtocol
-	if iprot == nil {
-		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
-		p.InputProtocol = iprot
-	}
-	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
-	if err != nil {
-		return
-	}
-	if mTypeId == thrift.EXCEPTION {
-		error1 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error2 error
-		error2, err = error1.Read(iprot)
-		if err != nil {
-			return
-		}
-		if err = iprot.ReadMessageEnd(); err != nil {
-			return
-		}
-		err = error2
-		return
-	}
-	if p.SeqId != seqId {
-		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "createCredential failed: out of sequence response")
-		return
-	}
-	result := CreateCredentialResult{}
-	if err = result.Read(iprot); err != nil {
-		return
-	}
-	if err = iprot.ReadMessageEnd(); err != nil {
-		return
-	}
-	if result.Se != nil {
-		err = result.Se
-		return
-	}
-	value = result.GetSuccess()
-	return
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  _, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error1 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error2 error
+    error2, err = error1.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error2
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "createCredential failed: out of sequence response")
+    return
+  }
+  result := CreateCredentialResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  if result.Se != nil {
+  err = result.Se
+  return 
+  }
+  value = result.GetSuccess()
+  return
 }
 
+
 type AuthServiceProcessor struct {
-	*common.BaseServiceProcessor
+  *common.BaseServiceProcessor
 }
 
 func NewAuthServiceProcessor(handler AuthService) *AuthServiceProcessor {
-	self3 := &AuthServiceProcessor{common.NewBaseServiceProcessor(handler)}
-	self3.AddToProcessorMap("createCredential", &authServiceProcessorCreateCredential{handler: handler})
-	return self3
+  self3 := &AuthServiceProcessor{common.NewBaseServiceProcessor(handler)}
+  self3.AddToProcessorMap("createCredential", &authServiceProcessorCreateCredential{handler:handler})
+  return self3
 }
 
 type authServiceProcessorCreateCredential struct {
-	handler AuthService
+  handler AuthService
 }
 
 func (p *authServiceProcessorCreateCredential) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := CreateCredentialArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("createCredential", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush()
-		return false, err
-	}
+  args := CreateCredentialArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("createCredential", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
+  }
 
-	iprot.ReadMessageEnd()
-	result := CreateCredentialResult{}
-	var retval *Credential
-	var err2 error
-	if retval, err2 = p.handler.CreateCredential(args.OauthInfo); err2 != nil {
-		switch v := err2.(type) {
-		case *errors.ServiceException:
-			result.Se = v
-		default:
-			x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing createCredential: "+err2.Error())
-			oprot.WriteMessageBegin("createCredential", thrift.EXCEPTION, seqId)
-			x.Write(oprot)
-			oprot.WriteMessageEnd()
-			oprot.Flush()
-			return true, err2
-		}
-	} else {
-		result.Success = retval
-	}
-	if err2 = oprot.WriteMessageBegin("createCredential", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
+  iprot.ReadMessageEnd()
+  result := CreateCredentialResult{}
+var retval *Credential
+  var err2 error
+  if retval, err2 = p.handler.CreateCredential(args.OauthInfo); err2 != nil {
+  switch v := err2.(type) {
+    case *errors.ServiceException:
+  result.Se = v
+    default:
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing createCredential: " + err2.Error())
+    oprot.WriteMessageBegin("createCredential", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
+  }
+  } else {
+    result.Success = retval
 }
+  if err2 = oprot.WriteMessageBegin("createCredential", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
 
 // HELPER FUNCTIONS AND STRUCTURES
 
 type CreateCredentialArgs struct {
-	OauthInfo *OAuthInfo `thrift:"oauthInfo,1" json:"oauthInfo"`
+  OauthInfo *OAuthInfo `thrift:"oauthInfo,1" json:"oauthInfo"`
 }
 
 func NewCreateCredentialArgs() *CreateCredentialArgs {
-	return &CreateCredentialArgs{}
+  return &CreateCredentialArgs{}
 }
 
 var CreateCredentialArgs_OauthInfo_DEFAULT *OAuthInfo
-
 func (p *CreateCredentialArgs) GetOauthInfo() *OAuthInfo {
-	if !p.IsSetOauthInfo() {
-		return CreateCredentialArgs_OauthInfo_DEFAULT
-	}
-	return p.OauthInfo
+  if !p.IsSetOauthInfo() {
+    return CreateCredentialArgs_OauthInfo_DEFAULT
+  }
+return p.OauthInfo
 }
 func (p *CreateCredentialArgs) IsSetOauthInfo() bool {
-	return p.OauthInfo != nil
+  return p.OauthInfo != nil
 }
 
 func (p *CreateCredentialArgs) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *CreateCredentialArgs) ReadField1(iprot thrift.TProtocol) error {
-	p.OauthInfo = &OAuthInfo{}
-	if err := p.OauthInfo.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.OauthInfo, err)
-	}
-	return nil
+func (p *CreateCredentialArgs)  ReadField1(iprot thrift.TProtocol) error {
+  p.OauthInfo = &OAuthInfo{}
+  if err := p.OauthInfo.Read(iprot); err != nil {
+    return fmt.Errorf("%T error reading struct: %s", p.OauthInfo, err)
+  }
+  return nil
 }
 
 func (p *CreateCredentialArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("createCredential_args"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("createCredential_args"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *CreateCredentialArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("oauthInfo", thrift.STRUCT, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:oauthInfo: %s", p, err)
-	}
-	if err := p.OauthInfo.Write(oprot); err != nil {
-		return fmt.Errorf("%T error writing struct: %s", p.OauthInfo, err)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:oauthInfo: %s", p, err)
-	}
-	return err
+  if err := oprot.WriteFieldBegin("oauthInfo", thrift.STRUCT, 1); err != nil {
+    return fmt.Errorf("%T write field begin error 1:oauthInfo: %s", p, err); }
+  if err := p.OauthInfo.Write(oprot); err != nil {
+    return fmt.Errorf("%T error writing struct: %s", p.OauthInfo, err)
+  }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return fmt.Errorf("%T write field end error 1:oauthInfo: %s", p, err); }
+  return err
 }
 
 func (p *CreateCredentialArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("CreateCredentialArgs(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("CreateCredentialArgs(%+v)", *p)
 }
 
 type CreateCredentialResult struct {
-	Success *Credential              `thrift:"success,0" json:"success"`
-	Se      *errors.ServiceException `thrift:"se,1" json:"se"`
+  Success *Credential `thrift:"success,0" json:"success"`
+  Se *errors.ServiceException `thrift:"se,1" json:"se"`
 }
 
 func NewCreateCredentialResult() *CreateCredentialResult {
-	return &CreateCredentialResult{}
+  return &CreateCredentialResult{}
 }
 
 var CreateCredentialResult_Success_DEFAULT *Credential
-
 func (p *CreateCredentialResult) GetSuccess() *Credential {
-	if !p.IsSetSuccess() {
-		return CreateCredentialResult_Success_DEFAULT
-	}
-	return p.Success
+  if !p.IsSetSuccess() {
+    return CreateCredentialResult_Success_DEFAULT
+  }
+return p.Success
 }
-
 var CreateCredentialResult_Se_DEFAULT *errors.ServiceException
-
 func (p *CreateCredentialResult) GetSe() *errors.ServiceException {
-	if !p.IsSetSe() {
-		return CreateCredentialResult_Se_DEFAULT
-	}
-	return p.Se
+  if !p.IsSetSe() {
+    return CreateCredentialResult_Se_DEFAULT
+  }
+return p.Se
 }
 func (p *CreateCredentialResult) IsSetSuccess() bool {
-	return p.Success != nil
+  return p.Success != nil
 }
 
 func (p *CreateCredentialResult) IsSetSe() bool {
-	return p.Se != nil
+  return p.Se != nil
 }
 
 func (p *CreateCredentialResult) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 0:
-			if err := p.ReadField0(iprot); err != nil {
-				return err
-			}
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if err := p.ReadField0(iprot); err != nil {
+        return err
+      }
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *CreateCredentialResult) ReadField0(iprot thrift.TProtocol) error {
-	p.Success = &Credential{}
-	if err := p.Success.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Success, err)
-	}
-	return nil
+func (p *CreateCredentialResult)  ReadField0(iprot thrift.TProtocol) error {
+  p.Success = &Credential{}
+  if err := p.Success.Read(iprot); err != nil {
+    return fmt.Errorf("%T error reading struct: %s", p.Success, err)
+  }
+  return nil
 }
 
-func (p *CreateCredentialResult) ReadField1(iprot thrift.TProtocol) error {
-	p.Se = &errors.ServiceException{}
-	if err := p.Se.Read(iprot); err != nil {
-		return fmt.Errorf("%T error reading struct: %s", p.Se, err)
-	}
-	return nil
+func (p *CreateCredentialResult)  ReadField1(iprot thrift.TProtocol) error {
+  p.Se = &errors.ServiceException{}
+  if err := p.Se.Read(iprot); err != nil {
+    return fmt.Errorf("%T error reading struct: %s", p.Se, err)
+  }
+  return nil
 }
 
 func (p *CreateCredentialResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("createCredential_result"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField0(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("createCredential_result"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField0(oprot); err != nil { return err }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *CreateCredentialResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Success, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+      return fmt.Errorf("%T write field begin error 0:success: %s", p, err); }
+    if err := p.Success.Write(oprot); err != nil {
+      return fmt.Errorf("%T error writing struct: %s", p.Success, err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 0:success: %s", p, err); }
+  }
+  return err
 }
 
 func (p *CreateCredentialResult) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSe() {
-		if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:se: %s", p, err)
-		}
-		if err := p.Se.Write(oprot); err != nil {
-			return fmt.Errorf("%T error writing struct: %s", p.Se, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:se: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetSe() {
+    if err := oprot.WriteFieldBegin("se", thrift.STRUCT, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:se: %s", p, err); }
+    if err := p.Se.Write(oprot); err != nil {
+      return fmt.Errorf("%T error writing struct: %s", p.Se, err)
+    }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:se: %s", p, err); }
+  }
+  return err
 }
 
 func (p *CreateCredentialResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("CreateCredentialResult(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("CreateCredentialResult(%+v)", *p)
 }
+
+

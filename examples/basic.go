@@ -113,6 +113,22 @@ func main() {
 			client.Float64Value(gr.GetItem()["score"]))
 	}
 
+	//realRemove data
+	remove := table.RemoveRequest{
+		TableName: &tableName,
+		Keys: map[string]*table.Datum {
+			"cityId": client.StringDatum(cities[i]),
+		},
+	}
+        removeList := []*table.RemoveRequest{&remove};
+	if gr, err := tableClient.RealRemove(removeList); err != nil {
+		fmt.Printf("Failed to get record: %s\n", err)
+	} else  {
+		fmt.Printf("Put record: %s, %v\n", cities[i], gr[0].IsSetSuccess())	
+        }
+
+
+
 	// batch put
 	var op table.BatchOp = table.BatchOp_PUT
 	batch := table.NewBatchRequest()

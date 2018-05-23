@@ -64,5 +64,6 @@ func (p *TableScanner) Iter() <-chan *ScannedItem {
 		}
 		close(ch)
 	}()
+	time.Sleep(time.Second)
 	return ch
 }

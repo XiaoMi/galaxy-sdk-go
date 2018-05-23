@@ -14,569 +14,495 @@ var _ = thrift.ZERO
 var _ = fmt.Printf
 var _ = bytes.Equal
 
-var GoUnusedProtection__ int
+var GoUnusedProtection__ int;
 
 //压缩算法类型
 type Compression int64
-
 const (
-	Compression_NONE   Compression = 0
-	Compression_SNAPPY Compression = 1
+  Compression_NONE Compression = 0
+  Compression_SNAPPY Compression = 1
 )
 
 func (p Compression) String() string {
-	switch p {
-	case Compression_NONE:
-		return "Compression_NONE"
-	case Compression_SNAPPY:
-		return "Compression_SNAPPY"
-	}
-	return "<UNSET>"
+  switch p {
+  case Compression_NONE: return "Compression_NONE"
+  case Compression_SNAPPY: return "Compression_SNAPPY"
+  }
+  return "<UNSET>"
 }
 
 func CompressionFromString(s string) (Compression, error) {
-	switch s {
-	case "Compression_NONE":
-		return Compression_NONE, nil
-	case "Compression_SNAPPY":
-		return Compression_SNAPPY, nil
-	}
-	return Compression(0), fmt.Errorf("not a valid Compression string")
+  switch s {
+  case "Compression_NONE": return Compression_NONE, nil 
+  case "Compression_SNAPPY": return Compression_SNAPPY, nil 
+  }
+  return Compression(0), fmt.Errorf("not a valid Compression string")
 }
+
 
 func CompressionPtr(v Compression) *Compression { return &v }
 
 //数据完整性校验算法类型
 type Checksum int64
-
 const (
-	Checksum_NONE  Checksum = 0
-	Checksum_CRC32 Checksum = 1
+  Checksum_NONE Checksum = 0
+  Checksum_CRC32 Checksum = 1
 )
 
 func (p Checksum) String() string {
-	switch p {
-	case Checksum_NONE:
-		return "Checksum_NONE"
-	case Checksum_CRC32:
-		return "Checksum_CRC32"
-	}
-	return "<UNSET>"
+  switch p {
+  case Checksum_NONE: return "Checksum_NONE"
+  case Checksum_CRC32: return "Checksum_CRC32"
+  }
+  return "<UNSET>"
 }
 
 func ChecksumFromString(s string) (Checksum, error) {
-	switch s {
-	case "Checksum_NONE":
-		return Checksum_NONE, nil
-	case "Checksum_CRC32":
-		return Checksum_CRC32, nil
-	}
-	return Checksum(0), fmt.Errorf("not a valid Checksum string")
+  switch s {
+  case "Checksum_NONE": return Checksum_NONE, nil 
+  case "Checksum_CRC32": return Checksum_CRC32, nil 
+  }
+  return Checksum(0), fmt.Errorf("not a valid Checksum string")
 }
+
 
 func ChecksumPtr(v Checksum) *Checksum { return &v }
 
 type RSFileHeader struct {
-	Magic       *string      `thrift:"magic,1" json:"magic"`
-	Version     *int32       `thrift:"version,2" json:"version"`
-	Compression *Compression `thrift:"compression,3" json:"compression"`
-	Checksum    *Checksum    `thrift:"checksum,4" json:"checksum"`
-	Count       int64        `thrift:"count,5" json:"count"`
-	Metadata    []byte       `thrift:"metadata,6" json:"metadata"`
+  Magic *string `thrift:"magic,1" json:"magic"`
+  Version *int32 `thrift:"version,2" json:"version"`
+  Compression *Compression `thrift:"compression,3" json:"compression"`
+  Checksum *Checksum `thrift:"checksum,4" json:"checksum"`
+  Count int64 `thrift:"count,5" json:"count"`
+  Metadata []byte `thrift:"metadata,6" json:"metadata"`
 }
 
 func NewRSFileHeader() *RSFileHeader {
-	return &RSFileHeader{
-		Count: -1,
-	}
+  return &RSFileHeader{
+Count: -1,
+}
 }
 
 var RSFileHeader_Magic_DEFAULT string
-
 func (p *RSFileHeader) GetMagic() string {
-	if !p.IsSetMagic() {
-		return RSFileHeader_Magic_DEFAULT
-	}
-	return *p.Magic
+  if !p.IsSetMagic() {
+    return RSFileHeader_Magic_DEFAULT
+  }
+return *p.Magic
 }
-
 var RSFileHeader_Version_DEFAULT int32
-
 func (p *RSFileHeader) GetVersion() int32 {
-	if !p.IsSetVersion() {
-		return RSFileHeader_Version_DEFAULT
-	}
-	return *p.Version
+  if !p.IsSetVersion() {
+    return RSFileHeader_Version_DEFAULT
+  }
+return *p.Version
 }
-
 var RSFileHeader_Compression_DEFAULT Compression
-
 func (p *RSFileHeader) GetCompression() Compression {
-	if !p.IsSetCompression() {
-		return RSFileHeader_Compression_DEFAULT
-	}
-	return *p.Compression
+  if !p.IsSetCompression() {
+    return RSFileHeader_Compression_DEFAULT
+  }
+return *p.Compression
 }
-
 var RSFileHeader_Checksum_DEFAULT Checksum
-
 func (p *RSFileHeader) GetChecksum() Checksum {
-	if !p.IsSetChecksum() {
-		return RSFileHeader_Checksum_DEFAULT
-	}
-	return *p.Checksum
+  if !p.IsSetChecksum() {
+    return RSFileHeader_Checksum_DEFAULT
+  }
+return *p.Checksum
 }
-
 var RSFileHeader_Count_DEFAULT int64 = -1
 
 func (p *RSFileHeader) GetCount() int64 {
-	return p.Count
+return p.Count
 }
-
 var RSFileHeader_Metadata_DEFAULT []byte
 
 func (p *RSFileHeader) GetMetadata() []byte {
-	return p.Metadata
+return p.Metadata
 }
 func (p *RSFileHeader) IsSetMagic() bool {
-	return p.Magic != nil
+  return p.Magic != nil
 }
 
 func (p *RSFileHeader) IsSetVersion() bool {
-	return p.Version != nil
+  return p.Version != nil
 }
 
 func (p *RSFileHeader) IsSetCompression() bool {
-	return p.Compression != nil
+  return p.Compression != nil
 }
 
 func (p *RSFileHeader) IsSetChecksum() bool {
-	return p.Checksum != nil
+  return p.Checksum != nil
 }
 
 func (p *RSFileHeader) IsSetCount() bool {
-	return p.Count != RSFileHeader_Count_DEFAULT
+  return p.Count != RSFileHeader_Count_DEFAULT
 }
 
 func (p *RSFileHeader) IsSetMetadata() bool {
-	return p.Metadata != nil
+  return p.Metadata != nil
 }
 
 func (p *RSFileHeader) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		case 3:
-			if err := p.ReadField3(iprot); err != nil {
-				return err
-			}
-		case 4:
-			if err := p.ReadField4(iprot); err != nil {
-				return err
-			}
-		case 5:
-			if err := p.ReadField5(iprot); err != nil {
-				return err
-			}
-		case 6:
-			if err := p.ReadField6(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+    case 4:
+      if err := p.ReadField4(iprot); err != nil {
+        return err
+      }
+    case 5:
+      if err := p.ReadField5(iprot); err != nil {
+        return err
+      }
+    case 6:
+      if err := p.ReadField6(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *RSFileHeader) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.Magic = &v
-	}
-	return nil
+func (p *RSFileHeader)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return fmt.Errorf("error reading field 1: %s", err)
+} else {
+  p.Magic = &v
+}
+  return nil
 }
 
-func (p *RSFileHeader) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 2: %s", err)
-	} else {
-		p.Version = &v
-	}
-	return nil
+func (p *RSFileHeader)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 2: %s", err)
+} else {
+  p.Version = &v
+}
+  return nil
 }
 
-func (p *RSFileHeader) ReadField3(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 3: %s", err)
-	} else {
-		temp := Compression(v)
-		p.Compression = &temp
-	}
-	return nil
+func (p *RSFileHeader)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 3: %s", err)
+} else {
+  temp := Compression(v)
+  p.Compression = &temp
+}
+  return nil
 }
 
-func (p *RSFileHeader) ReadField4(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 4: %s", err)
-	} else {
-		temp := Checksum(v)
-		p.Checksum = &temp
-	}
-	return nil
+func (p *RSFileHeader)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 4: %s", err)
+} else {
+  temp := Checksum(v)
+  p.Checksum = &temp
+}
+  return nil
 }
 
-func (p *RSFileHeader) ReadField5(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
-		return fmt.Errorf("error reading field 5: %s", err)
-	} else {
-		p.Count = v
-	}
-	return nil
+func (p *RSFileHeader)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI64(); err != nil {
+  return fmt.Errorf("error reading field 5: %s", err)
+} else {
+  p.Count = v
+}
+  return nil
 }
 
-func (p *RSFileHeader) ReadField6(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadBinary(); err != nil {
-		return fmt.Errorf("error reading field 6: %s", err)
-	} else {
-		p.Metadata = v
-	}
-	return nil
+func (p *RSFileHeader)  ReadField6(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBinary(); err != nil {
+  return fmt.Errorf("error reading field 6: %s", err)
+} else {
+  p.Metadata = v
+}
+  return nil
 }
 
 func (p *RSFileHeader) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("RSFileHeader"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField3(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField4(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField5(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField6(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("RSFileHeader"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := p.writeField3(oprot); err != nil { return err }
+  if err := p.writeField4(oprot); err != nil { return err }
+  if err := p.writeField5(oprot); err != nil { return err }
+  if err := p.writeField6(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *RSFileHeader) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetMagic() {
-		if err := oprot.WriteFieldBegin("magic", thrift.STRING, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:magic: %s", p, err)
-		}
-		if err := oprot.WriteString(string(*p.Magic)); err != nil {
-			return fmt.Errorf("%T.magic (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:magic: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetMagic() {
+    if err := oprot.WriteFieldBegin("magic", thrift.STRING, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:magic: %s", p, err); }
+    if err := oprot.WriteString(string(*p.Magic)); err != nil {
+    return fmt.Errorf("%T.magic (1) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:magic: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetVersion() {
-		if err := oprot.WriteFieldBegin("version", thrift.I32, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:version: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.Version)); err != nil {
-			return fmt.Errorf("%T.version (2) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:version: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetVersion() {
+    if err := oprot.WriteFieldBegin("version", thrift.I32, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:version: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.Version)); err != nil {
+    return fmt.Errorf("%T.version (2) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:version: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCompression() {
-		if err := oprot.WriteFieldBegin("compression", thrift.I32, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:compression: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.Compression)); err != nil {
-			return fmt.Errorf("%T.compression (3) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:compression: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetCompression() {
+    if err := oprot.WriteFieldBegin("compression", thrift.I32, 3); err != nil {
+      return fmt.Errorf("%T write field begin error 3:compression: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.Compression)); err != nil {
+    return fmt.Errorf("%T.compression (3) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 3:compression: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetChecksum() {
-		if err := oprot.WriteFieldBegin("checksum", thrift.I32, 4); err != nil {
-			return fmt.Errorf("%T write field begin error 4:checksum: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.Checksum)); err != nil {
-			return fmt.Errorf("%T.checksum (4) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 4:checksum: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetChecksum() {
+    if err := oprot.WriteFieldBegin("checksum", thrift.I32, 4); err != nil {
+      return fmt.Errorf("%T write field begin error 4:checksum: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.Checksum)); err != nil {
+    return fmt.Errorf("%T.checksum (4) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 4:checksum: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCount() {
-		if err := oprot.WriteFieldBegin("count", thrift.I64, 5); err != nil {
-			return fmt.Errorf("%T write field begin error 5:count: %s", p, err)
-		}
-		if err := oprot.WriteI64(int64(p.Count)); err != nil {
-			return fmt.Errorf("%T.count (5) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 5:count: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetCount() {
+    if err := oprot.WriteFieldBegin("count", thrift.I64, 5); err != nil {
+      return fmt.Errorf("%T write field begin error 5:count: %s", p, err); }
+    if err := oprot.WriteI64(int64(p.Count)); err != nil {
+    return fmt.Errorf("%T.count (5) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 5:count: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) writeField6(oprot thrift.TProtocol) (err error) {
-	if p.IsSetMetadata() {
-		if err := oprot.WriteFieldBegin("metadata", thrift.STRING, 6); err != nil {
-			return fmt.Errorf("%T write field begin error 6:metadata: %s", p, err)
-		}
-		if err := oprot.WriteBinary(p.Metadata); err != nil {
-			return fmt.Errorf("%T.metadata (6) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 6:metadata: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetMetadata() {
+    if err := oprot.WriteFieldBegin("metadata", thrift.STRING, 6); err != nil {
+      return fmt.Errorf("%T write field begin error 6:metadata: %s", p, err); }
+    if err := oprot.WriteBinary(p.Metadata); err != nil {
+    return fmt.Errorf("%T.metadata (6) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 6:metadata: %s", p, err); }
+  }
+  return err
 }
 
 func (p *RSFileHeader) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("RSFileHeader(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("RSFileHeader(%+v)", *p)
 }
 
 type Record struct {
-	Data     []byte `thrift:"data,1" json:"data"`
-	Checksum *int32 `thrift:"checksum,2" json:"checksum"`
-	Eof      bool   `thrift:"eof,3" json:"eof"`
+  Data []byte `thrift:"data,1" json:"data"`
+  Checksum *int32 `thrift:"checksum,2" json:"checksum"`
+  Eof bool `thrift:"eof,3" json:"eof"`
 }
 
 func NewRecord() *Record {
-	return &Record{}
+  return &Record{}
 }
 
 var Record_Data_DEFAULT []byte
 
 func (p *Record) GetData() []byte {
-	return p.Data
+return p.Data
 }
-
 var Record_Checksum_DEFAULT int32
-
 func (p *Record) GetChecksum() int32 {
-	if !p.IsSetChecksum() {
-		return Record_Checksum_DEFAULT
-	}
-	return *p.Checksum
+  if !p.IsSetChecksum() {
+    return Record_Checksum_DEFAULT
+  }
+return *p.Checksum
 }
-
 var Record_Eof_DEFAULT bool = false
 
 func (p *Record) GetEof() bool {
-	return p.Eof
+return p.Eof
 }
 func (p *Record) IsSetData() bool {
-	return p.Data != nil
+  return p.Data != nil
 }
 
 func (p *Record) IsSetChecksum() bool {
-	return p.Checksum != nil
+  return p.Checksum != nil
 }
 
 func (p *Record) IsSetEof() bool {
-	return p.Eof != Record_Eof_DEFAULT
+  return p.Eof != Record_Eof_DEFAULT
 }
 
 func (p *Record) Read(iprot thrift.TProtocol) error {
-	if _, err := iprot.ReadStructBegin(); err != nil {
-		return fmt.Errorf("%T read error: %s", p, err)
-	}
-	for {
-		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-		if err != nil {
-			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-		switch fieldId {
-		case 1:
-			if err := p.ReadField1(iprot); err != nil {
-				return err
-			}
-		case 2:
-			if err := p.ReadField2(iprot); err != nil {
-				return err
-			}
-		case 3:
-			if err := p.ReadField3(iprot); err != nil {
-				return err
-			}
-		default:
-			if err := iprot.Skip(fieldTypeId); err != nil {
-				return err
-			}
-		}
-		if err := iprot.ReadFieldEnd(); err != nil {
-			return err
-		}
-	}
-	if err := iprot.ReadStructEnd(); err != nil {
-		return fmt.Errorf("%T read struct end error: %s", p, err)
-	}
-	return nil
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return fmt.Errorf("%T read error: %s", p, err)
+  }
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return fmt.Errorf("%T read struct end error: %s", p, err)
+  }
+  return nil
 }
 
-func (p *Record) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadBinary(); err != nil {
-		return fmt.Errorf("error reading field 1: %s", err)
-	} else {
-		p.Data = v
-	}
-	return nil
+func (p *Record)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBinary(); err != nil {
+  return fmt.Errorf("error reading field 1: %s", err)
+} else {
+  p.Data = v
+}
+  return nil
 }
 
-func (p *Record) ReadField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI32(); err != nil {
-		return fmt.Errorf("error reading field 2: %s", err)
-	} else {
-		p.Checksum = &v
-	}
-	return nil
+func (p *Record)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return fmt.Errorf("error reading field 2: %s", err)
+} else {
+  p.Checksum = &v
+}
+  return nil
 }
 
-func (p *Record) ReadField3(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadBool(); err != nil {
-		return fmt.Errorf("error reading field 3: %s", err)
-	} else {
-		p.Eof = v
-	}
-	return nil
+func (p *Record)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBool(); err != nil {
+  return fmt.Errorf("error reading field 3: %s", err)
+} else {
+  p.Eof = v
+}
+  return nil
 }
 
 func (p *Record) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("Record"); err != nil {
-		return fmt.Errorf("%T write struct begin error: %s", p, err)
-	}
-	if err := p.writeField1(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField2(oprot); err != nil {
-		return err
-	}
-	if err := p.writeField3(oprot); err != nil {
-		return err
-	}
-	if err := oprot.WriteFieldStop(); err != nil {
-		return fmt.Errorf("write field stop error: %s", err)
-	}
-	if err := oprot.WriteStructEnd(); err != nil {
-		return fmt.Errorf("write struct stop error: %s", err)
-	}
-	return nil
+  if err := oprot.WriteStructBegin("Record"); err != nil {
+    return fmt.Errorf("%T write struct begin error: %s", p, err) }
+  if err := p.writeField1(oprot); err != nil { return err }
+  if err := p.writeField2(oprot); err != nil { return err }
+  if err := p.writeField3(oprot); err != nil { return err }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return fmt.Errorf("write field stop error: %s", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return fmt.Errorf("write struct stop error: %s", err) }
+  return nil
 }
 
 func (p *Record) writeField1(oprot thrift.TProtocol) (err error) {
-	if p.IsSetData() {
-		if err := oprot.WriteFieldBegin("data", thrift.STRING, 1); err != nil {
-			return fmt.Errorf("%T write field begin error 1:data: %s", p, err)
-		}
-		if err := oprot.WriteBinary(p.Data); err != nil {
-			return fmt.Errorf("%T.data (1) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 1:data: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetData() {
+    if err := oprot.WriteFieldBegin("data", thrift.STRING, 1); err != nil {
+      return fmt.Errorf("%T write field begin error 1:data: %s", p, err); }
+    if err := oprot.WriteBinary(p.Data); err != nil {
+    return fmt.Errorf("%T.data (1) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 1:data: %s", p, err); }
+  }
+  return err
 }
 
 func (p *Record) writeField2(oprot thrift.TProtocol) (err error) {
-	if p.IsSetChecksum() {
-		if err := oprot.WriteFieldBegin("checksum", thrift.I32, 2); err != nil {
-			return fmt.Errorf("%T write field begin error 2:checksum: %s", p, err)
-		}
-		if err := oprot.WriteI32(int32(*p.Checksum)); err != nil {
-			return fmt.Errorf("%T.checksum (2) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 2:checksum: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetChecksum() {
+    if err := oprot.WriteFieldBegin("checksum", thrift.I32, 2); err != nil {
+      return fmt.Errorf("%T write field begin error 2:checksum: %s", p, err); }
+    if err := oprot.WriteI32(int32(*p.Checksum)); err != nil {
+    return fmt.Errorf("%T.checksum (2) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 2:checksum: %s", p, err); }
+  }
+  return err
 }
 
 func (p *Record) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetEof() {
-		if err := oprot.WriteFieldBegin("eof", thrift.BOOL, 3); err != nil {
-			return fmt.Errorf("%T write field begin error 3:eof: %s", p, err)
-		}
-		if err := oprot.WriteBool(bool(p.Eof)); err != nil {
-			return fmt.Errorf("%T.eof (3) field write error: %s", p, err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 3:eof: %s", p, err)
-		}
-	}
-	return err
+  if p.IsSetEof() {
+    if err := oprot.WriteFieldBegin("eof", thrift.BOOL, 3); err != nil {
+      return fmt.Errorf("%T write field begin error 3:eof: %s", p, err); }
+    if err := oprot.WriteBool(bool(p.Eof)); err != nil {
+    return fmt.Errorf("%T.eof (3) field write error: %s", p, err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return fmt.Errorf("%T write field end error 3:eof: %s", p, err); }
+  }
+  return err
 }
 
 func (p *Record) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("Record(%+v)", *p)
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("Record(%+v)", *p)
 }
+

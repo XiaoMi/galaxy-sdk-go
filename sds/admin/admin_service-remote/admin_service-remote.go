@@ -4,712 +4,934 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"github.com/XiaoMi/galaxy-sdk-go/thrift"
-	"math"
-	"net"
-	"net/url"
-	"os"
-	"sds/admin"
-	"strconv"
-	"strings"
+        "flag"
+        "fmt"
+        "math"
+        "net"
+        "net/url"
+        "os"
+        "strconv"
+        "strings"
+        "github.com/XiaoMi/galaxy-sdk-go/thrift"
+        "sds/admin"
 )
 
 func Usage() {
-	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
-	flag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  void saveAppInfo(AppInfo appInfo)")
-	fmt.Fprintln(os.Stderr, "  AppInfo getAppInfo(string appId)")
-	fmt.Fprintln(os.Stderr, "   findAllApps()")
-	fmt.Fprintln(os.Stderr, "   findAllTables()")
-	fmt.Fprintln(os.Stderr, "  TableInfo createTable(string tableName, TableSpec tableSpec)")
-	fmt.Fprintln(os.Stderr, "  void dropTable(string tableName)")
-	fmt.Fprintln(os.Stderr, "  void alterTable(string tableName, TableSpec tableSpec)")
-	fmt.Fprintln(os.Stderr, "  void cloneTable(string srcName, string destTable, bool flushTable)")
-	fmt.Fprintln(os.Stderr, "  void disableTable(string tableName)")
-	fmt.Fprintln(os.Stderr, "  void enableTable(string tableName)")
-	fmt.Fprintln(os.Stderr, "  TableSpec describeTable(string tableName)")
-	fmt.Fprintln(os.Stderr, "  TableStatus getTableStatus(string tableName)")
-	fmt.Fprintln(os.Stderr, "  TableState getTableState(string tableName)")
-	fmt.Fprintln(os.Stderr, "   getTableSplits(string tableName, Dictionary startKey, Dictionary stopKey)")
-	fmt.Fprintln(os.Stderr, "  TimeSeriesData queryMetric(MetricQueryRequest query)")
-	fmt.Fprintln(os.Stderr, "   queryMetrics( queries)")
-	fmt.Fprintln(os.Stderr, "   findAllAppInfo()")
-	fmt.Fprintln(os.Stderr, "  i64 getTableSize(string tableName)")
-	fmt.Fprintln(os.Stderr, "  void putClientMetrics(ClientMetrics clientMetrics)")
-	fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string phoneNumber, string spaceId)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string phoneNumber, string spaceId)")
-	fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string email, string spaceId)")
-	fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string email, string spaceId)")
-	fmt.Fprintln(os.Stderr, "   listSubscribedPhone(string spaceId)")
-	fmt.Fprintln(os.Stderr, "   listSubscribedEmail(string spaceId)")
-	fmt.Fprintln(os.Stderr, "   getTableHistorySize(string tableName, i64 startDate, i64 stopDate)")
-	fmt.Fprintln(os.Stderr, "  void renameTable(string srcName, string destName)")
-	fmt.Fprintln(os.Stderr, "  TableSnapshots listSnapshots(string tableName)")
-	fmt.Fprintln(os.Stderr, "  void snapshotTable(string tableName, string snapshotName)")
-	fmt.Fprintln(os.Stderr, "  void deleteSnapshot(string tableName, string snapshotName)")
-	fmt.Fprintln(os.Stderr, "  void restoreSnapshot(string tableName, string snapshotName, string destTableName, bool isSystem)")
-	fmt.Fprintln(os.Stderr, "   listAllSnapshots()")
-	fmt.Fprintln(os.Stderr, "  void cancelSnapshotTable(string tableName, string snapshotName)")
-	fmt.Fprintln(os.Stderr, "  SnapshotState getSnapshotState(string tableName, string snapshotName)")
-	fmt.Fprintln(os.Stderr, "  QuotaInfo getQuotaInfo(string spaceId)")
-	fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
-	fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
-	fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
-	fmt.Fprintln(os.Stderr)
-	os.Exit(0)
+  fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
+  flag.PrintDefaults()
+  fmt.Fprintln(os.Stderr, "\nFunctions:")
+  fmt.Fprintln(os.Stderr, "  void saveAppInfo(AppInfo appInfo)")
+  fmt.Fprintln(os.Stderr, "  AppInfo getAppInfo(string appId)")
+  fmt.Fprintln(os.Stderr, "   findAllApps()")
+  fmt.Fprintln(os.Stderr, "   findAllTables()")
+  fmt.Fprintln(os.Stderr, "  TableInfo createTable(string tableName, TableSpec tableSpec)")
+  fmt.Fprintln(os.Stderr, "  void dropTable(string tableName)")
+  fmt.Fprintln(os.Stderr, "  void alterTable(string tableName, TableSpec tableSpec)")
+  fmt.Fprintln(os.Stderr, "  void cloneTable(string srcTableName, string destTableName, bool flushTable)")
+  fmt.Fprintln(os.Stderr, "  void disableTable(string tableName)")
+  fmt.Fprintln(os.Stderr, "  void enableTable(string tableName)")
+  fmt.Fprintln(os.Stderr, "  TableSpec describeTable(string tableName)")
+  fmt.Fprintln(os.Stderr, "  TableStatus getTableStatus(string tableName)")
+  fmt.Fprintln(os.Stderr, "  TableState getTableState(string tableName)")
+  fmt.Fprintln(os.Stderr, "   getTableSplits(string tableName, Dictionary startKey, Dictionary stopKey)")
+  fmt.Fprintln(os.Stderr, "   getIndexTableSplits(string tableName, string indexName, Dictionary startKey, Dictionary stopKey)")
+  fmt.Fprintln(os.Stderr, "  TimeSeriesData queryMetric(MetricQueryRequest query)")
+  fmt.Fprintln(os.Stderr, "   queryMetrics( queries)")
+  fmt.Fprintln(os.Stderr, "   findAllAppInfo()")
+  fmt.Fprintln(os.Stderr, "  i64 getTableSize(string tableName)")
+  fmt.Fprintln(os.Stderr, "  void putClientMetrics(ClientMetrics clientMetrics)")
+  fmt.Fprintln(os.Stderr, "  void subscribePhoneAlert(string phoneNumber, string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void unsubscribePhoneAlert(string phoneNumber, string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void subscribeEmailAlert(string email, string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void unsubscribeEmailAlert(string email, string spaceId)")
+  fmt.Fprintln(os.Stderr, "   listSubscribedPhone(string spaceId)")
+  fmt.Fprintln(os.Stderr, "   listSubscribedEmail(string spaceId)")
+  fmt.Fprintln(os.Stderr, "   getTableHistorySize(string tableName, i64 startDate, i64 stopDate)")
+  fmt.Fprintln(os.Stderr, "  void renameTable(string srcName, string destName)")
+  fmt.Fprintln(os.Stderr, "  TableSnapshots listSnapshots(string tableName)")
+  fmt.Fprintln(os.Stderr, "  void snapshotTable(string tableName, string snapshotName)")
+  fmt.Fprintln(os.Stderr, "  void deleteSnapshot(string tableName, string snapshotName)")
+  fmt.Fprintln(os.Stderr, "  void restoreSnapshot(string tableName, string snapshotName, string destTableName, SnapshotType snapshotType)")
+  fmt.Fprintln(os.Stderr, "   listAllSnapshots(string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void cancelSnapshotTable(string tableName, string snapshotName)")
+  fmt.Fprintln(os.Stderr, "  SnapshotState getSnapshotState(string tableName, string snapshotName)")
+  fmt.Fprintln(os.Stderr, "  QuotaInfo getQuotaInfo(string spaceId)")
+  fmt.Fprintln(os.Stderr, "  string getDevelopId()")
+  fmt.Fprintln(os.Stderr, "  StreamCheckpoint getLatestStreamCheckpoint(string tableName, string topicName)")
+  fmt.Fprintln(os.Stderr, "  StreamCheckpoint getFloorStreamCheckpoint(string tableName, string topicName, i64 timestamp)")
+  fmt.Fprintln(os.Stderr, "  StreamCheckpoint getCeilStreamCheckpoint(string tableName, string topicName, i64 timestamp)")
+  fmt.Fprintln(os.Stderr, "  void recoverTable(string srcTableName, string destTableName, string topicName, i64 timestamp)")
+  fmt.Fprintln(os.Stderr, "   listAllDeletedTables(string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void restoreTable(string deletedTableName, string destTableName)")
+  fmt.Fprintln(os.Stderr, "  ColdStandBy getDefaultColdStandBy()")
+  fmt.Fprintln(os.Stderr, "  GrantRule getGrantRule(string spaceId)")
+  fmt.Fprintln(os.Stderr, "  void setGrantRule(string spaceId, GrantRule grantRule)")
+  fmt.Fprintln(os.Stderr, "  void setSpaceId(string tableName, string spaceId)")
+  fmt.Fprintln(os.Stderr, "  Version getServerVersion()")
+  fmt.Fprintln(os.Stderr, "  void validateClientVersion(Version clientVersion)")
+  fmt.Fprintln(os.Stderr, "  i64 getServerTime()")
+  fmt.Fprintln(os.Stderr)
+  os.Exit(0)
 }
 
 func main() {
-	flag.Usage = Usage
-	var host string
-	var port int
-	var protocol string
-	var urlString string
-	var framed bool
-	var useHttp bool
-	var parsedUrl url.URL
-	var trans thrift.TTransport
-	_ = strconv.Atoi
-	_ = math.Abs
-	flag.Usage = Usage
-	flag.StringVar(&host, "h", "localhost", "Specify host and port")
-	flag.IntVar(&port, "p", 9090, "Specify port")
-	flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
-	flag.StringVar(&urlString, "u", "", "Specify the url")
-	flag.BoolVar(&framed, "framed", false, "Use framed transport")
-	flag.BoolVar(&useHttp, "http", false, "Use http")
-	flag.Parse()
-
-	if len(urlString) > 0 {
-		parsedUrl, err := url.Parse(urlString)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-			flag.Usage()
-		}
-		host = parsedUrl.Host
-		useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http"
-	} else if useHttp {
-		_, err := url.Parse(fmt.Sprint("http://", host, ":", port))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-			flag.Usage()
-		}
-	}
-
-	cmd := flag.Arg(0)
-	var err error
-	if useHttp {
-		trans, err = thrift.NewTHttpClient(parsedUrl.String())
-	} else {
-		portStr := fmt.Sprint(port)
-		if strings.Contains(host, ":") {
-			host, portStr, err = net.SplitHostPort(host)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "error with host:", err)
-				os.Exit(1)
-			}
-		}
-		trans, err = thrift.NewTSocket(net.JoinHostPort(host, portStr))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "error resolving address:", err)
-			os.Exit(1)
-		}
-		if framed {
-			trans = thrift.NewTFramedTransport(trans)
-		}
-	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating transport", err)
-		os.Exit(1)
-	}
-	defer trans.Close()
-	var protocolFactory thrift.TProtocolFactory
-	switch protocol {
-	case "compact":
-		protocolFactory = thrift.NewTCompactProtocolFactory()
-		break
-	case "simplejson":
-		protocolFactory = thrift.NewTSimpleJSONProtocolFactory()
-		break
-	case "json":
-		protocolFactory = thrift.NewTJSONProtocolFactory()
-		break
-	case "binary", "":
-		protocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
-		break
-	default:
-		fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
-		Usage()
-		os.Exit(1)
-	}
-	client := admin.NewAdminServiceClientFactory(trans, protocolFactory)
-	if err := trans.Open(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
-		os.Exit(1)
-	}
-
-	switch cmd {
-	case "saveAppInfo":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "SaveAppInfo requires 1 args")
-			flag.Usage()
-		}
-		arg95 := flag.Arg(1)
-		mbTrans96 := thrift.NewTMemoryBufferLen(len(arg95))
-		defer mbTrans96.Close()
-		_, err97 := mbTrans96.WriteString(arg95)
-		if err97 != nil {
-			Usage()
-			return
-		}
-		factory98 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt99 := factory98.GetProtocol(mbTrans96)
-		argvalue0 := admin.NewAppInfo()
-		err100 := argvalue0.Read(jsProt99)
-		if err100 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.SaveAppInfo(value0))
-		fmt.Print("\n")
-		break
-	case "getAppInfo":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetAppInfo requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetAppInfo(value0))
-		fmt.Print("\n")
-		break
-	case "findAllApps":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "FindAllApps requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.FindAllApps())
-		fmt.Print("\n")
-		break
-	case "findAllTables":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "FindAllTables requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.FindAllTables())
-		fmt.Print("\n")
-		break
-	case "createTable":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "CreateTable requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		arg103 := flag.Arg(2)
-		mbTrans104 := thrift.NewTMemoryBufferLen(len(arg103))
-		defer mbTrans104.Close()
-		_, err105 := mbTrans104.WriteString(arg103)
-		if err105 != nil {
-			Usage()
-			return
-		}
-		factory106 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt107 := factory106.GetProtocol(mbTrans104)
-		argvalue1 := admin.NewTableSpec()
-		err108 := argvalue1.Read(jsProt107)
-		if err108 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		fmt.Print(client.CreateTable(value0, value1))
-		fmt.Print("\n")
-		break
-	case "dropTable":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "DropTable requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.DropTable(value0))
-		fmt.Print("\n")
-		break
-	case "alterTable":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "AlterTable requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		arg111 := flag.Arg(2)
-		mbTrans112 := thrift.NewTMemoryBufferLen(len(arg111))
-		defer mbTrans112.Close()
-		_, err113 := mbTrans112.WriteString(arg111)
-		if err113 != nil {
-			Usage()
-			return
-		}
-		factory114 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt115 := factory114.GetProtocol(mbTrans112)
-		argvalue1 := admin.NewTableSpec()
-		err116 := argvalue1.Read(jsProt115)
-		if err116 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		fmt.Print(client.AlterTable(value0, value1))
-		fmt.Print("\n")
-		break
-	case "cloneTable":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "CloneTable requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3) == "true"
-		value2 := argvalue2
-		fmt.Print(client.CloneTable(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "disableTable":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "DisableTable requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.DisableTable(value0))
-		fmt.Print("\n")
-		break
-	case "enableTable":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "EnableTable requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.EnableTable(value0))
-		fmt.Print("\n")
-		break
-	case "describeTable":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "DescribeTable requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.DescribeTable(value0))
-		fmt.Print("\n")
-		break
-	case "getTableStatus":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetTableStatus requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetTableStatus(value0))
-		fmt.Print("\n")
-		break
-	case "getTableState":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetTableState requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetTableState(value0))
-		fmt.Print("\n")
-		break
-	case "getTableSplits":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "GetTableSplits requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		arg126 := flag.Arg(2)
-		mbTrans127 := thrift.NewTMemoryBufferLen(len(arg126))
-		defer mbTrans127.Close()
-		_, err128 := mbTrans127.WriteString(arg126)
-		if err128 != nil {
-			Usage()
-			return
-		}
-		factory129 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt130 := factory129.GetProtocol(mbTrans127)
-		containerStruct1 := admin.NewGetTableSplitsArgs()
-		err131 := containerStruct1.ReadField2(jsProt130)
-		if err131 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := containerStruct1.StartKey
-		value1 := admin.Dictionary(argvalue1)
-		arg132 := flag.Arg(3)
-		mbTrans133 := thrift.NewTMemoryBufferLen(len(arg132))
-		defer mbTrans133.Close()
-		_, err134 := mbTrans133.WriteString(arg132)
-		if err134 != nil {
-			Usage()
-			return
-		}
-		factory135 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt136 := factory135.GetProtocol(mbTrans133)
-		containerStruct2 := admin.NewGetTableSplitsArgs()
-		err137 := containerStruct2.ReadField3(jsProt136)
-		if err137 != nil {
-			Usage()
-			return
-		}
-		argvalue2 := containerStruct2.StopKey
-		value2 := admin.Dictionary(argvalue2)
-		fmt.Print(client.GetTableSplits(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "queryMetric":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "QueryMetric requires 1 args")
-			flag.Usage()
-		}
-		arg138 := flag.Arg(1)
-		mbTrans139 := thrift.NewTMemoryBufferLen(len(arg138))
-		defer mbTrans139.Close()
-		_, err140 := mbTrans139.WriteString(arg138)
-		if err140 != nil {
-			Usage()
-			return
-		}
-		factory141 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt142 := factory141.GetProtocol(mbTrans139)
-		argvalue0 := admin.NewMetricQueryRequest()
-		err143 := argvalue0.Read(jsProt142)
-		if err143 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.QueryMetric(value0))
-		fmt.Print("\n")
-		break
-	case "queryMetrics":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "QueryMetrics requires 1 args")
-			flag.Usage()
-		}
-		arg144 := flag.Arg(1)
-		mbTrans145 := thrift.NewTMemoryBufferLen(len(arg144))
-		defer mbTrans145.Close()
-		_, err146 := mbTrans145.WriteString(arg144)
-		if err146 != nil {
-			Usage()
-			return
-		}
-		factory147 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt148 := factory147.GetProtocol(mbTrans145)
-		containerStruct0 := admin.NewQueryMetricsArgs()
-		err149 := containerStruct0.ReadField1(jsProt148)
-		if err149 != nil {
-			Usage()
-			return
-		}
-		argvalue0 := containerStruct0.Queries
-		value0 := argvalue0
-		fmt.Print(client.QueryMetrics(value0))
-		fmt.Print("\n")
-		break
-	case "findAllAppInfo":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "FindAllAppInfo requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.FindAllAppInfo())
-		fmt.Print("\n")
-		break
-	case "getTableSize":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetTableSize requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetTableSize(value0))
-		fmt.Print("\n")
-		break
-	case "putClientMetrics":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "PutClientMetrics requires 1 args")
-			flag.Usage()
-		}
-		arg151 := flag.Arg(1)
-		mbTrans152 := thrift.NewTMemoryBufferLen(len(arg151))
-		defer mbTrans152.Close()
-		_, err153 := mbTrans152.WriteString(arg151)
-		if err153 != nil {
-			Usage()
-			return
-		}
-		factory154 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt155 := factory154.GetProtocol(mbTrans152)
-		argvalue0 := admin.NewClientMetrics()
-		err156 := argvalue0.Read(jsProt155)
-		if err156 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.PutClientMetrics(value0))
-		fmt.Print("\n")
-		break
-	case "subscribePhoneAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.SubscribePhoneAlert(value0, value1))
-		fmt.Print("\n")
-		break
-	case "unsubscribePhoneAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.UnsubscribePhoneAlert(value0, value1))
-		fmt.Print("\n")
-		break
-	case "subscribeEmailAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.SubscribeEmailAlert(value0, value1))
-		fmt.Print("\n")
-		break
-	case "unsubscribeEmailAlert":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.UnsubscribeEmailAlert(value0, value1))
-		fmt.Print("\n")
-		break
-	case "listSubscribedPhone":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.ListSubscribedPhone(value0))
-		fmt.Print("\n")
-		break
-	case "listSubscribedEmail":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.ListSubscribedEmail(value0))
-		fmt.Print("\n")
-		break
-	case "getTableHistorySize":
-		if flag.NArg()-1 != 3 {
-			fmt.Fprintln(os.Stderr, "GetTableHistorySize requires 3 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1, err168 := (strconv.ParseInt(flag.Arg(2), 10, 64))
-		if err168 != nil {
-			Usage()
-			return
-		}
-		value1 := argvalue1
-		argvalue2, err169 := (strconv.ParseInt(flag.Arg(3), 10, 64))
-		if err169 != nil {
-			Usage()
-			return
-		}
-		value2 := argvalue2
-		fmt.Print(client.GetTableHistorySize(value0, value1, value2))
-		fmt.Print("\n")
-		break
-	case "renameTable":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "RenameTable requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.RenameTable(value0, value1))
-		fmt.Print("\n")
-		break
-	case "listSnapshots":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ListSnapshots requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.ListSnapshots(value0))
-		fmt.Print("\n")
-		break
-	case "snapshotTable":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "SnapshotTable requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.SnapshotTable(value0, value1))
-		fmt.Print("\n")
-		break
-	case "deleteSnapshot":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "DeleteSnapshot requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.DeleteSnapshot(value0, value1))
-		fmt.Print("\n")
-		break
-	case "restoreSnapshot":
-		if flag.NArg()-1 != 4 {
-			fmt.Fprintln(os.Stderr, "RestoreSnapshot requires 4 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		argvalue2 := flag.Arg(3)
-		value2 := argvalue2
-		argvalue3 := flag.Arg(4) == "true"
-		value3 := argvalue3
-		fmt.Print(client.RestoreSnapshot(value0, value1, value2, value3))
-		fmt.Print("\n")
-		break
-	case "listAllSnapshots":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "ListAllSnapshots requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.ListAllSnapshots())
-		fmt.Print("\n")
-		break
-	case "cancelSnapshotTable":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "CancelSnapshotTable requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.CancelSnapshotTable(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getSnapshotState":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "GetSnapshotState requires 2 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		argvalue1 := flag.Arg(2)
-		value1 := argvalue1
-		fmt.Print(client.GetSnapshotState(value0, value1))
-		fmt.Print("\n")
-		break
-	case "getQuotaInfo":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetQuotaInfo requires 1 args")
-			flag.Usage()
-		}
-		argvalue0 := flag.Arg(1)
-		value0 := argvalue0
-		fmt.Print(client.GetQuotaInfo(value0))
-		fmt.Print("\n")
-		break
-	case "getServerVersion":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "GetServerVersion requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.GetServerVersion())
-		fmt.Print("\n")
-		break
-	case "validateClientVersion":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
-			flag.Usage()
-		}
-		arg186 := flag.Arg(1)
-		mbTrans187 := thrift.NewTMemoryBufferLen(len(arg186))
-		defer mbTrans187.Close()
-		_, err188 := mbTrans187.WriteString(arg186)
-		if err188 != nil {
-			Usage()
-			return
-		}
-		factory189 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt190 := factory189.GetProtocol(mbTrans187)
-		argvalue0 := admin.NewVersion()
-		err191 := argvalue0.Read(jsProt190)
-		if err191 != nil {
-			Usage()
-			return
-		}
-		value0 := argvalue0
-		fmt.Print(client.ValidateClientVersion(value0))
-		fmt.Print("\n")
-		break
-	case "getServerTime":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "GetServerTime requires 0 args")
-			flag.Usage()
-		}
-		fmt.Print(client.GetServerTime())
-		fmt.Print("\n")
-		break
-	case "":
-		Usage()
-		break
-	default:
-		fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
-	}
+  flag.Usage = Usage
+  var host string
+  var port int
+  var protocol string
+  var urlString string
+  var framed bool
+  var useHttp bool
+  var parsedUrl url.URL
+  var trans thrift.TTransport
+  _ = strconv.Atoi
+  _ = math.Abs
+  flag.Usage = Usage
+  flag.StringVar(&host, "h", "localhost", "Specify host and port")
+  flag.IntVar(&port, "p", 9090, "Specify port")
+  flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
+  flag.StringVar(&urlString, "u", "", "Specify the url")
+  flag.BoolVar(&framed, "framed", false, "Use framed transport")
+  flag.BoolVar(&useHttp, "http", false, "Use http")
+  flag.Parse()
+  
+  if len(urlString) > 0 {
+    parsedUrl, err := url.Parse(urlString)
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+      flag.Usage()
+    }
+    host = parsedUrl.Host
+    useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http"
+  } else if useHttp {
+    _, err := url.Parse(fmt.Sprint("http://", host, ":", port))
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+      flag.Usage()
+    }
+  }
+  
+  cmd := flag.Arg(0)
+  var err error
+  if useHttp {
+    trans, err = thrift.NewTHttpClient(parsedUrl.String())
+  } else {
+    portStr := fmt.Sprint(port)
+    if strings.Contains(host, ":") {
+           host, portStr, err = net.SplitHostPort(host)
+           if err != nil {
+                   fmt.Fprintln(os.Stderr, "error with host:", err)
+                   os.Exit(1)
+           }
+    }
+    trans, err = thrift.NewTSocket(net.JoinHostPort(host, portStr))
+    if err != nil {
+      fmt.Fprintln(os.Stderr, "error resolving address:", err)
+      os.Exit(1)
+    }
+    if framed {
+      trans = thrift.NewTFramedTransport(trans)
+    }
+  }
+  if err != nil {
+    fmt.Fprintln(os.Stderr, "Error creating transport", err)
+    os.Exit(1)
+  }
+  defer trans.Close()
+  var protocolFactory thrift.TProtocolFactory
+  switch protocol {
+  case "compact":
+    protocolFactory = thrift.NewTCompactProtocolFactory()
+    break
+  case "simplejson":
+    protocolFactory = thrift.NewTSimpleJSONProtocolFactory()
+    break
+  case "json":
+    protocolFactory = thrift.NewTJSONProtocolFactory()
+    break
+  case "binary", "":
+    protocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
+    break
+  default:
+    fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
+    Usage()
+    os.Exit(1)
+  }
+  client := admin.NewAdminServiceClientFactory(trans, protocolFactory)
+  if err := trans.Open(); err != nil {
+    fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
+    os.Exit(1)
+  }
+  
+  switch cmd {
+  case "saveAppInfo":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "SaveAppInfo requires 1 args")
+      flag.Usage()
+    }
+    arg133 := flag.Arg(1)
+    mbTrans134 := thrift.NewTMemoryBufferLen(len(arg133))
+    defer mbTrans134.Close()
+    _, err135 := mbTrans134.WriteString(arg133)
+    if err135 != nil {
+      Usage()
+      return
+    }
+    factory136 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt137 := factory136.GetProtocol(mbTrans134)
+    argvalue0 := admin.NewAppInfo()
+    err138 := argvalue0.Read(jsProt137)
+    if err138 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.SaveAppInfo(value0))
+    fmt.Print("\n")
+    break
+  case "getAppInfo":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetAppInfo requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetAppInfo(value0))
+    fmt.Print("\n")
+    break
+  case "findAllApps":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "FindAllApps requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.FindAllApps())
+    fmt.Print("\n")
+    break
+  case "findAllTables":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "FindAllTables requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.FindAllTables())
+    fmt.Print("\n")
+    break
+  case "createTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "CreateTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg141 := flag.Arg(2)
+    mbTrans142 := thrift.NewTMemoryBufferLen(len(arg141))
+    defer mbTrans142.Close()
+    _, err143 := mbTrans142.WriteString(arg141)
+    if err143 != nil {
+      Usage()
+      return
+    }
+    factory144 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt145 := factory144.GetProtocol(mbTrans142)
+    argvalue1 := admin.NewTableSpec()
+    err146 := argvalue1.Read(jsProt145)
+    if err146 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    fmt.Print(client.CreateTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "dropTable":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "DropTable requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.DropTable(value0))
+    fmt.Print("\n")
+    break
+  case "alterTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "AlterTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg149 := flag.Arg(2)
+    mbTrans150 := thrift.NewTMemoryBufferLen(len(arg149))
+    defer mbTrans150.Close()
+    _, err151 := mbTrans150.WriteString(arg149)
+    if err151 != nil {
+      Usage()
+      return
+    }
+    factory152 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt153 := factory152.GetProtocol(mbTrans150)
+    argvalue1 := admin.NewTableSpec()
+    err154 := argvalue1.Read(jsProt153)
+    if err154 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    fmt.Print(client.AlterTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "cloneTable":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "CloneTable requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3) == "true"
+    value2 := argvalue2
+    fmt.Print(client.CloneTable(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "disableTable":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "DisableTable requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.DisableTable(value0))
+    fmt.Print("\n")
+    break
+  case "enableTable":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "EnableTable requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.EnableTable(value0))
+    fmt.Print("\n")
+    break
+  case "describeTable":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "DescribeTable requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.DescribeTable(value0))
+    fmt.Print("\n")
+    break
+  case "getTableStatus":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetTableStatus requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetTableStatus(value0))
+    fmt.Print("\n")
+    break
+  case "getTableState":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetTableState requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetTableState(value0))
+    fmt.Print("\n")
+    break
+  case "getTableSplits":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "GetTableSplits requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg164 := flag.Arg(2)
+    mbTrans165 := thrift.NewTMemoryBufferLen(len(arg164))
+    defer mbTrans165.Close()
+    _, err166 := mbTrans165.WriteString(arg164)
+    if err166 != nil { 
+      Usage()
+      return
+    }
+    factory167 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt168 := factory167.GetProtocol(mbTrans165)
+    containerStruct1 := admin.NewGetTableSplitsArgs()
+    err169 := containerStruct1.ReadField2(jsProt168)
+    if err169 != nil {
+      Usage()
+      return
+    }
+    argvalue1 := containerStruct1.StartKey
+    value1 := admin.Dictionary(argvalue1)
+    arg170 := flag.Arg(3)
+    mbTrans171 := thrift.NewTMemoryBufferLen(len(arg170))
+    defer mbTrans171.Close()
+    _, err172 := mbTrans171.WriteString(arg170)
+    if err172 != nil { 
+      Usage()
+      return
+    }
+    factory173 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt174 := factory173.GetProtocol(mbTrans171)
+    containerStruct2 := admin.NewGetTableSplitsArgs()
+    err175 := containerStruct2.ReadField3(jsProt174)
+    if err175 != nil {
+      Usage()
+      return
+    }
+    argvalue2 := containerStruct2.StopKey
+    value2 := admin.Dictionary(argvalue2)
+    fmt.Print(client.GetTableSplits(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "getIndexTableSplits":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "GetIndexTableSplits requires 4 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    arg178 := flag.Arg(3)
+    mbTrans179 := thrift.NewTMemoryBufferLen(len(arg178))
+    defer mbTrans179.Close()
+    _, err180 := mbTrans179.WriteString(arg178)
+    if err180 != nil { 
+      Usage()
+      return
+    }
+    factory181 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt182 := factory181.GetProtocol(mbTrans179)
+    containerStruct2 := admin.NewGetIndexTableSplitsArgs()
+    err183 := containerStruct2.ReadField3(jsProt182)
+    if err183 != nil {
+      Usage()
+      return
+    }
+    argvalue2 := containerStruct2.StartKey
+    value2 := admin.Dictionary(argvalue2)
+    arg184 := flag.Arg(4)
+    mbTrans185 := thrift.NewTMemoryBufferLen(len(arg184))
+    defer mbTrans185.Close()
+    _, err186 := mbTrans185.WriteString(arg184)
+    if err186 != nil { 
+      Usage()
+      return
+    }
+    factory187 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt188 := factory187.GetProtocol(mbTrans185)
+    containerStruct3 := admin.NewGetIndexTableSplitsArgs()
+    err189 := containerStruct3.ReadField4(jsProt188)
+    if err189 != nil {
+      Usage()
+      return
+    }
+    argvalue3 := containerStruct3.StopKey
+    value3 := admin.Dictionary(argvalue3)
+    fmt.Print(client.GetIndexTableSplits(value0, value1, value2, value3))
+    fmt.Print("\n")
+    break
+  case "queryMetric":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "QueryMetric requires 1 args")
+      flag.Usage()
+    }
+    arg190 := flag.Arg(1)
+    mbTrans191 := thrift.NewTMemoryBufferLen(len(arg190))
+    defer mbTrans191.Close()
+    _, err192 := mbTrans191.WriteString(arg190)
+    if err192 != nil {
+      Usage()
+      return
+    }
+    factory193 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt194 := factory193.GetProtocol(mbTrans191)
+    argvalue0 := admin.NewMetricQueryRequest()
+    err195 := argvalue0.Read(jsProt194)
+    if err195 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.QueryMetric(value0))
+    fmt.Print("\n")
+    break
+  case "queryMetrics":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "QueryMetrics requires 1 args")
+      flag.Usage()
+    }
+    arg196 := flag.Arg(1)
+    mbTrans197 := thrift.NewTMemoryBufferLen(len(arg196))
+    defer mbTrans197.Close()
+    _, err198 := mbTrans197.WriteString(arg196)
+    if err198 != nil { 
+      Usage()
+      return
+    }
+    factory199 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt200 := factory199.GetProtocol(mbTrans197)
+    containerStruct0 := admin.NewQueryMetricsArgs()
+    err201 := containerStruct0.ReadField1(jsProt200)
+    if err201 != nil {
+      Usage()
+      return
+    }
+    argvalue0 := containerStruct0.Queries
+    value0 := argvalue0
+    fmt.Print(client.QueryMetrics(value0))
+    fmt.Print("\n")
+    break
+  case "findAllAppInfo":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "FindAllAppInfo requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.FindAllAppInfo())
+    fmt.Print("\n")
+    break
+  case "getTableSize":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetTableSize requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetTableSize(value0))
+    fmt.Print("\n")
+    break
+  case "putClientMetrics":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "PutClientMetrics requires 1 args")
+      flag.Usage()
+    }
+    arg203 := flag.Arg(1)
+    mbTrans204 := thrift.NewTMemoryBufferLen(len(arg203))
+    defer mbTrans204.Close()
+    _, err205 := mbTrans204.WriteString(arg203)
+    if err205 != nil {
+      Usage()
+      return
+    }
+    factory206 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt207 := factory206.GetProtocol(mbTrans204)
+    argvalue0 := admin.NewClientMetrics()
+    err208 := argvalue0.Read(jsProt207)
+    if err208 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.PutClientMetrics(value0))
+    fmt.Print("\n")
+    break
+  case "subscribePhoneAlert":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "SubscribePhoneAlert requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.SubscribePhoneAlert(value0, value1))
+    fmt.Print("\n")
+    break
+  case "unsubscribePhoneAlert":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "UnsubscribePhoneAlert requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.UnsubscribePhoneAlert(value0, value1))
+    fmt.Print("\n")
+    break
+  case "subscribeEmailAlert":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "SubscribeEmailAlert requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.SubscribeEmailAlert(value0, value1))
+    fmt.Print("\n")
+    break
+  case "unsubscribeEmailAlert":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "UnsubscribeEmailAlert requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.UnsubscribeEmailAlert(value0, value1))
+    fmt.Print("\n")
+    break
+  case "listSubscribedPhone":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ListSubscribedPhone requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.ListSubscribedPhone(value0))
+    fmt.Print("\n")
+    break
+  case "listSubscribedEmail":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ListSubscribedEmail requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.ListSubscribedEmail(value0))
+    fmt.Print("\n")
+    break
+  case "getTableHistorySize":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "GetTableHistorySize requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1, err220 := (strconv.ParseInt(flag.Arg(2), 10, 64))
+    if err220 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    argvalue2, err221 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err221 != nil {
+      Usage()
+      return
+    }
+    value2 := argvalue2
+    fmt.Print(client.GetTableHistorySize(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "renameTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "RenameTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.RenameTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "listSnapshots":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ListSnapshots requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.ListSnapshots(value0))
+    fmt.Print("\n")
+    break
+  case "snapshotTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "SnapshotTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.SnapshotTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "deleteSnapshot":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "DeleteSnapshot requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.DeleteSnapshot(value0, value1))
+    fmt.Print("\n")
+    break
+  case "restoreSnapshot":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "RestoreSnapshot requires 4 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3)
+    value2 := argvalue2
+    tmp3, err := (strconv.Atoi(flag.Arg(4)))
+    if err != nil {
+      Usage()
+     return
+    }
+    argvalue3 := admin.SnapshotType(tmp3)
+    value3 := argvalue3
+    fmt.Print(client.RestoreSnapshot(value0, value1, value2, value3))
+    fmt.Print("\n")
+    break
+  case "listAllSnapshots":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ListAllSnapshots requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.ListAllSnapshots(value0))
+    fmt.Print("\n")
+    break
+  case "cancelSnapshotTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "CancelSnapshotTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.CancelSnapshotTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "getSnapshotState":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "GetSnapshotState requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.GetSnapshotState(value0, value1))
+    fmt.Print("\n")
+    break
+  case "getQuotaInfo":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetQuotaInfo requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetQuotaInfo(value0))
+    fmt.Print("\n")
+    break
+  case "getDevelopId":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetDevelopId requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetDevelopId())
+    fmt.Print("\n")
+    break
+  case "getLatestStreamCheckpoint":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "GetLatestStreamCheckpoint requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.GetLatestStreamCheckpoint(value0, value1))
+    fmt.Print("\n")
+    break
+  case "getFloorStreamCheckpoint":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "GetFloorStreamCheckpoint requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2, err242 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err242 != nil {
+      Usage()
+      return
+    }
+    value2 := argvalue2
+    fmt.Print(client.GetFloorStreamCheckpoint(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "getCeilStreamCheckpoint":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "GetCeilStreamCheckpoint requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2, err245 := (strconv.ParseInt(flag.Arg(3), 10, 64))
+    if err245 != nil {
+      Usage()
+      return
+    }
+    value2 := argvalue2
+    fmt.Print(client.GetCeilStreamCheckpoint(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "recoverTable":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "RecoverTable requires 4 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3)
+    value2 := argvalue2
+    argvalue3, err249 := (strconv.ParseInt(flag.Arg(4), 10, 64))
+    if err249 != nil {
+      Usage()
+      return
+    }
+    value3 := argvalue3
+    fmt.Print(client.RecoverTable(value0, value1, value2, value3))
+    fmt.Print("\n")
+    break
+  case "listAllDeletedTables":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ListAllDeletedTables requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.ListAllDeletedTables(value0))
+    fmt.Print("\n")
+    break
+  case "restoreTable":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "RestoreTable requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.RestoreTable(value0, value1))
+    fmt.Print("\n")
+    break
+  case "getDefaultColdStandBy":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetDefaultColdStandBy requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetDefaultColdStandBy())
+    fmt.Print("\n")
+    break
+  case "getGrantRule":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetGrantRule requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetGrantRule(value0))
+    fmt.Print("\n")
+    break
+  case "setGrantRule":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "SetGrantRule requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg255 := flag.Arg(2)
+    mbTrans256 := thrift.NewTMemoryBufferLen(len(arg255))
+    defer mbTrans256.Close()
+    _, err257 := mbTrans256.WriteString(arg255)
+    if err257 != nil {
+      Usage()
+      return
+    }
+    factory258 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt259 := factory258.GetProtocol(mbTrans256)
+    argvalue1 := admin.NewGrantRule()
+    err260 := argvalue1.Read(jsProt259)
+    if err260 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    fmt.Print(client.SetGrantRule(value0, value1))
+    fmt.Print("\n")
+    break
+  case "setSpaceId":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "SetSpaceId requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.SetSpaceId(value0, value1))
+    fmt.Print("\n")
+    break
+  case "getServerVersion":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetServerVersion requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetServerVersion())
+    fmt.Print("\n")
+    break
+  case "validateClientVersion":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "ValidateClientVersion requires 1 args")
+      flag.Usage()
+    }
+    arg263 := flag.Arg(1)
+    mbTrans264 := thrift.NewTMemoryBufferLen(len(arg263))
+    defer mbTrans264.Close()
+    _, err265 := mbTrans264.WriteString(arg263)
+    if err265 != nil {
+      Usage()
+      return
+    }
+    factory266 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt267 := factory266.GetProtocol(mbTrans264)
+    argvalue0 := admin.NewVersion()
+    err268 := argvalue0.Read(jsProt267)
+    if err268 != nil {
+      Usage()
+      return
+    }
+    value0 := argvalue0
+    fmt.Print(client.ValidateClientVersion(value0))
+    fmt.Print("\n")
+    break
+  case "getServerTime":
+    if flag.NArg() - 1 != 0 {
+      fmt.Fprintln(os.Stderr, "GetServerTime requires 0 args")
+      flag.Usage()
+    }
+    fmt.Print(client.GetServerTime())
+    fmt.Print("\n")
+    break
+  case "":
+    Usage()
+    break
+  default:
+    fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
+  }
 }
