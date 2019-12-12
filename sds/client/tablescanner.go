@@ -5,6 +5,8 @@ import (
 	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
 	"github.com/golang/glog"
+  	"runtime"
+
 )
 
 type TableScanner struct {
@@ -64,6 +66,6 @@ func (p *TableScanner) Iter() <-chan *ScannedItem {
 		}
 		close(ch)
 	}()
-	time.Sleep(time.Second)
+  	runtime.Gosched()
 	return ch
 }
