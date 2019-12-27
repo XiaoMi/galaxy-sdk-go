@@ -20,12 +20,12 @@ const MAX_RETRY = 1
 
 func init() {
 ERROR_BACKOFF = map[ErrorCode]int64{
-    2: 1000,
-    25: 1000,
+    2: 10,
+    25: 10,
     37: 0,
     32: 0,
-    1: 1000,
-    35: 1000,
+    1: 10,
+    35: 10,
 }
 
 ERROR_RETRY_TYPE = map[ErrorCode]RetryType{
