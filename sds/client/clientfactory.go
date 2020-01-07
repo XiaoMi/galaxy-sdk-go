@@ -29,7 +29,7 @@ func NewClientFactory(credential *auth.Credential, soTimeout time.Duration) Clie
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			Dial: func(network, addr string) (net.Conn, error) {
-				return net.DialTimeout(network, addr, soTimeout);
+				return net.DialTimeout(network, addr, soTimeout)
 			},
 		},
 	}
