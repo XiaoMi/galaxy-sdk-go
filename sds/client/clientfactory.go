@@ -31,7 +31,6 @@ func NewClientFactory(credential *auth.Credential, soTimeout time.Duration) Clie
 			Dial: func(network, addr string) (net.Conn, error) {
 				return net.DialTimeout(network, addr, soTimeout)
 			},
-			MaxIdleConnsPerHost: 10 * runtime.NumCPU(),
 		},
 	}
 	return ClientFactory{credential: credential, httpClient: httpClient, agent: agent}
