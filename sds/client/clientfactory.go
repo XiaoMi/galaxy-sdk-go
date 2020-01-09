@@ -29,11 +29,15 @@ func NewClientFactory(credential *auth.Credential, soTimeout time.Duration) Clie
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			Dial: func(network, addr string) (net.Conn, error) {
-				return net.DialTimeout(network, addr, soTimeout);
+				return net.DialTimeout(network, addr, soTimeout)
 			},
 		},
 	}
 	return ClientFactory{credential: credential, httpClient: httpClient, agent: agent}
+}
+
+func (cf *ClientFactory) SetHTTPClient(client *http.Client) {
+	cf.httpClient = client
 }
 
 func (cf *ClientFactory) NewDefaultAdminClient() (admin.AdminService) {
