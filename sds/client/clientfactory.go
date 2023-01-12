@@ -2,23 +2,26 @@ package client
 
 import (
 	"fmt"
-	"net/http"
 	"net"
+	"net/http"
 	"runtime"
 	"time"
-	"github.com/golang/glog"
+
 	"github.com/XiaoMi/galaxy-sdk-go/sds/admin"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 	"github.com/XiaoMi/galaxy-sdk-go/sds/table"
 	"github.com/XiaoMi/galaxy-sdk-go/thrift"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/golang/glog"
 )
 
 type ClientFactory struct {
-	credential *auth.Credential
-	httpClient *http.Client
-	agent      string
+	credential      *auth.Credential
+	httpClient      *http.Client
+	agent           string
+	protocolType    *common.ThriftProtocol
+	protocolFactory thrift.TProtocolFactory
 }
 
 func NewClientFactory(credential *auth.Credential, soTimeout time.Duration) ClientFactory {
@@ -36,39 +39,47 @@ func NewClientFactory(credential *auth.Credential, soTimeout time.Duration) Clie
 	return ClientFactory{credential: credential, httpClient: httpClient, agent: agent}
 }
 
+func (cf *ClientFactory) SetTProtocol(protoType common.ThriftProtocol, protocolFactory thrift.TProtocolFactory) {
+	cf.protocolType = &protoType
+	cf.protocolFactory = protocolFactory
+}
+
 func (cf *ClientFactory) SetHTTPClient(client *http.Client) {
 	cf.httpClient = client
 }
 
-func (cf *ClientFactory) NewDefaultAdminClient() (admin.AdminService) {
-	return cf.NewAdminClient(common.DEFAULT_SERVICE_ENDPOINT+common.ADMIN_SERVICE_PATH)
+func (cf *ClientFactory) NewDefaultAdminClient() admin.AdminService {
+	return cf.NewAdminClient(common.DEFAULT_SERVICE_ENDPOINT + common.ADMIN_SERVICE_PATH)
 }
 
-func (cf *ClientFactory) NewDefaultSecureAdminClient() (admin.AdminService) {
-	return cf.NewAdminClient(common.DEFAULT_SECURE_SERVICE_ENDPOINT+common.ADMIN_SERVICE_PATH)
+func (cf *ClientFactory) NewDefaultSecureAdminClient() admin.AdminService {
+	return cf.NewAdminClient(common.DEFAULT_SECURE_SERVICE_ENDPOINT + common.ADMIN_SERVICE_PATH)
 }
 
-func (cf *ClientFactory) NewAdminClient(url string) (admin.AdminService) {
+func (cf *ClientFactory) NewAdminClient(url string) admin.AdminService {
 	transFactory := NewTHttpClientTransportFactory(url, cf.credential, cf.httpClient, cf.agent)
 	return &AdminClientProxy{factory: transFactory, clockOffset: 0}
 }
 
-func (cf *ClientFactory) NewDefaultTableClient() (table.TableService) {
-	return cf.NewTableClient(common.DEFAULT_SERVICE_ENDPOINT+common.TABLE_SERVICE_PATH)
+func (cf *ClientFactory) NewDefaultTableClient() table.TableService {
+	return cf.NewTableClient(common.DEFAULT_SERVICE_ENDPOINT + common.TABLE_SERVICE_PATH)
 }
 
-func (cf *ClientFactory) NewDefaultSecureTableClient() (table.TableService) {
-	return cf.NewTableClient(common.DEFAULT_SECURE_SERVICE_ENDPOINT+common.TABLE_SERVICE_PATH)
+func (cf *ClientFactory) NewDefaultSecureTableClient() table.TableService {
+	return cf.NewTableClient(common.DEFAULT_SECURE_SERVICE_ENDPOINT + common.TABLE_SERVICE_PATH)
 }
 
-func (cf *ClientFactory) NewTableClient(url string) (table.TableService) {
+func (cf *ClientFactory) NewTableClient(url string) table.TableService {
 	transFactory := NewTHttpClientTransportFactory(url, cf.credential, cf.httpClient, cf.agent)
-	return &TableClientProxy{factory: transFactory, clockOffset: 0}
+	if cf.protocolType != nil {
+		transFactory.SetTProtocol(*cf.protocolType)
+	}
+	return &TableClientProxy{factory: transFactory, protocolFactory: cf.protocolFactory, clockOffset: 0}
 }
 
-////////////////////////////
+// //////////////////////////
 // Admin client proxy
-////////////////////////////
+// //////////////////////////
 type AdminClientProxy struct {
 	factory     *SdsTHttpClientTransportFactory
 	clockOffset int64
@@ -302,7 +313,6 @@ func (p *AdminClientProxy) SnapshotTable(tableName string, snapshotName string) 
 	return client.SnapshotTable(tableName, snapshotName)
 }
 
-
 func (p *AdminClientProxy) DeleteSnapshot(tableName string, snapshotName string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=deleteSnapshot")
 	defer trans.Close()
@@ -401,8 +411,7 @@ func (p *AdminClientProxy) GetLatestStreamCheckpoint(tableName string, topicName
 	return client.GetLatestStreamCheckpoint(tableName, topicName)
 }
 
-
-func (p *AdminClientProxy) ListAllDeletedTables(spaceId string) (r []*table.TableInfo, err error){
+func (p *AdminClientProxy) ListAllDeletedTables(spaceId string) (r []*table.TableInfo, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
@@ -423,40 +432,40 @@ func (p *AdminClientProxy) RestoreTable(deletedTableName string, destTableName s
 	return client.RestoreTable(deletedTableName, destTableName)
 }
 
-func (p *AdminClientProxy) SetSpaceId(tableName string, spaceId string) (err error){
+func (p *AdminClientProxy) SetSpaceId(tableName string, spaceId string) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getSnapshotState")
 	defer trans.Close()
 	client := admin.NewAdminServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
 	return client.SetSpaceId(tableName, spaceId)
 }
 
-
-////////////////////////////
+// //////////////////////////
 // Table client proxy
-////////////////////////////
+// //////////////////////////
 type TableClientProxy struct {
-	factory     *SdsTHttpClientTransportFactory
-	clockOffset int64
+	factory         *SdsTHttpClientTransportFactory
+	protocolFactory thrift.TProtocolFactory
+	clockOffset     int64
 }
 
 func (p *TableClientProxy) GetServerVersion() (r *common.Version, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getServerVersion")
 	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	client := p.newTableServiceClientFactory(trans)
 	return client.GetServerVersion()
 }
 
 func (p *TableClientProxy) ValidateClientVersion(clientVersion *common.Version) (err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=validateClientVersion")
 	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	client := p.newTableServiceClientFactory(trans)
 	return client.ValidateClientVersion(clientVersion)
 }
 
 func (p *TableClientProxy) GetServerTime() (r int64, err error) {
 	trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, "type=getServerTime")
 	defer trans.Close()
-	client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+	client := p.newTableServiceClientFactory(trans)
 	return client.GetServerTime()
 }
 
@@ -465,7 +474,7 @@ func (p *TableClientProxy) Get(request *table.GetRequest) (r *table.GetResult_, 
 		query := fmt.Sprintf("type=get&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Get(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -485,7 +494,7 @@ func (p *TableClientProxy) Put(request *table.PutRequest) (r *table.PutResult_, 
 		query := fmt.Sprintf("type=put&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Put(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -506,7 +515,7 @@ func (p *TableClientProxy) Increment(request *table.IncrementRequest) (r *table.
 		query := fmt.Sprintf("type=increment&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Increment(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -527,7 +536,7 @@ func (p *TableClientProxy) Remove(request *table.RemoveRequest) (r *table.Remove
 		query := fmt.Sprintf("type=remove&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Remove(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -548,7 +557,7 @@ func (p *TableClientProxy) RealRemove(request []*table.RemoveRequest) (r []*tabl
 		query := fmt.Sprintf("type=realRemove&name=%s", request[0].GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.RealRemove(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -563,14 +572,12 @@ func (p *TableClientProxy) RealRemove(request []*table.RemoveRequest) (r []*tabl
 	return nil, err
 }
 
-
-
 func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
 		query := fmt.Sprintf("type=scan&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Scan(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -585,14 +592,12 @@ func (p *TableClientProxy) Scan(request *table.ScanRequest) (r *table.ScanResult
 	return nil, err
 }
 
-
-
 func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
 		action := request.GetItems()[0].GetAction()
 		rq := request.GetItems()[0].GetRequest()
 		var tableName string
-		switch(action) {
+		switch action {
 		case table.BatchOp_GET:
 			tableName = rq.GetGetRequest().GetTableName()
 			break
@@ -609,7 +614,7 @@ func (p *TableClientProxy) Batch(request *table.BatchRequest) (r *table.BatchRes
 		query := fmt.Sprintf("type=batch&name=%s", tableName)
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Batch(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -629,7 +634,7 @@ func (p *TableClientProxy) PartialAllowedBatch(request *table.BatchRequest) (r *
 		action := request.GetItems()[0].GetAction()
 		rq := request.GetItems()[0].GetRequest()
 		var tableName string
-		switch(action) {
+		switch action {
 		case table.BatchOp_GET:
 			tableName = rq.GetGetRequest().GetTableName()
 			break
@@ -646,7 +651,7 @@ func (p *TableClientProxy) PartialAllowedBatch(request *table.BatchRequest) (r *
 		query := fmt.Sprintf("type=batch&name=%s", tableName)
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.Batch(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -661,14 +666,12 @@ func (p *TableClientProxy) PartialAllowedBatch(request *table.BatchRequest) (r *
 	return nil, err
 }
 
-
-
 func (p *TableClientProxy) BatchCheckAndMutate(request *table.BatchRequest) (r *table.BatchResult_, err error) {
 	for retry := 0; retry <= errors.MAX_RETRY; {
 		action := request.GetItems()[0].GetAction()
 		rq := request.GetItems()[0].GetRequest()
 		var tableName string
-		switch(action) {
+		switch action {
 		case table.BatchOp_GET:
 			tableName = rq.GetGetRequest().GetTableName()
 			break
@@ -685,7 +688,7 @@ func (p *TableClientProxy) BatchCheckAndMutate(request *table.BatchRequest) (r *
 		query := fmt.Sprintf("type=batchCheckAndMutate&name=%s", tableName)
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.BatchCheckAndMutate(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -704,7 +707,7 @@ func (p *TableClientProxy) PutToRebuildIndex(request *table.PutRequest) (r *tabl
 		query := fmt.Sprintf("type=putToRebuild&name=%s", request.GetTableName())
 		trans := p.factory.GetTransportWithClockOffset(nil, p.clockOffset, query)
 		defer trans.Close()
-		client := table.NewTableServiceClientFactory(trans, thrift.NewTJSONProtocolFactory())
+		client := p.newTableServiceClientFactory(trans)
 		if r, e := client.PutToRebuildIndex(request); e != nil {
 			if p.shouldRetry(e) {
 				err = e
@@ -723,7 +726,7 @@ func (p *TableClientProxy) shouldRetry(err error) bool {
 	if se, ok := err.(SdsErrorCodePeeker); ok {
 		if se.GetErrorCode() == errors.ErrorCode_CLOCK_TOO_SKEWED {
 			if te, ok := err.(*SdsTransportError); ok {
-				p.clockOffset = te.ServerTime-time.Now().Unix()
+				p.clockOffset = te.ServerTime - time.Now().Unix()
 				glog.V(1).Infof("Adjusting local clock with offset: %d", p.clockOffset)
 			}
 		}
@@ -735,4 +738,13 @@ func (p *TableClientProxy) shouldRetry(err error) bool {
 		}
 	}
 	return false
+}
+
+func (p *TableClientProxy) newTableServiceClientFactory(trans thrift.TTransport) *table.TableServiceClient {
+	protoFactory := p.protocolFactory
+	if protoFactory == nil {
+		// use TJSONProtocolFactory as default ProtocolFactory
+		protoFactory = thrift.NewTJSONProtocolFactory()
+	}
+	return table.NewTableServiceClientFactory(trans, protoFactory)
 }

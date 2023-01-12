@@ -20,24 +20,26 @@
 package client
 
 import (
-	"fmt"
 	"bytes"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
-	"strconv"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/common"
+	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
+	"github.com/XiaoMi/galaxy-sdk-go/thrift"
 	"github.com/golang/glog"
 	"github.com/nu7hatch/gouuid"
-	"github.com/XiaoMi/galaxy-sdk-go/thrift"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/auth"
-	"github.com/XiaoMi/galaxy-sdk-go/sds/errors"
 )
 
 type SdsTHttpClient struct {
@@ -49,24 +51,32 @@ type SdsTHttpClient struct {
 	header        http.Header
 	clockOffset   int64
 	httpClient    *http.Client
-	queryString	  string
+	queryString   string
+	tProtocol     *common.ThriftProtocol
 }
 
 type SdsTHttpClientTransportFactory struct {
-	credential  *auth.Credential
-	url         string
-	agent       string
-	httpClient  *http.Client
+	credential *auth.Credential
+	url        string
+	agent      string
+	httpClient *http.Client
+	tProtocol  *common.ThriftProtocol
 }
 
 func NewTHttpClientTransportFactory(url string, credential *auth.Credential,
 	httpClient *http.Client, agent string) *SdsTHttpClientTransportFactory {
-	return &SdsTHttpClientTransportFactory {
+	return &SdsTHttpClientTransportFactory{
 		credential: credential,
 		url:        url,
 		agent:      agent,
 		httpClient: httpClient,
 	}
+}
+
+// SetTProtocol Set the thrift protocol for Thrift Transport factory
+// It decides the "Content-Type" in http request header, which specify server parse protocol
+func (p *SdsTHttpClientTransportFactory) SetTProtocol(tProtocol common.ThriftProtocol) {
+	p.tProtocol = &tProtocol
 }
 
 func (p *SdsTHttpClientTransportFactory) GetTransport(trans thrift.TTransport) thrift.TTransport {
@@ -80,15 +90,17 @@ func (p *SdsTHttpClientTransportFactory) GetTransportWithClockOffset(trans thrif
 		if ok && t.url != nil {
 			s, _ := newSdsTHttpClient(t.url.String(), t.credential, t.httpClient,
 				t.agent, t.clockOffset, query)
+			s.SetTProtocol(t.tProtocol)
 			return s
 		}
 	}
 	s, _ := newSdsTHttpClient(p.url, p.credential, p.httpClient, p.agent, clockOffset, query)
+	s.SetTProtocol(p.tProtocol)
 	return s
 }
 
 func newSdsTHttpClient(urlstr string, credential *auth.Credential, httpClient *http.Client,
-	agent string, clockOffset int64, queryString string) (thrift.TTransport, error) {
+	agent string, clockOffset int64, queryString string) (*SdsTHttpClient, error) {
 	parsedURL, err := url.Parse(urlstr)
 	if err != nil {
 		return nil, err
@@ -104,6 +116,12 @@ func newSdsTHttpClient(urlstr string, credential *auth.Credential, httpClient *h
 		clockOffset:   clockOffset,
 		queryString:   queryString,
 	}, nil
+}
+
+// SetTProtocol Set the thrift protocol for Thrift Transport factory
+// It decides the "Content-Type" in http request header, which specify server parse protocol
+func (p *SdsTHttpClient) SetTProtocol(tProtocol *common.ThriftProtocol) {
+	p.tProtocol = tProtocol
 }
 
 // Set the HTTP Header for this specific Thrift Transport
@@ -194,7 +212,7 @@ func (p *SdsTHttpClient) WriteString(s string) (n int, err error) {
 
 func (p *SdsTHttpClient) generateRandomId(length int) string {
 	requestId, _ := uuid.NewV4()
-	return requestId.String()[0 : length]
+	return requestId.String()[0:length]
 }
 
 func (p *SdsTHttpClient) Flush() error {
@@ -241,15 +259,15 @@ func (p *SdsTHttpClient) Flush() error {
 }
 
 func (p *SdsTHttpClient) canonicalizeResource(uri string) string {
-	subResource := [] string {"acl", "quota", "uploads", "partNumber", "uploadId",
+	subResource := []string{"acl", "quota", "uploads", "partNumber", "uploadId",
 		"storageAccessToken", "metadata"}
 	parseUrl, _ := url.Parse(uri)
 	result := parseUrl.Path
 	queryArgs := parseUrl.Query()
 	canonicalizeQuery := make([]string, 0, len(queryArgs))
 	for k, _ := range queryArgs {
-		if (p.contains(&subResource, k)) {
-			canonicalizeQuery = append(canonicalizeQuery, k);
+		if p.contains(&subResource, k) {
+			canonicalizeQuery = append(canonicalizeQuery, k)
 		}
 	}
 	if len(canonicalizeQuery) != 0 {
@@ -265,7 +283,7 @@ func (p *SdsTHttpClient) canonicalizeResource(uri string) string {
 			if len(values) == 1 && values[0] == "" {
 				result = fmt.Sprintf("%s%s", result, v)
 			} else {
-				result = fmt.Sprintf("%s%s=%s", result, v, values[len(values) -1])
+				result = fmt.Sprintf("%s%s=%s", result, v, values[len(values)-1])
 			}
 			i++
 		}
@@ -276,10 +294,10 @@ func (p *SdsTHttpClient) canonicalizeResource(uri string) string {
 func (p *SdsTHttpClient) contains(arr *[]string, target string) bool {
 	for _, v := range *arr {
 		if strings.EqualFold(v, target) {
-			return true;
+			return true
 		}
 	}
-	return false;
+	return false
 }
 
 func (p *SdsTHttpClient) getDate() string {
@@ -304,7 +322,7 @@ func (p *SdsTHttpClient) canonicalizeXiaomiHeaders(headers *http.Header) string 
 	canonicalizedHeaders := make(map[string]string)
 	for k, v := range *headers {
 		lowerKey := strings.ToLower(k)
-		if (strings.Index(lowerKey, "x-xiaomi-") == 0) {
+		if strings.Index(lowerKey, "x-xiaomi-") == 0 {
 			canonicalizedKeys = append(canonicalizedKeys, lowerKey)
 			canonicalizedHeaders[lowerKey] = strings.Join(v, ",")
 		}
@@ -313,34 +331,39 @@ func (p *SdsTHttpClient) canonicalizeXiaomiHeaders(headers *http.Header) string 
 	result := ""
 	for i := range canonicalizedKeys {
 		result = fmt.Sprintf("%s%s:%s\n", result, canonicalizedKeys[i],
-			canonicalizedHeaders[canonicalizedKeys[i]]);
+			canonicalizedHeaders[canonicalizedKeys[i]])
 	}
 	return result
 }
 
-
 func (p *SdsTHttpClient) getHeader(headers *http.Header, key string) string {
 	for k, v := range *headers {
 		lowerKey := strings.ToLower(k)
-		if (strings.EqualFold(key, lowerKey)) {
-			return v[0];
+		if strings.EqualFold(key, lowerKey) {
+			return v[0]
 		}
 	}
-	return "";
+	return ""
 }
 
 func (p *SdsTHttpClient) createHeaders() *map[string]string {
 	var _ = sha1.Size
 	headers := make(map[string]string)
 	headers[auth.HK_HOST] = p.url.Host
-	headers[auth.HK_TIMESTAMP] = fmt.Sprintf("%d", time.Now().Unix() + p.clockOffset)
+	headers[auth.HK_TIMESTAMP] = fmt.Sprintf("%d", time.Now().Unix()+p.clockOffset)
 	md5c := md5.New()
 	io.WriteString(md5c, p.requestBuffer.String())
 	headers[auth.HK_CONTENT_MD5] = fmt.Sprintf("%x", md5c.Sum(nil))
 	headers[auth.MI_DATE] = p.getDate()
-	headers["Content-Type"] = "application/x-thrift"
 	headers["Content-Length"] = strconv.Itoa(p.requestBuffer.Len())
 	headers["User-Agent"] = p.agent
+
+	contentType := "application/x-thrift"
+	if p.tProtocol != nil {
+		contentType = common.THRIFT_HEADER_MAP[*p.tProtocol]
+	}
+	headers["Content-Type"] = contentType
+
 	return &headers
 }
 
